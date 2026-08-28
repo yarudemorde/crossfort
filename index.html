@@ -33,8 +33,8 @@ button{font:inherit;touch-action:manipulation}
 .small{font-size:11px;color:var(--muted)}
 
 .boardWrap{overflow-x:auto;overscroll-behavior-x:contain;padding:4px 0 8px}
-.board{min-width:620px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.slot{height:108px;border:1px dashed #46607c;border-radius:14px;background:linear-gradient(180deg,#0f1f31,#0a1624);padding:5px;display:flex;align-items:stretch}
+.board{width:100%;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.slot{height:108px;border:1px dashed #46607c;border-radius:12px;background:linear-gradient(180deg,#0f1f31,#0a1624);padding:4px;display:flex;align-items:stretch;position:relative;min-width:0}.slot.selectable{cursor:pointer}.slot.selectedSlot{border:2px solid var(--gold);box-shadow:0 0 0 2px #f1c75b33;background:linear-gradient(180deg,#2a2b22,#121a22)}.slotIndex{position:absolute;top:3px;right:5px;font-size:9px;color:#6e8ba8;font-weight:800}.slot.selectedSlot .slotIndex{color:var(--gold)}
 .slot.enemy{transform:rotate(180deg)} .slot.enemy>.card{transform:rotate(180deg)}
 .slot.empty::after{content:"EMPTY";margin:auto;color:#456078;font-size:10px}
 .card{width:100%;border:1px solid #7690aa;border-radius:10px;background:#233a55;padding:6px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
@@ -112,7 +112,7 @@ button{font:inherit;touch-action:manipulation}
   <div class="sectionTitle"><span>CPU FIELD</span><span>← 5レーン →</span></div>
   <div class="boardWrap"><div class="board" id="enemyBoard"></div></div>
   <div class="log" id="battleLog">ゲーム開始</div>
-  <div class="sectionTitle"><span>YOUR FIELD</span><span>ユニットをタップして攻撃</span></div>
+  <div class="sectionTitle"><span>YOUR FIELD</span><span>手札→空きスロット→配置</span></div>
   <div class="boardWrap"><div class="board" id="playerBoard"></div></div>
   <div class="sectionTitle"><span>HAND</span><span>カードをタップして選択</span></div>
   <div class="hand" id="playerHand"></div>
@@ -184,7 +184,7 @@ function startGame(color){
       playerDeck:buildDeck(color),enemyDeck:buildDeck(cpuColor),
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
-      selectedCard:-1,playerTurn:true,gameOver:false
+      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     $('startScreen').style.display='none';
@@ -219,7 +219,8 @@ function render(){
   $('graveCount').textContent=state.grave.length;
   $('mana').textContent=state.mana+'/'+state.maxMana;
   $('turnLabel').textContent='TURN '+state.turn+' / '+(state.playerTurn?'あなた':'CPU');
-  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.selectedCard<0);
+  var selected=state.selectedCard>=0?state.playerHand[state.selectedCard]:null;
+  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.selectedCard<0 || (selected && selected.type!=='スペル' && state.selectedSlot<0));
   $('endBtn').disabled=(!state.playerTurn || state.gameOver);
   renderBoard('enemy');
   renderBoard('player');
@@ -232,7 +233,11 @@ function renderBoard(side){
   for(var i=0;i<5;i++){
     (function(index){
       var slot=document.createElement('div');
-      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty');
+      var isSelected=(side==='player' && state.selectedSlot===index);
+      var canSelect=(side==='player' && !board[index] && state.playerTurn && state.selectedCard>=0 && state.playerHand[state.selectedCard] && state.playerHand[state.selectedCard].type!=='スペル');
+      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'');
+      var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
+      if(canSelect) slot.onclick=function(){ selectSlot(index); };
       var u=board[index];
       if(u){
         var card=document.createElement('div');
@@ -265,7 +270,16 @@ function renderHand(){
 function selectCard(i){
   if(!state.playerTurn || state.gameOver) return;
   if(state.playerHand[i].cost>state.mana){ logMsg('資源が足りません'); return; }
-  state.selectedCard=(state.selectedCard===i?-1:i);
+  if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }
+  else { state.selectedCard=i; state.selectedSlot=-1; }
+  render();
+}
+function selectSlot(i){
+  if(!state.playerTurn || state.gameOver || state.selectedCard<0) return;
+  var c=state.playerHand[state.selectedCard];
+  if(!c || c.type==='スペル') return;
+  if(state.playerBoard[i]){ logMsg('そのスロットにはすでにカードがあります'); return; }
+  state.selectedSlot=(state.selectedSlot===i?-1:i);
   render();
 }
 function playSelectedCard(){
@@ -280,12 +294,13 @@ function playSelectedCard(){
     state.grave.push(c);
     logMsg(c.name+'を使用');
   }else{
-    var slot=firstEmpty(state.playerBoard);
-    if(slot<0){ state.playerHand.push(c); state.mana+=c.cost; logMsg('盤面が満員です'); render(); return; }
+    var slot=state.selectedSlot;
+    if(slot<0 || state.playerBoard[slot]){ state.playerHand.push(c); state.mana+=c.cost; state.selectedSlot=-1; logMsg('空いているスロットを選択してください'); render(); return; }
     c.canAttack=c.text.indexOf('猛襲')>=0;
     state.playerBoard[slot]=c;
     applyEffect(c,'player',slot);
-    logMsg(c.name+'を配置');
+    logMsg(c.name+'をスロット'+(slot+1)+'に配置');
+    state.selectedSlot=-1;
   }
   checkGame(); render();
 }
@@ -360,7 +375,7 @@ function attack(i){
 }
 function endTurn(){
   if(!state.playerTurn || state.gameOver) return;
-  state.playerTurn=false; state.selectedCard=-1; render(); logMsg('CPUのターン');
+  state.playerTurn=false; state.selectedCard=-1; state.selectedSlot=-1; render(); logMsg('CPUのターン');
   setTimeout(cpuTurn,350);
 }
 function cpuTurn(){
