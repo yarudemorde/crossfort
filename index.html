@@ -37,23 +37,23 @@ button{font:inherit;touch-action:manipulation}
 .slot{height:108px;border:1px dashed #46607c;border-radius:12px;background:linear-gradient(180deg,#0f1f31,#0a1624);padding:4px;display:flex;align-items:stretch;position:relative;min-width:0}.slot.selectable{cursor:pointer}.slot.selectedSlot{border:2px solid var(--gold);box-shadow:0 0 0 2px #f1c75b33;background:linear-gradient(180deg,#2a2b22,#121a22)}.slotIndex{position:absolute;top:3px;right:5px;font-size:9px;color:#6e8ba8;font-weight:800}.slot.selectedSlot .slotIndex{color:var(--gold)}
 .slot.enemy{transform:rotate(180deg)} .slot.enemy>.card{transform:rotate(180deg)}
 .slot.empty::after{content:"EMPTY";margin:auto;color:#456078;font-size:10px}
-.card{width:100%;border:1px solid #7690aa;border-radius:10px;background:#233a55;padding:6px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.card{width:100%;border:1px solid #7690aa;border-radius:10px;background:#233a55;padding:5px;display:flex;flex-direction:column;gap:3px;justify-content:space-between;overflow:hidden}
 .card.green{background:#244b36} .card.white{background:#ded7c7;color:#19212a} .card.red{background:#633033}
 .card.blue{background:#244967} .card.black{background:#282631} .card.yellow{background:#66551c}
-.cardName{font-size:11px;font-weight:900;line-height:1.15}
-.cardType{font-size:9px;opacity:.8} .stats{display:flex;justify-content:space-between;font-size:12px;font-weight:900}
-.effect{font-size:9px;line-height:1.15;opacity:.88;max-height:32px;overflow:hidden}
+.cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
+.cardType{font-size:8px;opacity:.8}.power{font-size:12px;font-weight:900;text-align:right}.power::before{content:'PWR '}
+.effect{font-size:8px;line-height:1.16;opacity:.9;overflow:visible;word-break:break-word}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:var(--muted);font-size:11px}
 .log{background:#0d1928;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#d8e5f4}
 
-.hand{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
-.handCard{flex:0 0 132px;height:162px;border:2px solid #7690aa;border-radius:14px;background:#233a55;padding:8px;display:flex;flex-direction:column;justify-content:space-between;scroll-snap-align:start;position:relative}
+.hand{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:4px 2px 14px;overflow:visible}
+.handCard{min-width:0;min-height:142px;border:2px solid #7690aa;border-radius:12px;background:#233a55;padding:6px;display:flex;flex-direction:column;gap:4px;justify-content:space-between;position:relative;overflow:hidden}
 .handCard.selected{border-color:var(--gold);box-shadow:0 0 0 2px #f1c75b44;transform:translateY(-3px)}
 .handCard.disabled{opacity:.42;filter:grayscale(.5)}
-.cost{position:absolute;top:7px;left:7px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#7bd3ff;color:#07111a;font-weight:900}
-.handName{padding-left:34px;font-size:12px;font-weight:900;line-height:1.15;min-height:30px}
-.handText{font-size:10px;line-height:1.35;color:#dbe7f5;overflow:auto;max-height:72px}
-.handStats{display:flex;justify-content:space-between;font-weight:900;font-size:13px}
+.cost{position:absolute;top:5px;left:5px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#7bd3ff;color:#07111a;font-size:11px;font-weight:900}
+.handName{padding-left:28px;font-size:9px;font-weight:900;line-height:1.12;min-height:25px;word-break:break-word}
+.handText{font-size:8px;line-height:1.18;color:#dbe7f5;overflow:visible;word-break:break-word}
+.handPower{font-weight:900;font-size:11px;text-align:right}.handPower::before{content:'PWR '} 
 
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,rgba(8,17,29,.1),#08111d 28%)}
 .controlInner{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;max-width:720px;margin:auto}
@@ -67,7 +67,8 @@ button{font:inherit;touch-action:manipulation}
   #gameScreen{max-width:900px;margin:auto}
   .board{min-width:0}
   .slot{height:125px}
-  .handCard{flex-basis:150px;height:180px}
+  .hand{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .handCard{min-height:170px}
   .deckGrid{grid-template-columns:repeat(3,1fr)}
 }
 </style>
@@ -81,7 +82,7 @@ button{font:inherit;touch-action:manipulation}
     <div class="rules">
       <b>5レーン制 / LIFE 20 / 初期手札5枚</b><br>
       色を選ぶと30枚デッキを自動構築してCPU戦を開始します。<br>
-      スマホでは盤面・手札を左右にスワイプできます。
+      カードは攻撃力・体力ではなく、1つの「パワー」だけを持ちます。手札は一覧で表示されます。
     </div>
     <div class="deckGrid">
       <button class="deckBtn green" onclick="startGame('緑')">緑デッキ</button>
@@ -162,7 +163,7 @@ var state=null;
 
 function $(id){ return document.getElementById(id); }
 function cloneCard(a,color){
-  return {name:a[0],cost:a[1],atk:a[2],hp:Math.max(1,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
+  return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
 }
 function shuffle(a){
   for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
@@ -244,7 +245,7 @@ function renderBoard(side){
         card.className='card '+(COLOR_CLASS[u.color]||'');
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
-          +'<div class="stats"><span>⚔ '+u.atk+'</span><span>♥ '+u.hp+'</span></div>';
+          +'<div class="power">'+u.power+'</div>';
         if(side==='player') card.onclick=function(){ attack(index); };
         slot.appendChild(card);
       }
@@ -261,7 +262,7 @@ function renderHand(){
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.innerHTML='<div class="cost">'+c.cost+'</div><div class="handName">'+escapeHtml(c.name)+'</div>'
         +'<div class="handText">'+escapeHtml(c.text)+'</div>'
-        +'<div class="handStats"><span>⚔ '+c.atk+'</span><span>♥ '+c.hp+'</span></div>';
+        +'<div class="handPower">'+c.power+'</div>';
       d.onclick=function(){ selectCard(index); };
       root.appendChild(d);
     })(i);
@@ -329,19 +330,19 @@ function applyEffect(c,side,slot){
     var x=firstUnit(enemyBoard); if(x>=0) destroy(side==='player'?'enemy':'player',x);
   }
   if(t.indexOf('他の味方すべてのパワー+1')>=0){
-    for(var i=0;i<ownBoard.length;i++) if(ownBoard[i] && i!==slot){ownBoard[i].atk++;ownBoard[i].hp++;}
+    for(var i=0;i<ownBoard.length;i++) if(ownBoard[i] && i!==slot){ownBoard[i].power++;}
   }
   if(t.indexOf('他の味方すべて+2')>=0){
-    for(var j=0;j<ownBoard.length;j++) if(ownBoard[j] && j!==slot){ownBoard[j].atk+=2;ownBoard[j].hp+=2;}
+    for(var j=0;j<ownBoard.length;j++) if(ownBoard[j] && j!==slot){ownBoard[j].power+=2;}
   }
 }
 function damage(board,index,amount,side,lethal){
   var u=board[index]; if(!u) return;
   var dmg=amount;
   if(u.text.indexOf('受けるダメージ-1')>=0) dmg=Math.max(0,dmg-1);
-  u.hp-=dmg;
-  if(lethal && dmg>0) u.hp=0;
-  if(u.hp<=0) destroy(side,index);
+  if(lethal && dmg>0) u.power=0;
+  else u.power-=dmg;
+  if(u.power<=0) destroy(side,index);
 }
 function destroy(side,index){
   var board=side==='player'?state.playerBoard:state.enemyBoard;
@@ -359,16 +360,16 @@ function attack(i){
   if(target<0 && state.enemyBoard[i]) target=i;
   if(target>=0){
     var t=state.enemyBoard[target];
-    var tAtk=t.atk, tHp=t.hp;
+    var aPower=a.power, tPower=t.power;
     var lethalA=a.text.indexOf('殺傷')>=0, lethalT=t.text.indexOf('殺傷')>=0;
-    damage(state.enemyBoard,target,a.atk,'enemy',lethalA);
-    if(state.playerBoard[i]) damage(state.playerBoard,i,tAtk,'player',lethalT);
-    if(state.playerBoard[i] && a.text.indexOf('貫通')>=0 && a.atk>tHp) state.enemyLife-=a.atk-tHp;
+    damage(state.enemyBoard,target,aPower,'enemy',lethalA);
+    if(state.playerBoard[i]) damage(state.playerBoard,i,tPower,'player',lethalT);
+    if(a.text.indexOf('貫通')>=0 && aPower>tPower) state.enemyLife-=aPower-tPower;
     logMsg(a.name+' → '+t.name);
   }else{
-    state.enemyLife-=a.atk;
+    state.enemyLife-=a.power;
     if(a.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) state.enemyLife-=2;
-    logMsg(a.name+' → 敵LIFE '+a.atk+'ダメージ');
+    logMsg(a.name+' → 敵LIFE '+a.power+'ダメージ');
   }
   if(state.playerBoard[i]) state.playerBoard[i].canAttack=false;
   checkGame(); render();
@@ -402,12 +403,12 @@ function cpuTurn(){
     var ti=guardIndex(state.playerBoard);
     if(ti<0 && state.playerBoard[lane]) ti=lane;
     if(ti>=0){
-      var t=state.playerBoard[ti], tAtk=t.atk, tHp=t.hp;
-      damage(state.playerBoard,ti,u.atk,'player',u.text.indexOf('殺傷')>=0);
-      if(state.enemyBoard[lane]) damage(state.enemyBoard,lane,tAtk,'enemy',t.text.indexOf('殺傷')>=0);
-      if(state.enemyBoard[lane] && u.text.indexOf('貫通')>=0 && u.atk>tHp) state.playerLife-=u.atk-tHp;
+      var t=state.playerBoard[ti], uPower=u.power, tPower=t.power;
+      damage(state.playerBoard,ti,uPower,'player',u.text.indexOf('殺傷')>=0);
+      if(state.enemyBoard[lane]) damage(state.enemyBoard,lane,tPower,'enemy',t.text.indexOf('殺傷')>=0);
+      if(u.text.indexOf('貫通')>=0 && uPower>tPower) state.playerLife-=uPower-tPower;
     }else{
-      state.playerLife-=u.atk;
+      state.playerLife-=u.power;
       if(u.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) state.playerLife-=2;
     }
     if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
