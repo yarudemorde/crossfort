@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>CROSSFORT Mobile Prototype</title>
+<style>
+:root {
+  --bg:#08111d; --panel:#101d2e; --panel2:#16263a; --text:#eef5ff; --muted:#94a8bf;
+  --gold:#f1c75b; --line:#31455e; --danger:#ff7777;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100%;}
+button{font:inherit;touch-action:manipulation}
+#startScreen{min-height:100vh;padding:24px 16px 40px;display:flex;align-items:center;justify-content:center}
+.startCard{width:min(560px,100%);background:linear-gradient(180deg,#13243a,#0d1827);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 20px 60px #0008}
+.logo{font-size:30px;font-weight:900;letter-spacing:.08em;color:var(--gold);text-align:center}
+.subtitle{text-align:center;color:var(--muted);font-size:14px;margin:8px 0 22px}
+.rules{font-size:13px;line-height:1.7;background:#0a1523;border-radius:14px;padding:12px 14px;margin-bottom:16px}
+.deckGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.deckBtn{min-height:68px;border:1px solid var(--line);border-radius:16px;color:white;font-weight:900;font-size:17px;background:#1b3048}
+.deckBtn:active{transform:scale(.98)}
+.deckBtn.green{background:#315c42} .deckBtn.white{background:#e7e0cf;color:#18212c}
+.deckBtn.red{background:#7b3030} .deckBtn.blue{background:#234f75}
+.deckBtn.black{background:#292631} .deckBtn.yellow{background:#786219}
+#startError{display:none;color:#ff9f9f;background:#321c24;padding:10px;border-radius:10px;margin-top:12px;font-size:12px;white-space:pre-wrap}
+
+#gameScreen{display:none;min-height:100vh;padding:calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 90px)}
+.topbar{position:sticky;top:0;z-index:10;background:rgba(8,17,29,.94);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-bottom:8px}
+.scoreRow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.life{font-size:18px;font-weight:900} .life.enemy{color:#ff8d8d} .life.player{color:#9bd7ff}
+.turn{font-weight:800;color:var(--gold);text-align:center;font-size:12px}
+.small{font-size:11px;color:var(--muted)}
+
+.boardWrap{overflow-x:auto;overscroll-behavior-x:contain;padding:4px 0 8px}
+.board{min-width:620px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.slot{height:108px;border:1px dashed #46607c;border-radius:14px;background:linear-gradient(180deg,#0f1f31,#0a1624);padding:5px;display:flex;align-items:stretch}
+.slot.enemy{transform:rotate(180deg)} .slot.enemy>.card{transform:rotate(180deg)}
+.slot.empty::after{content:"EMPTY";margin:auto;color:#456078;font-size:10px}
+.card{width:100%;border:1px solid #7690aa;border-radius:10px;background:#233a55;padding:6px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.card.green{background:#244b36} .card.white{background:#ded7c7;color:#19212a} .card.red{background:#633033}
+.card.blue{background:#244967} .card.black{background:#282631} .card.yellow{background:#66551c}
+.cardName{font-size:11px;font-weight:900;line-height:1.15}
+.cardType{font-size:9px;opacity:.8} .stats{display:flex;justify-content:space-between;font-size:12px;font-weight:900}
+.effect{font-size:9px;line-height:1.15;opacity:.88;max-height:32px;overflow:hidden}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:var(--muted);font-size:11px}
+.log{background:#0d1928;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#d8e5f4}
+
+.hand{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
+.handCard{flex:0 0 132px;height:162px;border:2px solid #7690aa;border-radius:14px;background:#233a55;padding:8px;display:flex;flex-direction:column;justify-content:space-between;scroll-snap-align:start;position:relative}
+.handCard.selected{border-color:var(--gold);box-shadow:0 0 0 2px #f1c75b44;transform:translateY(-3px)}
+.handCard.disabled{opacity:.42;filter:grayscale(.5)}
+.cost{position:absolute;top:7px;left:7px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#7bd3ff;color:#07111a;font-weight:900}
+.handName{padding-left:34px;font-size:12px;font-weight:900;line-height:1.15;min-height:30px}
+.handText{font-size:10px;line-height:1.35;color:#dbe7f5;overflow:auto;max-height:72px}
+.handStats{display:flex;justify-content:space-between;font-weight:900;font-size:13px}
+
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,rgba(8,17,29,.1),#08111d 28%)}
+.controlInner{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;max-width:720px;margin:auto}
+.ctrl{min-height:54px;border:0;border-radius:14px;font-weight:900;background:#b9c7d6;color:#102030}
+.ctrl.primary{background:var(--gold)} .ctrl.danger{background:#843d43;color:white} .ctrl:disabled{opacity:.35}
+.modal{display:none;position:fixed;inset:0;background:#000b;z-index:50;align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex} .modalBox{width:min(520px,100%);background:#122034;border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
+.modalBox h2{margin-top:0;color:var(--gold)} .modalBox button{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);font-weight:900}
+
+@media (min-width:760px){
+  #gameScreen{max-width:900px;margin:auto}
+  .board{min-width:0}
+  .slot{height:125px}
+  .handCard{flex-basis:150px;height:180px}
+  .deckGrid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<section id="startScreen">
+  <div class="startCard">
+    <div class="logo">CROSSFORT</div>
+    <div class="subtitle">Playable Prototype</div>
+    <div class="rules">
+      <b>5レーン制 / LIFE 20 / 初期手札5枚</b><br>
+      色を選ぶと30枚デッキを自動構築してCPU戦を開始します。<br>
+      スマホでは盤面・手札を左右にスワイプできます。
+    </div>
+    <div class="deckGrid">
+      <button class="deckBtn green" onclick="startGame('緑')">緑デッキ</button>
+      <button class="deckBtn white" onclick="startGame('白')">白デッキ</button>
+      <button class="deckBtn red" onclick="startGame('赤')">赤デッキ</button>
+      <button class="deckBtn blue" onclick="startGame('青')">青デッキ</button>
+      <button class="deckBtn black" onclick="startGame('黒')">黒デッキ</button>
+      <button class="deckBtn yellow" onclick="startGame('黄')">黄デッキ</button>
+    </div>
+    <div id="startError"></div>
+  </div>
+</section>
+
+<section id="gameScreen">
+  <div class="topbar">
+    <div class="scoreRow">
+      <div><span class="small">CPU</span> <span class="life enemy">♥ <span id="enemyLife">20</span></span></div>
+      <div class="turn" id="turnLabel">TURN 1</div>
+      <div><span class="life player">♥ <span id="playerLife">20</span></span> <span class="small">YOU</span></div>
+    </div>
+    <div class="scoreRow small" style="margin-top:4px">
+      <div>敵手札 <span id="enemyHandCount">5</span> / 山札 <span id="enemyDeckCount">25</span></div>
+      <div>資源 <b id="mana">1/1</b></div>
+      <div>山札 <span id="playerDeckCount">25</span> / 墓地 <span id="graveCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="sectionTitle"><span>CPU FIELD</span><span>← 5レーン →</span></div>
+  <div class="boardWrap"><div class="board" id="enemyBoard"></div></div>
+  <div class="log" id="battleLog">ゲーム開始</div>
+  <div class="sectionTitle"><span>YOUR FIELD</span><span>ユニットをタップして攻撃</span></div>
+  <div class="boardWrap"><div class="board" id="playerBoard"></div></div>
+  <div class="sectionTitle"><span>HAND</span><span>カードをタップして選択</span></div>
+  <div class="hand" id="playerHand"></div>
+</section>
+
+<div class="controls" id="controls" style="display:none">
+  <div class="controlInner">
+    <button class="ctrl" onclick="returnToDecks()">デッキ選択</button>
+    <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
+    <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
+  </div>
+</div>
+
+<div class="modal" id="resultModal">
+  <div class="modalBox">
+    <h2 id="resultTitle">VICTORY</h2>
+    <p id="resultText"></p>
+    <button onclick="startGame(selectedColor)">もう一度</button>
+    <button onclick="returnToDecks()" style="margin-top:8px;background:#b9c7d6">デッキ選択へ</button>
+  </div>
+</div>
+
+<script>
+var CARD_POOLS = {
+  '緑': [
+    ['原始的な投槍',1,0,'スペル','相手ユニット1体に1ダメージ。'],['群れ呼び蜥蜴',2,1,'ユニット','配置：空きスロットにパワー1トークンを1体配置。'],['沼潜みの射手',2,1,'ユニット','配置：正面の敵に1ダメージ。'],['毒牙の蜥蜴',3,1,'ユニット','自分のユニットすべてに殺傷を付与。'],['開戦の笛吹',3,1,'ユニット','配置：パワー1トークンを2体配置。'],['復讐者アーシュ',3,1,'ユニット','味方が破壊されるたびパワー+1。'],['鱗の頭領シャトゥルツカ',3,2,'ユニット','殺傷。リスカリの配置コスト-1。'],['反乱する蜥蜴軍',4,2,'ユニット','配置：他の味方すべてのパワー+1。'],['集結するリスカリ軍',5,3,'ユニット','配置：パワー2トークンを2体配置。'],['反乱の先導者ボザヤ',5,3,'ユニット','味方の与えるダメージを2倍。'],['ハストボーンの北王',2,2,'ユニット','配置：味方1体を戻し、1枚引く。'],['ハストボーンの東王',3,2,'ユニット','配置：味方1体を戻し、正面に3ダメージ。'],['ハストボーンの西王',4,3,'ユニット','配置：味方1体を戻し、自身+2。'],['四都市の統合王 クルオケシュ',7,5,'ユニット','配置：戻した味方の枠にパワー4トークンを配置。'],['翠冠の継承',2,0,'スペル','味方1体を手札に戻し、コスト3以下を配置。']
+  ],
+  '白': [
+    ['クロスフォートの城壁',1,4,'ユニット','攻撃できない。'],['農民',2,1,'ユニット','配置：資源+1。'],['クロスフォート兵',2,2,'ユニット','守護。'],['王国の重装歩兵',3,3,'ユニット','守護。'],['永遠樹の恩寵',3,0,'スペル','資源+1。'],['決闘場のチャンピオン',4,3,'ユニット','配置：敵1体を正面へ移動。'],['王室近衛兵',4,3,'ユニット','受けるダメージ-1。'],['クロスフォート城',4,0,'ランドマーク','パワー3以上の味方に守護。'],['白獅子の将軍',5,4,'ユニット','配置：資源+2。'],['王国の反逆者グレン',10,6,'ユニット','手札配置：追加ターン。'],['大正門の見張り手',2,2,'ユニット','配置：ライフ+1。'],['フィリポス山脈',2,0,'ランドマーク','次のターン開始時、資源+1。'],['イルデニアの鍛冶師',3,2,'ユニット','配置：味方1体のパワー+1。'],['投獄',4,0,'スペル','敵1体のパワーを2にする。'],['イルデニアの騎士団長',6,5,'ユニット','配置：ライフ+5。'],['銀嶺の騎士ゼルモント',7,6,'ユニット','守護。配置：他の味方すべて+2。']
+  ],
+  '赤': [
+    ['帝国の突撃兵',1,1,'ユニット','猛襲。'],['帝国の投擲兵',2,2,'ユニット','配置：相手ライフに1ダメージ。'],['帝国の騎馬隊',2,2,'ユニット','貫通。'],['皇帝軍',2,2,'ユニット',''],['捨て身の突撃兵',3,4,'ユニット','猛襲。ターン終了時、自身に2ダメージ。'],['強襲の指揮官',3,1,'ユニット','味方すべてに猛襲。'],['黒の将軍',5,4,'ユニット','貫通。攻撃時：相手ライフに2ダメージ。'],['龍皇帝ヴァンビエッタⅢ',6,4,'ユニット','配置：手札からドラゴン1体を配置。'],['処刑',6,0,'スペル','敵ユニット1体を破壊。'],['帝国の黒騎士団',6,0,'スペル','空きスロットすべてにパワー2トークン。'],['真紅の囁きアリオサ',2,2,'ユニット','攻撃時移動可。味方破壊時、相手ライフに1ダメージ。'],['ニルスタッドの諜報員',2,2,'ユニット','報復2。'],['沈黙は破られた',5,0,'スペル','2枚引き、自分に3ダメージ。'],['緋帳の貴婦人',4,1,'ユニット','報復3。殺傷。'],['ニルスタッドの影',5,3,'ユニット','報復3。猛襲。']
+  ],
+  '青': [
+    ['危険な釣り人',1,1,'ユニット','潜水時：1枚引く。'],['海底の徘徊者',2,1,'ユニット','潜水1。配置：手札を山札下へ戻し1枚引く。'],['危険海域',2,0,'ランドマーク','潜水コスト-1。'],['人食いクラゲ',3,1,'ユニット','潜水2。報復3。配置：ライフ+1。'],['深海ピラニア',4,2,'ユニット','潜水3。配置：相手の手札1枚を山札下へ。'],['深海の大渦バルメデ',4,3,'ユニット','潜水1。攻撃時、山札下から潜水ユニットを配置。'],['アークルハーバーの夜笛守',4,3,'ユニット','配置：手札1枚を山札下へ置き2枚引く。'],['船喰らい',6,4,'ユニット','潜水4。配置：敵1体を破壊。'],['激浪のアクルティス',9,6,'ユニット','潜水6。配置：敵2体を山札下へ。'],['廃船酒場の踊り子',2,1,'ユニット','ターン終了時：山札上1枚を墓地へ。'],['沈没街の孤児',2,2,'ユニット','配置：山札上2枚を墓地へ。'],['コールティガの港湾労働者',3,2,'ユニット','配置：墓地のユニット1枚を手札へ。'],['座礁船の縫合士',4,3,'ユニット','配置：墓地からカード1枚を手札へ。'],['港印卿の拒絶',4,0,'スペル','敵1体を山札下へ。'],['コールティガの船骸書記',5,1,'ユニット','配置：墓地1枚につきパワー+1。'],['港印卿コルドロッホ',6,5,'ユニット','配置：墓地からコスト8以下を配置。'],['死礁の貪り手',10,5,'ユニット','守護。墓地1枚につきコスト-1。']
+  ],
+  '黒': [
+    ['白龍エルレハイヌ',6,4,'ユニット','配置：カードを3枚引く。'],['終末の亀裂 ダルディエク',7,0,'スペル','すべてのユニットを破壊。'],['亜龍イザルクリューネ',8,5,'ユニット','配置：敵ユニットすべてに3ダメージ。'],['起源の龍モルディヤルデ',12,10,'ユニット','貫通。味方5体を破壊するとコスト0。']
+  ],
+  '黄': [
+    ['サルベージ',1,0,'スペル','探査2。'],['砂漠の贈賄者',2,1,'ユニット','発見：資源+1。配置：1枚引く。'],['流砂乗り',2,2,'ユニット','攻撃：探査2。'],['水脈への地図',3,0,'スペル','発見：ライフ+1。ライフ+2。'],['砂漠の商隊狩り',3,1,'ユニット','配置：相手は手札1枚を破棄。'],['砂読みの案内人',3,2,'ユニット','配置：探査3。'],['オアシスの不法管理者',4,1,'ユニット','相手がドローする時、敵1体に1ダメージ。'],['武装商人ラズリウス',4,2,'ユニット','発見：1コストで配置可。配置：探査3後、敵に3ダメージ。'],['砂漠の先遣隊',5,4,'ユニット','配置：探査4。'],['黄金文明の遺物',5,0,'スペル','発見：味方全体+1。使用：味方全体+2。'],['奇襲する砂蜘蛛',5,3,'ユニット','発見：配置。守護。'],['アウロニアン・デスワーム',8,6,'ユニット','配置：探査10。'],['黄金色の金属片',1,0,'ランドマーク','発見：手札に加える。配置：1枚引く。'],['砂漠に沈む黄金門',1,0,'ランドマーク','発見：手札に加える。配置：探査2。'],['黄金の天秤',2,0,'ランドマーク','発見：手札に加える。配置：正面に2ダメージ。'],['アウロニア信者',2,2,'ユニット','信仰2 配置：自身+2。'],['異端審問',2,0,'スペル','信仰2で報復1。敵に2ダメージ。'],['遺跡荒らしの商隊',3,1,'ユニット','聖遺物1枚を破壊し、パワー3トークン。'],['アウロニアの重装神官',3,3,'ユニット','信仰2で守護。信仰3 配置：自身+2。'],['アウロニアの巫女',4,2,'ユニット','配置：山札からコスト2以下の聖遺物を配置。'],['女教皇アウローン',5,4,'ユニット','信仰3で防衛されない。魂響で復活。'],['黄金文明の再興',6,0,'スペル','聖遺物を破壊し、その枠にパワー5トークン。']
+  ]
+};
+var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
+var selectedColor='青';
+var state=null;
+
+function $(id){ return document.getElementById(id); }
+function cloneCard(a,color){
+  return {name:a[0],cost:a[1],atk:a[2],hp:Math.max(1,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
+}
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+function buildDeck(color){
+  var pool=CARD_POOLS[color], deck=[];
+  for(var i=0;i<30;i++) deck.push(cloneCard(pool[i%pool.length],color));
+  return shuffle(deck);
+}
+function startGame(color){
+  try{
+    selectedColor=color;
+    var colors=Object.keys(CARD_POOLS);
+    var ci=colors.indexOf(color);
+    var cpuColor=colors[(ci+2)%colors.length];
+    state={
+      turn:1,maxMana:1,mana:1,playerLife:20,enemyLife:20,
+      playerDeck:buildDeck(color),enemyDeck:buildDeck(cpuColor),
+      playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
+      enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
+      selectedCard:-1,playerTurn:true,gameOver:false
+    };
+    for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
+    $('startScreen').style.display='none';
+    $('gameScreen').style.display='block';
+    $('controls').style.display='block';
+    $('resultModal').classList.remove('show');
+    logMsg(color+'デッキ VS '+cpuColor+'デッキ');
+    render();
+  }catch(e){
+    var box=$('startError');
+    box.style.display='block';
+    box.textContent='開始エラー: '+(e && e.message ? e.message : String(e));
+  }
+}
+function returnToDecks(){
+  $('resultModal').classList.remove('show');
+  $('gameScreen').style.display='none';
+  $('controls').style.display='none';
+  $('startScreen').style.display='flex';
+}
+function drawCard(side){
+  var deck=side==='player'?state.playerDeck:state.enemyDeck;
+  var hand=side==='player'?state.playerHand:state.enemyHand;
+  if(deck.length && hand.length<8) hand.push(deck.shift());
+}
+function render(){
+  $('enemyLife').textContent=state.enemyLife;
+  $('playerLife').textContent=state.playerLife;
+  $('enemyHandCount').textContent=state.enemyHand.length;
+  $('enemyDeckCount').textContent=state.enemyDeck.length;
+  $('playerDeckCount').textContent=state.playerDeck.length;
+  $('graveCount').textContent=state.grave.length;
+  $('mana').textContent=state.mana+'/'+state.maxMana;
+  $('turnLabel').textContent='TURN '+state.turn+' / '+(state.playerTurn?'あなた':'CPU');
+  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.selectedCard<0);
+  $('endBtn').disabled=(!state.playerTurn || state.gameOver);
+  renderBoard('enemy');
+  renderBoard('player');
+  renderHand();
+}
+function renderBoard(side){
+  var root=$(side+'Board');
+  root.innerHTML='';
+  var board=side==='player'?state.playerBoard:state.enemyBoard;
+  for(var i=0;i<5;i++){
+    (function(index){
+      var slot=document.createElement('div');
+      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty');
+      var u=board[index];
+      if(u){
+        var card=document.createElement('div');
+        card.className='card '+(COLOR_CLASS[u.color]||'');
+        card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
+          +'<div class="effect">'+escapeHtml(u.text)+'</div>'
+          +'<div class="stats"><span>⚔ '+u.atk+'</span><span>♥ '+u.hp+'</span></div>';
+        if(side==='player') card.onclick=function(){ attack(index); };
+        slot.appendChild(card);
+      }
+      root.appendChild(slot);
+    })(i);
+  }
+}
+function renderHand(){
+  var root=$('playerHand'); root.innerHTML='';
+  for(var i=0;i<state.playerHand.length;i++){
+    (function(index){
+      var c=state.playerHand[index], d=document.createElement('div');
+      var disabled=c.cost>state.mana || !state.playerTurn;
+      d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
+      d.innerHTML='<div class="cost">'+c.cost+'</div><div class="handName">'+escapeHtml(c.name)+'</div>'
+        +'<div class="handText">'+escapeHtml(c.text)+'</div>'
+        +'<div class="handStats"><span>⚔ '+c.atk+'</span><span>♥ '+c.hp+'</span></div>';
+      d.onclick=function(){ selectCard(index); };
+      root.appendChild(d);
+    })(i);
+  }
+}
+function selectCard(i){
+  if(!state.playerTurn || state.gameOver) return;
+  if(state.playerHand[i].cost>state.mana){ logMsg('資源が足りません'); return; }
+  state.selectedCard=(state.selectedCard===i?-1:i);
+  render();
+}
+function playSelectedCard(){
+  if(state.selectedCard<0 || !state.playerTurn || state.gameOver) return;
+  var c=state.playerHand[state.selectedCard];
+  if(c.cost>state.mana) return;
+  state.mana-=c.cost;
+  state.playerHand.splice(state.selectedCard,1);
+  state.selectedCard=-1;
+  if(c.type==='スペル'){
+    applyEffect(c,'player',-1);
+    state.grave.push(c);
+    logMsg(c.name+'を使用');
+  }else{
+    var slot=firstEmpty(state.playerBoard);
+    if(slot<0){ state.playerHand.push(c); state.mana+=c.cost; logMsg('盤面が満員です'); render(); return; }
+    c.canAttack=c.text.indexOf('猛襲')>=0;
+    state.playerBoard[slot]=c;
+    applyEffect(c,'player',slot);
+    logMsg(c.name+'を配置');
+  }
+  checkGame(); render();
+}
+function firstEmpty(board){ for(var i=0;i<board.length;i++) if(!board[i]) return i; return -1; }
+function firstUnit(board){ for(var i=0;i<board.length;i++) if(board[i]) return i; return -1; }
+function guardIndex(board){ for(var i=0;i<board.length;i++) if(board[i] && board[i].text.indexOf('守護')>=0) return i; return -1; }
+
+function applyEffect(c,side,slot){
+  var ownBoard=side==='player'?state.playerBoard:state.enemyBoard;
+  var enemyBoard=side==='player'?state.enemyBoard:state.playerBoard;
+  var lifeKey=side==='player'?'playerLife':'enemyLife';
+  var enemyLifeKey=side==='player'?'enemyLife':'playerLife';
+  var t=c.text||'';
+  if(t.indexOf('1枚引く')>=0) drawCard(side);
+  if(t.indexOf('2枚引')>=0){drawCard(side);drawCard(side);}
+  if(t.indexOf('3枚引')>=0){drawCard(side);drawCard(side);drawCard(side);}
+  if(t.indexOf('ライフ+1')>=0) state[lifeKey]+=1;
+  if(t.indexOf('ライフ+2')>=0) state[lifeKey]+=2;
+  if(t.indexOf('ライフ+5')>=0) state[lifeKey]+=5;
+  if(t.indexOf('相手ライフに1ダメージ')>=0) state[enemyLifeKey]-=1;
+  if(t.indexOf('自分に3ダメージ')>=0) state[lifeKey]-=3;
+  if(t.indexOf('正面の敵に1ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,1,side==='player'?'enemy':'player',false);
+  if(t.indexOf('正面に2ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,2,side==='player'?'enemy':'player',false);
+  if(t.indexOf('正面に3ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,3,side==='player'?'enemy':'player',false);
+  if(t.indexOf('敵ユニット1体を破壊')>=0 || t.indexOf('敵1体を破壊')>=0){
+    var x=firstUnit(enemyBoard); if(x>=0) destroy(side==='player'?'enemy':'player',x);
+  }
+  if(t.indexOf('他の味方すべてのパワー+1')>=0){
+    for(var i=0;i<ownBoard.length;i++) if(ownBoard[i] && i!==slot){ownBoard[i].atk++;ownBoard[i].hp++;}
+  }
+  if(t.indexOf('他の味方すべて+2')>=0){
+    for(var j=0;j<ownBoard.length;j++) if(ownBoard[j] && j!==slot){ownBoard[j].atk+=2;ownBoard[j].hp+=2;}
+  }
+}
+function damage(board,index,amount,side,lethal){
+  var u=board[index]; if(!u) return;
+  var dmg=amount;
+  if(u.text.indexOf('受けるダメージ-1')>=0) dmg=Math.max(0,dmg-1);
+  u.hp-=dmg;
+  if(lethal && dmg>0) u.hp=0;
+  if(u.hp<=0) destroy(side,index);
+}
+function destroy(side,index){
+  var board=side==='player'?state.playerBoard:state.enemyBoard;
+  var grave=side==='player'?state.grave:state.enemyGrave;
+  if(board[index]) grave.push(board[index]);
+  board[index]=null;
+}
+function attack(i){
+  if(!state.playerTurn || state.gameOver) return;
+  var a=state.playerBoard[i];
+  if(!a) return;
+  if(a.type==='ランドマーク' || a.text.indexOf('攻撃できない')>=0){logMsg('このカードは攻撃できません');return;}
+  if(!a.canAttack){logMsg('このユニットは次のターンから攻撃できます');return;}
+  var target=guardIndex(state.enemyBoard);
+  if(target<0 && state.enemyBoard[i]) target=i;
+  if(target>=0){
+    var t=state.enemyBoard[target];
+    var tAtk=t.atk, tHp=t.hp;
+    var lethalA=a.text.indexOf('殺傷')>=0, lethalT=t.text.indexOf('殺傷')>=0;
+    damage(state.enemyBoard,target,a.atk,'enemy',lethalA);
+    if(state.playerBoard[i]) damage(state.playerBoard,i,tAtk,'player',lethalT);
+    if(state.playerBoard[i] && a.text.indexOf('貫通')>=0 && a.atk>tHp) state.enemyLife-=a.atk-tHp;
+    logMsg(a.name+' → '+t.name);
+  }else{
+    state.enemyLife-=a.atk;
+    if(a.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) state.enemyLife-=2;
+    logMsg(a.name+' → 敵LIFE '+a.atk+'ダメージ');
+  }
+  if(state.playerBoard[i]) state.playerBoard[i].canAttack=false;
+  checkGame(); render();
+}
+function endTurn(){
+  if(!state.playerTurn || state.gameOver) return;
+  state.playerTurn=false; state.selectedCard=-1; render(); logMsg('CPUのターン');
+  setTimeout(cpuTurn,350);
+}
+function cpuTurn(){
+  if(state.gameOver) return;
+  var mana=state.maxMana;
+  var progress=true;
+  while(progress){
+    progress=false;
+    for(var i=0;i<state.enemyHand.length;i++){
+      var c=state.enemyHand[i];
+      if(c.cost<=mana){
+        if(c.type!=='スペル' && firstEmpty(state.enemyBoard)<0) continue;
+        mana-=c.cost;
+        state.enemyHand.splice(i,1);
+        if(c.type==='スペル'){applyEffect(c,'enemy',-1);state.enemyGrave.push(c);}
+        else{var s=firstEmpty(state.enemyBoard);c.canAttack=c.text.indexOf('猛襲')>=0;state.enemyBoard[s]=c;applyEffect(c,'enemy',s);}
+        progress=true; break;
+      }
+    }
+  }
+  for(var lane=0;lane<5;lane++){
+    var u=state.enemyBoard[lane];
+    if(!u || !u.canAttack || u.type==='ランドマーク' || u.text.indexOf('攻撃できない')>=0) continue;
+    var ti=guardIndex(state.playerBoard);
+    if(ti<0 && state.playerBoard[lane]) ti=lane;
+    if(ti>=0){
+      var t=state.playerBoard[ti], tAtk=t.atk, tHp=t.hp;
+      damage(state.playerBoard,ti,u.atk,'player',u.text.indexOf('殺傷')>=0);
+      if(state.enemyBoard[lane]) damage(state.enemyBoard,lane,tAtk,'enemy',t.text.indexOf('殺傷')>=0);
+      if(state.enemyBoard[lane] && u.text.indexOf('貫通')>=0 && u.atk>tHp) state.playerLife-=u.atk-tHp;
+    }else{
+      state.playerLife-=u.atk;
+      if(u.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) state.playerLife-=2;
+    }
+    if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
+    if(checkGame()){render();return;}
+  }
+  state.turn++;
+  state.maxMana=Math.min(12,state.maxMana+1);
+  state.mana=state.maxMana;
+  drawCard('player'); drawCard('enemy');
+  for(var p=0;p<5;p++) if(state.playerBoard[p]) state.playerBoard[p].canAttack=true;
+  for(var e=0;e<5;e++) if(state.enemyBoard[e]) state.enemyBoard[e].canAttack=true;
+  state.playerTurn=true;
+  logMsg('あなたのターン');
+  render();
+}
+function checkGame(){
+  if(state.enemyLife<=0){finish(true,'敵のLIFEを0にしました');return true;}
+  if(state.playerLife<=0){finish(false,'あなたのLIFEが0になりました');return true;}
+  return false;
+}
+function finish(win,text){
+  state.gameOver=true;
+  $('resultTitle').textContent=win?'VICTORY':'DEFEAT';
+  $('resultText').textContent=text;
+  $('resultModal').classList.add('show');
+}
+function logMsg(t){ $('battleLog').textContent=t; }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
+}
+window.onerror=function(message,source,line,col,error){
+  var box=$('startError');
+  if($('startScreen').style.display!=='none'){box.style.display='block';box.textContent='エラー: '+message+'\nline '+line;}
+  return false;
+};
+</script>
+</body>
+</html>
