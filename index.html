@@ -44,7 +44,7 @@ button{font:inherit;touch-action:manipulation}
 .slot.enemy.targetable::before{transform:translateX(-50%) rotate(180deg)}
 .slot.enemy{transform:rotate(180deg)} .slot.enemy>.card{transform:rotate(180deg)}
 .slot.empty::after{content:"◇";margin:auto;color:#756650;font-size:18px}
-.card{width:100%;border:1px solid #9b835f;border-radius:7px;background:#26303a;padding:5px;display:flex;flex-direction:column;gap:3px;justify-content:space-between;overflow:hidden;box-shadow:inset 0 0 0 1px #0b0e12,0 3px 9px #0008}
+.card{width:100%;border:1px solid #9b835f;border-radius:7px;background:#26303a;padding:5px;display:flex;flex-direction:column;gap:3px;justify-content:space-between;overflow:hidden;box-shadow:inset 0 0 0 1px #0b0e12,0 3px 9px #0008;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .card.attackable{border-color:#f2dcc0;box-shadow:inset 0 0 0 1px #0b0e12,0 0 0 2px #dfbd8d55,0 0 18px #f0ca8caa;animation:attackReady 1.15s ease-in-out infinite}.slot:has(.card.attackable){overflow:visible;z-index:3}.slot:has(.card.attackable)::before{content:"攻撃可";position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:4;background:#edcf9f;color:#21170d;border:1px solid #fff0d3;border-radius:12px;padding:2px 6px;font-size:9px;font-weight:900;white-space:nowrap}
 .card.green{background:#244b36} .card.white{background:#ded7c7;color:#19212a} .card.red{background:#633033}
 .card.blue{background:#244967} .card.black{background:#282631} .card.yellow{background:#66551c}
@@ -66,11 +66,14 @@ button{font:inherit;touch-action:manipulation}
 .handPower{font-family:Georgia,"Yu Mincho",serif;font-weight:900;font-size:13px;text-align:right;color:#f2dcc0}.handPower::before{content:'PWR '}
 
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,transparent,#090c10 24%)}
-.controlInner{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;max-width:720px;margin:auto}
+.controlInner{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;max-width:720px;margin:auto}.controlInner.hasSpecial{grid-template-columns:1fr .68fr .68fr 1fr}.controlInner.hasSpecial #specialBtn{display:block}
 .ctrl{min-height:54px;border:1px solid #665947;border-radius:10px;font-weight:900;background:#171c21;color:#d8cbbb}.ctrl.primary{background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;border-color:#f2dcc0}.ctrl.danger{background:#5d292c;color:#f3dedb;border-color:#9b5555}.ctrl:disabled{opacity:.35}
+#specialBtn{display:none;background:linear-gradient(135deg,#6b527e,#372944);color:#f4e7ff;border-color:#a989bd;font-size:11px}
 .modal{display:none;position:fixed;inset:0;background:#000b;z-index:50;align-items:center;justify-content:center;padding:18px}
 .modal.show{display:flex} .modalBox{width:min(520px,100%);background:#122034;border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
 .modalBox h2{margin-top:0;color:var(--gold)} .modalBox button{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);font-weight:900}
+.detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#0009;pointer-events:none}.detailOverlay.show{display:flex}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
+.pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerConfirm{min-height:48px;margin-top:12px;border:1px solid #f2dcc0;border-radius:10px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900}
 .fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
 @keyframes attackReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
 @keyframes targetReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.32)}}
@@ -175,11 +178,24 @@ button{font:inherit;touch-action:manipulation}
   <div class="controlInner">
     <button class="ctrl" onclick="returnToDecks()">デッキ選択</button>
     <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
+    <button class="ctrl" id="specialBtn" onclick="playSpecialCard()">特殊</button>
     <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
   </div>
 </div>
 
 <div class="targetPrompt" id="targetPrompt" role="status" aria-live="polite">対象のカードをタップしてください</div>
+
+<div class="detailOverlay" id="detailOverlay" aria-hidden="true">
+  <div class="detailCard" id="detailCard"></div>
+</div>
+
+<div class="modal" id="pickerModal">
+  <div class="pickerBox">
+    <h2 id="pickerTitle">カードを選択</h2>
+    <div class="pickerList" id="pickerList"></div>
+    <button class="pickerConfirm" id="pickerConfirm" onclick="confirmPicker()">決定</button>
+  </div>
+</div>
 
 <div class="modal" id="resultModal">
   <div class="modalBox">
@@ -212,7 +228,7 @@ var CARD_POOLS = {
   ]
 };
 var CARD_RULES={
-  '原始的な投槍':{onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
+  '原始的な投槍':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
   '沼潜みの射手':{onPlay:[{type:'damageUnit',target:'opposing',amount:1}]},
   '毒牙の蜥蜴':{keywords:['lethal'],auras:[{keyword:'lethal'}]},
   '復讐者アーシュ':{onFriendlyDestroyed:[{type:'buffSelf',amount:1}]},
@@ -239,30 +255,44 @@ var CARD_RULES={
   '捨て身の突撃兵':{keywords:['haste'],onTurnEnd:[{type:'damageSelf',amount:2}]},
   '強襲の指揮官':{auras:[{keyword:'haste'}]},
   '黒の将軍':{keywords:['pierce'],onAttack:[{type:'damageLife',target:'enemy',amount:2}]},
-  '処刑':{onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
+  '処刑':{revenge:4,onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
   '真紅の囁きアリオサ':{onFriendlyDestroyed:[{type:'damageLife',target:'enemy',amount:1}]},
   '沈黙は破られた':{onPlay:[{type:'draw',amount:2},{type:'damageLife',target:'self',amount:3}]},
-  '緋帳の貴婦人':{keywords:['lethal']},
-  'ニルスタッドの影':{keywords:['haste']},
-  '海底の徘徊者':{onPlay:[{type:'draw',amount:1}]},
-  '人食いクラゲ':{onPlay:[{type:'heal',amount:1}]},
-  'アークルハーバーの夜笛守':{onPlay:[{type:'draw',amount:2}]},
-  '船喰らい':{onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
+  'ニルスタッドの諜報員':{revenge:2},
+  '緋帳の貴婦人':{revenge:3,keywords:['lethal']},
+  'ニルスタッドの影':{revenge:3,keywords:['haste']},
+  '危険な釣り人':{onFriendlyDive:[{type:'draw',amount:1}]},
+  '海底の徘徊者':{dive:1,onPlay:[{type:'handToBottom'},{type:'draw',amount:1}]},
+  '人食いクラゲ':{dive:2,revenge:3,onPlay:[{type:'heal',amount:1}]},
+  '深海ピラニア':{dive:3,onPlay:[{type:'enemyHandToBottom'}]},
+  '深海の大渦バルメデ':{dive:1,onAttack:[{type:'deployDiveFromBottom',amount:3}]},
+  'アークルハーバーの夜笛守':{onPlay:[{type:'handToBottom'},{type:'draw',amount:2}]},
+  '船喰らい':{dive:4,onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
+  '激浪のアクルティス':{dive:6,onPlay:[{type:'sendUnitsToBottom',amount:2}]},
   '廃船酒場の踊り子':{onTurnEnd:[{type:'mill',amount:1}]},
   '沈没街の孤児':{onPlay:[{type:'mill',amount:2}]},
+  'コールティガの港湾労働者':{onPlay:[{type:'recoverGrave',unitOnly:true}]},
+  '座礁船の縫合士':{onPlay:[{type:'recoverGrave'}]},
+  '港印卿の拒絶':{onPlay:[{type:'sendUnitToBottom',target:'enemyUnit'}]},
+  '港印卿コルドロッホ':{onPlay:[{type:'deployFromGrave',maxCost:8}]},
   '死礁の貪り手':{keywords:['guard']},
   '白龍エルレハイヌ':{onPlay:[{type:'draw',amount:3}]},
   '終末の亀裂 ダルディエク':{onPlay:[{type:'destroyAllUnits'}]},
   '亜龍イザルクリューネ':{onPlay:[{type:'damageAllEnemies',amount:3}]},
   '起源の龍モルディヤルデ':{keywords:['pierce']},
+  'サルベージ':{onPlay:[{type:'explore',amount:2}]},
   '砂漠の贈賄者':{onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'gainMana',amount:1}]},
+  '流砂乗り':{onAttack:[{type:'explore',amount:2}]},
   '水脈への地図':{onPlay:[{type:'heal',amount:2}],onDiscover:[{type:'heal',amount:1}]},
   '黄金文明の遺物':{onPlay:[{type:'buffAll',amount:2}],onDiscover:[{type:'buffAll',amount:1}]},
-  '奇襲する砂蜘蛛':{keywords:['guard']},
-  '黄金色の金属片':{tags:['relic'],onPlay:[{type:'draw',amount:1}]},
-  '砂漠に沈む黄金門':{tags:['relic']},
-  '黄金の天秤':{tags:['relic'],onPlay:[{type:'damageUnit',target:'opposing',amount:2}]},
-  '異端審問':{onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
+  '砂読みの案内人':{onPlay:[{type:'explore',amount:3}]},
+  '砂漠の先遣隊':{onPlay:[{type:'explore',amount:4}]},
+  '奇襲する砂蜘蛛':{keywords:['guard'],onDiscover:[{type:'deploySelf'}]},
+  'アウロニアン・デスワーム':{onPlay:[{type:'explore',amount:10}]},
+  '黄金色の金属片':{tags:['relic'],onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'claimDiscovered'}]},
+  '砂漠に沈む黄金門':{tags:['relic'],onPlay:[{type:'explore',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
+  '黄金の天秤':{tags:['relic'],onPlay:[{type:'damageUnit',target:'opposing',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
+  '異端審問':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
   'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
   '女教皇アウローン':{onDestroyed:[{type:'soulEcho'}]}
 };
@@ -308,7 +338,7 @@ function startGame(color){
       playerDeck:buildDeck(color),enemyDeck:buildDeck(cpuColor),
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
-      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null
+      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null,choiceRequest:null
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     $('startScreen').style.display='none';
@@ -359,6 +389,40 @@ function effectiveCost(card,side){
   if(card.name==='起源の龍モルディヤルデ' && graveFor(side).filter(function(c){return c.type==='ユニット';}).length>=5) cost=0;
   return Math.max(0,cost);
 }
+function diveCost(card,side){
+  var cost=rulesFor(card).dive;
+  if(cost==null) return null;
+  if(boardFor(side).some(function(c){return c && c.name==='危険海域';})) cost--;
+  return Math.max(0,cost);
+}
+function lowestPlayableCost(card,side){
+  var costs=[effectiveCost(card,side)], dive=diveCost(card,side);
+  if(dive!=null) costs.push(dive);
+  if(card._revengeReady) costs.push(0);
+  return Math.min.apply(Math,costs);
+}
+function showCardDetail(card){
+  var rules=rulesFor(card), badges=[];
+  if(rules.revenge) badges.push('報復 '+rules.revenge);
+  if(rules.dive!=null) badges.push('潜水 '+rules.dive);
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(card.type)+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">PWR '+card.power+'</div>';
+  $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
+}
+function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
+function attachCardHold(el,card,onTap){
+  var timer=null,opened=false,suppress=false;
+  el.onpointerdown=function(){opened=false;timer=setTimeout(function(){opened=true;suppress=true;showCardDetail(card);},380);};
+  el.onpointerup=el.onpointercancel=el.onpointerleave=function(){clearTimeout(timer);if(opened)hideCardDetail();};
+  el.onclick=function(e){if(suppress){suppress=false;e.stopPropagation();return;}if(onTap)onTap(e);};
+  el.oncontextmenu=function(e){e.preventDefault();};
+}
+function selectedSpecial(){
+  if(!state || state.selectedCard<0) return null;
+  var c=state.playerHand[state.selectedCard], rules=rulesFor(c);
+  if(c._revengeReady) return {mode:'revenge',label:'報復 '+rules.revenge,cost:0};
+  if(rules.dive!=null){var cost=diveCost(c,'player');return {mode:'dive',label:'潜水 '+cost,cost:cost};}
+  return null;
+}
 function render(){
   var prompt=$('targetPrompt');
   if(state.targetRequest){prompt.textContent=state.targetRequest.prompt;prompt.classList.add('show');}
@@ -372,7 +436,12 @@ function render(){
   $('mana').textContent=state.mana+'/'+state.maxMana;
   $('turnLabel').textContent='TURN '+state.turn+' / '+(state.playerTurn?'あなた':'CPU');
   var selected=state.selectedCard>=0?state.playerHand[state.selectedCard]:null;
-  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && selected.type!=='スペル' && state.selectedSlot<0));
+  var special=selectedSpecial(), controls=$('controls').querySelector('.controlInner');
+  controls.classList.toggle('hasSpecial',!!special);
+  $('playBtn').textContent=special?'通常':'配置';
+  $('specialBtn').textContent=special?special.label:'特殊';
+  $('specialBtn').disabled=!special || !state.playerTurn || state.gameOver || state.animating || special.cost>state.mana || !selected || (selected.type!=='スペル' && state.selectedSlot<0);
+  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,'player')>state.mana) || (selected && selected.type!=='スペル' && state.selectedSlot<0));
   $('endBtn').disabled=(!state.playerTurn || state.gameOver || state.animating);
   renderBoard('enemy');
   renderBoard('player');
@@ -400,8 +469,8 @@ function renderBoard(side){
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
           +'<div class="power">'+u.power+'</div>';
-        if(targetable) card.onclick=function(e){e.stopPropagation();resolveTarget(side,index);};
-        else if(side==='player') card.onclick=function(){ attack(index); };
+        if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
+        else attachCardHold(card,u,side==='player'?function(){attack(index);}:null);
         slot.appendChild(card);
       }
       root.appendChild(slot);
@@ -415,7 +484,7 @@ function renderHand(){
     (function(index){
       var c=state.playerHand[index], d=document.createElement('div');
       var shownCost=effectiveCost(c,'player');
-      var disabled=shownCost>state.mana || !state.playerTurn;
+      var disabled=lowestPlayableCost(c,'player')>state.mana || !state.playerTurn;
       var spread=count<=1?.5:index/(count-1);
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left=(spread*100)+'%';
@@ -435,7 +504,7 @@ function renderHand(){
 }
 function selectCard(i){
   if(!state.playerTurn || state.gameOver || state.animating) return;
-  if(effectiveCost(state.playerHand[i],'player')>state.mana){ logMsg('資源が足りません'); return; }
+  if(lowestPlayableCost(state.playerHand[i],'player')>state.mana){ logMsg('資源が足りません'); return; }
   if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }
   else { state.selectedCard=i; state.selectedSlot=-1; }
   render();
@@ -448,14 +517,19 @@ function selectSlot(i){
   state.selectedSlot=(state.selectedSlot===i?-1:i);
   render();
 }
-async function playSelectedCard(){
+function playSpecialCard(){var special=selectedSpecial();if(special)playSelectedCard(special.mode);}
+async function playSelectedCard(mode){
   if(state.selectedCard<0 || !state.playerTurn || state.gameOver || state.animating) return;
-  var c=state.playerHand[state.selectedCard], cost=effectiveCost(c,'player');
+  mode=mode||'normal';
+  var c=state.playerHand[state.selectedCard], rules=rulesFor(c), cost=mode==='revenge'?0:(mode==='dive'?diveCost(c,'player'):effectiveCost(c,'player'));
+  if(mode==='revenge' && !c._revengeReady) return;
+  if(mode==='dive' && rules.dive==null) return;
   if(cost>state.mana) return;
   var slot=state.selectedSlot;
   if(c.type!=='スペル' && (slot<0 || state.playerBoard[slot])){logMsg('空いているスロットを選択してください');return;}
   state.animating=true; state.mana-=cost;
   state.playerHand.splice(state.selectedCard,1); state.selectedCard=-1; state.selectedSlot=-1;
+  c._revengeReady=false; c.dived=(mode==='dive');
   if(c.type==='スペル'){
     logMsg(c.name+'を使用'); render();
     await triggerCard(c,'onPlay','player',-1,{});
@@ -465,6 +539,7 @@ async function playSelectedCard(){
     state.playerBoard[slot]=c;
     logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon('player',slot); await wait(240);
     await triggerCard(c,'onPlay','player',slot,{});
+    if(mode==='dive') await emitBoardEvent('player','onFriendlyDive',{dived:c});
   }
   state.animating=false; checkGame(); render();
 }
@@ -493,6 +568,64 @@ function resolveTarget(side,index){
   var request=state.targetRequest;
   if(!request || request.targetSide!==side || request.candidates.indexOf(index)<0) return;
   state.targetRequest=null; request.resolve({side:side,index:index}); render();
+}
+function chooseZoneCard(actingSide,cards,title){
+  if(!cards.length) return Promise.resolve(null);
+  if(actingSide==='enemy') return Promise.resolve(cards[0]);
+  return new Promise(function(resolve){
+    state.choiceRequest={kind:'single',cards:cards,title:title,resolve:resolve}; renderPicker();
+  });
+}
+function chooseExploreDestinations(side,cards){
+  if(!cards.length) return Promise.resolve([]);
+  if(side==='enemy') return Promise.resolve(cards.map(function(){return 'top';}));
+  return new Promise(function(resolve){
+    state.choiceRequest={kind:'explore',cards:cards,title:'探査：各カードを山札の上か下へ',destinations:cards.map(function(){return 'top';}),resolve:resolve}; renderPicker();
+  });
+}
+function renderPicker(){
+  var request=state.choiceRequest, modal=$('pickerModal'), list=$('pickerList'), confirm=$('pickerConfirm');
+  if(!request){modal.classList.remove('show');return;}
+  $('pickerTitle').textContent=request.title; list.innerHTML='';
+  for(var i=0;i<request.cards.length;i++){
+    (function(index){
+      var c=request.cards[index], button=document.createElement('button');
+      button.className='pickerCard '+(COLOR_CLASS[c.color]||'');
+      button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':'');
+      button.onclick=function(){
+        if(request.kind==='single') resolvePicker(index);
+        else{request.destinations[index]=request.destinations[index]==='top'?'bottom':'top';renderPicker();}
+      };
+      list.appendChild(button);
+    })(i);
+  }
+  confirm.style.display=request.kind==='explore'?'block':'none'; modal.classList.add('show');
+}
+function resolvePicker(index){
+  var request=state.choiceRequest;if(!request || request.kind!=='single') return;
+  state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.cards[index]);
+}
+function confirmPicker(){
+  var request=state.choiceRequest;if(!request || request.kind!=='explore') return;
+  state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.destinations.slice());
+}
+async function runExplore(side,amount){
+  var deck=side==='player'?state.playerDeck:state.enemyDeck;
+  var found=deck.splice(0,Math.min(amount,deck.length)), remaining=[];
+  for(var i=0;i<found.length;i++){
+    var context={discoveredCard:found[i],claimed:false};
+    await triggerCard(found[i],'onDiscover',side,-1,context);
+    if(!context.claimed) remaining.push(found[i]);
+  }
+  var destinations=await chooseExploreDestinations(side,remaining), top=[], bottom=[];
+  for(var j=0;j<remaining.length;j++) (destinations[j]==='bottom'?bottom:top).push(remaining[j]);
+  if(top.length) deck.unshift.apply(deck,top);
+  if(bottom.length) deck.push.apply(deck,bottom);
+  logMsg('探査'+found.length+'を実行');
+}
+async function emitBoardEvent(side,event,context){
+  var snapshot=boardFor(side).slice();
+  for(var i=0;i<snapshot.length;i++) if(snapshot[i] && boardFor(side)[i]===snapshot[i]) await triggerCard(snapshot[i],event,side,i,context||{});
 }
 async function triggerCard(card,event,side,slot,context){
   if(!card) return;
@@ -525,7 +658,41 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     else if(a.type==='destroySelf' && own[sourceSlot]===sourceCard) await destroy(side,sourceSlot);
     else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
     else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j]) await damage(enemy,j,a.amount,enemySide,false);}
-    else if(a.type==='destroyAllUnits'){
+    else if(a.type==='handToBottom'){
+      var hand=side==='player'?state.playerHand:state.enemyHand, handCard=await chooseZoneCard(side,hand.slice(),'山札の下へ戻す手札を選択');
+      if(handCard){var handIndex=hand.indexOf(handCard);if(handIndex>=0){hand.splice(handIndex,1);(side==='player'?state.playerDeck:state.enemyDeck).push(handCard);}}
+    }else if(a.type==='enemyHandToBottom'){
+      var enemyHand=side==='player'?state.enemyHand:state.playerHand;
+      if(enemyHand.length){var hiddenIndex=Math.floor(Math.random()*enemyHand.length);(side==='player'?state.enemyDeck:state.playerDeck).push(enemyHand.splice(hiddenIndex,1)[0]);}
+    }else if(a.type==='recoverGrave'){
+      var ownGrave=graveFor(side), recoverable=ownGrave.filter(function(c){return !a.unitOnly || c.type==='ユニット';});
+      var recovered=await chooseZoneCard(side,recoverable,a.unitOnly?'墓地からユニットを選択':'墓地からカードを選択');
+      if(recovered && (side==='player'?state.playerHand:state.enemyHand).length<8){var recoveredIndex=ownGrave.indexOf(recovered);if(recoveredIndex>=0)(side==='player'?state.playerHand:state.enemyHand).push(ownGrave.splice(recoveredIndex,1)[0]);}
+    }else if(a.type==='deployFromGrave'){
+      var deployGrave=graveFor(side), deployable=deployGrave.filter(function(c){return c.cost<=(a.maxCost==null?99:a.maxCost) && c.type!=='スペル';});
+      var deployed=await chooseZoneCard(side,deployable,'墓地から配置するカードを選択'), open=firstEmpty(own);
+      if(deployed && open>=0){var deployedIndex=deployGrave.indexOf(deployed);deployGrave.splice(deployedIndex,1);own[open]=deployed;deployed.canAttack=false;animateSummon(side,open);await triggerCard(deployed,'onPlay',side,open,{});}
+    }else if(a.type==='sendUnitToBottom' && target){
+      var sent=boardFor(target.side)[target.index];if(sent){showDestroy(target.side,target.index);boardFor(target.side)[target.index]=null;(target.side==='player'?state.playerDeck:state.enemyDeck).push(sent);}
+    }else if(a.type==='sendUnitsToBottom'){
+      for(j=0;j<a.amount;j++){
+        var sendTarget=await chooseTarget(side,enemySide,'山札の下へ送る敵カードをタップ',null);
+        if(!sendTarget) break;
+        var sentMany=enemy[sendTarget.index];showDestroy(enemySide,sendTarget.index);enemy[sendTarget.index]=null;(enemySide==='player'?state.playerDeck:state.enemyDeck).push(sentMany);render();
+      }
+    }else if(a.type==='explore') await runExplore(side,a.amount);
+    else if(a.type==='claimDiscovered' && context.discoveredCard===sourceCard){
+      var claimHand=side==='player'?state.playerHand:state.enemyHand;
+      if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
+    }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
+      var discoverySlot=firstEmpty(own);
+      if(discoverySlot>=0){own[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;animateSummon(side,discoverySlot);await triggerCard(sourceCard,'onPlay',side,discoverySlot,{});}
+    }else if(a.type==='deployDiveFromBottom'){
+      var ownDeck=side==='player'?state.playerDeck:state.enemyDeck, start=Math.max(0,ownDeck.length-a.amount), bottomCards=ownDeck.splice(start), diveCards=bottomCards.filter(function(c){return rulesFor(c).dive!=null && c.type!=='スペル';});
+      var diveCard=await chooseZoneCard(side,diveCards,'山札下から配置する潜水カードを選択');
+      if(diveCard && firstEmpty(own)>=0){var diveIndex=bottomCards.indexOf(diveCard);bottomCards.splice(diveIndex,1);var diveSlot=firstEmpty(own);own[diveSlot]=diveCard;diveCard.canAttack=false;animateSummon(side,diveSlot);await triggerCard(diveCard,'onPlay',side,diveSlot,{});}
+      ownDeck.push.apply(ownDeck,bottomCards);
+    }else if(a.type==='destroyAllUnits'){
       for(j=0;j<5;j++) if(state.playerBoard[j] && state.playerBoard[j].type==='ユニット') await destroy('player',j);
       for(j=0;j<5;j++) if(state.enemyBoard[j] && state.enemyBoard[j].type==='ユニット') await destroy('enemy',j);
     }else if(a.type==='soulEcho') await resolveSoulEcho(side,sourceSlot,sourceCard);
@@ -570,10 +737,18 @@ function showDestroy(side,index){
 }
 function changeLife(side,amount){
   var key=side==='player'?'playerLife':'enemyLife'; state[key]+=amount;
+  if(amount<0) markRevengeReady(side,-amount);
   var el=document.querySelector('.life.'+(side==='player'?'player':'enemy'));
   var number=$(side==='player'?'playerLife':'enemyLife'); if(number) number.textContent=state[key];
   floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');
   pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);
+}
+function markRevengeReady(side,damageAmount){
+  var hand=side==='player'?state.playerHand:state.enemyHand;
+  for(var i=0;i<hand.length;i++){
+    var rules=rulesFor(hand[i]);
+    if(rules.revenge!=null && damageAmount>=rules.revenge && (hand[i].name!=='異端審問' || relicCount(side)>=2)) hand[i]._revengeReady=true;
+  }
 }
 async function damage(board,index,amount,side,lethal){
   var u=board[index]; if(!u) return;
@@ -588,7 +763,9 @@ async function destroy(side,index){
   var board=boardFor(side), grave=graveFor(side), destroyed=board[index];
   if(!destroyed) return;
   showDestroy(side,index);
-  grave.push(destroyed); board[index]=null;
+  board[index]=null;
+  if(destroyed.dived){destroyed.dived=false;(side==='player'?state.playerDeck:state.enemyDeck).push(destroyed);}
+  else grave.push(destroyed);
   var survivors=board.slice();
   for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed});
   await triggerCard(destroyed,'onDestroyed',side,index,{destroyed:destroyed});
@@ -642,14 +819,17 @@ async function cpuTurn(){
     progress=false;
     for(var i=0;i<state.enemyHand.length;i++){
       var c=state.enemyHand[i];
-      var cost=effectiveCost(c,'enemy');
+      var normalCost=effectiveCost(c,'enemy'), specialDive=diveCost(c,'enemy');
+      var cpuMode=c._revengeReady?'revenge':(specialDive!=null && specialDive<normalCost?'dive':'normal');
+      var cost=cpuMode==='revenge'?0:(cpuMode==='dive'?specialDive:normalCost);
       if(cost<=state.enemyMana){
         if(c.type!=='スペル' && firstEmpty(state.enemyBoard)<0) continue;
         state.enemyMana-=cost;
         state.enemyHand.splice(i,1);
+        c._revengeReady=false;c.dived=(cpuMode==='dive');
         var s=-1;
         if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
-        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+'を配置');render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});}
+        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='dive')await emitBoardEvent('enemy','onFriendlyDive',{dived:c});}
         render(); if(s>=0) animateSummon('enemy',s); await wait(520);
         if(checkGame()){render();return;}
         progress=true; break;
