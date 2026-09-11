@@ -32,6 +32,10 @@ button{font:inherit;touch-action:manipulation}
 .newsHeader{display:flex;justify-content:space-between;align-items:center;margin:0 3px 7px}.newsHeader h2{font-family:Georgia,"Yu Mincho",serif;font-size:16px;margin:0}.newsHeader span{font-size:10px;color:#9d958b}.newsList{border-top:1px solid #2c3035}.newsItem{display:grid;grid-template-columns:72px 1fr;gap:8px;padding:10px 3px;border-bottom:1px solid #292d31;font-size:10px;color:#d7d0c7}.newsDate{color:#888f96}.homeToast{position:fixed;left:50%;bottom:88px;transform:translate(-50%,15px);background:#ead4b3;color:#18130e;border-radius:22px;padding:10px 18px;font-size:12px;font-weight:800;opacity:0;pointer-events:none;transition:.2s;z-index:45;white-space:nowrap}.homeToast.show{opacity:1;transform:translate(-50%,0)}
 .homeNav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#0a0e12ee;border-top:1px solid #292e34;padding:6px max(8px,env(safe-area-inset-right)) calc(5px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));backdrop-filter:blur(12px)}.homeNavInner{display:grid;grid-template-columns:repeat(5,1fr);width:min(680px,100%);margin:auto}.navBtn{border:0;background:transparent;color:#7f858b;min-height:48px;font-size:9px;display:flex;flex-direction:column;align-items:center;gap:2px}.navBtn span{font-size:19px}.navBtn.active{color:#dfbd8d}.backHome{display:block;margin:0 0 10px;border:0;background:transparent;color:#d9c7ad;font-weight:700}
 
+#catalogScreen{display:none;min-height:100vh;padding:0 14px calc(env(safe-area-inset-bottom) + 30px);background:radial-gradient(circle at 84% 4%,#29323b 0,transparent 25%),linear-gradient(180deg,#10151b,#080b0f 62%)}
+.catalogShell{width:min(760px,100%);margin:auto}.catalogTop{position:sticky;top:0;z-index:25;margin:0 -14px;padding:calc(env(safe-area-inset-top) + 11px) 14px 10px;background:linear-gradient(180deg,#0d1217 76%,#0d121700);backdrop-filter:blur(15px)}.catalogTitleRow{display:grid;grid-template-columns:42px 1fr 42px;align-items:center}.catalogBack{width:42px;height:42px;border:1px solid #5e5244;border-radius:50%;background:#14191f;color:#eddbc0;font-size:22px}.catalogHeading{text-align:center}.catalogHeading h1{font-family:Georgia,"Yu Mincho",serif;font-size:22px;letter-spacing:.08em;margin:0}.catalogCount{display:block;color:#a99f91;font-size:10px;margin-top:3px}.catalogMark{color:#d9b980;text-align:right;font-size:24px}.colorTabs{display:flex;gap:7px;overflow-x:auto;padding:11px 0 5px;scrollbar-width:none}.colorTabs::-webkit-scrollbar{display:none}.colorTab{flex:1 0 66px;min-height:39px;border:1px solid #4b4640;border-radius:20px;background:#151a20;color:#bcb4aa;font-size:12px;font-weight:900;white-space:nowrap}.colorTab::before{content:"";display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:50%;background:var(--tab-color);box-shadow:0 0 8px var(--tab-color)}.colorTab.selected{border-color:var(--gold2);color:#fff4e4;background:#30281f;box-shadow:0 0 14px #dfbd8d35}.colorTab.green{--tab-color:#6eb083}.colorTab.white{--tab-color:#eee4d0}.colorTab.red{--tab-color:#d96f68}.colorTab.blue{--tab-color:#69a5d4}.colorTab.black{--tab-color:#9785ad}.colorTab.yellow{--tab-color:#e0c354}
+.catalogGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding-top:8px}.catalogCard{position:relative;min-height:224px;border:1px solid #8d795d;border-radius:13px;padding:13px 11px 11px;background:#26303a;color:#f3eadf;text-align:left;display:flex;flex-direction:column;overflow:hidden;box-shadow:inset 0 0 0 1px #0a0d10,0 8px 20px #0007}.catalogCard::after{content:"";position:absolute;inset:5px;border:1px solid #ffffff12;border-radius:9px;pointer-events:none}.catalogCard:active{transform:scale(.98);filter:brightness(1.14)}.catalogCard.green{background:linear-gradient(155deg,#355b43,#13261b)}.catalogCard.white{background:linear-gradient(155deg,#eee5d4,#a99c88);color:#211c17}.catalogCard.red{background:linear-gradient(155deg,#78403f,#321719)}.catalogCard.blue{background:linear-gradient(155deg,#365c7c,#172633)}.catalogCard.black{background:linear-gradient(155deg,#42394a,#18151c)}.catalogCard.yellow{background:linear-gradient(155deg,#78672d,#30270e)}.catalogCardCost{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;border:1px solid #56432f;color:#17110c;font-size:14px;font-weight:900;box-shadow:0 2px 7px #0008}.catalogCardName{font-family:Georgia,"Yu Mincho",serif;font-size:15px;font-weight:900;line-height:1.25;margin:12px 0 4px;word-break:break-word}.catalogCardType{font-size:9px;opacity:.72}.catalogCardText{margin-top:auto;padding:11px 0 8px;border-top:1px solid #ffffff28;font-size:10px;line-height:1.45;word-break:break-word}.catalogCardPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:15px;font-weight:900}.catalogEmpty{grid-column:1/-1;text-align:center;color:#aaa197;padding:60px 12px}
+
 #gameScreen{display:none;min-height:100vh;padding:calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 94px);background:radial-gradient(ellipse at 50% 38%,#2a2926 0,#11161b 42%,#080b0f 78%)}
 .topbar{position:sticky;top:0;z-index:10;background:rgba(12,16,20,.94);backdrop-filter:blur(12px);border:1px solid #685b4b;border-radius:10px;padding:9px 11px;margin-bottom:8px;box-shadow:inset 0 1px #ffffff0b,0 8px 24px #0008}
 .scoreRow{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
@@ -75,7 +79,7 @@ button{font:inherit;touch-action:manipulation}
 .modal{display:none;position:fixed;inset:0;background:#000b;z-index:50;align-items:center;justify-content:center;padding:18px}
 .modal.show{display:flex} .modalBox{width:min(520px,100%);background:#122034;border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
 .modalBox h2{margin-top:0;color:var(--gold)} .modalBox button{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);font-weight:900}
-.detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#0009;pointer-events:none}.detailOverlay.show{display:flex}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
+.detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#000b;pointer-events:none}.detailOverlay.show{display:flex;pointer-events:auto}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column;position:relative}.detailCard::after{content:"背景をタップして閉じる";position:absolute;left:0;right:0;bottom:-31px;text-align:center;color:#c9b99f;font-size:10px}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
 .pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerList.discover{grid-template-columns:1fr}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected,.pickerCard.preview{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard.preview{min-height:132px}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.pickerActions.discover{grid-template-columns:1fr 1fr}.pickerConfirm,.pickerCancel{min-height:48px;border:1px solid #f2dcc0;border-radius:10px;font-weight:900}.pickerConfirm{background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d}.pickerCancel{display:none;background:#20262d;color:#d8cbbb;border-color:#62594d}
 .pickerActions.multi{grid-template-columns:1fr 1fr}
 .fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
@@ -98,6 +102,7 @@ button{font:inherit;touch-action:manipulation}
   .hand{height:190px}
   .handCard{width:136px;height:176px}
   .deckGrid{grid-template-columns:repeat(3,1fr)}
+  .catalogGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 </style>
 </head>
@@ -117,7 +122,7 @@ button{font:inherit;touch-action:manipulation}
     <div class="homeGrid">
       <button class="homeTile primary" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPU戦・対人テスト</span></button>
       <button class="homeTile" onclick="showComingSoon('デッキ編集')"><span class="tileIcon">♛</span><span class="tileTitle">デッキ編集</span><span class="tileSub">あなただけの戦略を</span></button>
-      <button class="homeTile" onclick="showComingSoon('カード図鑑')"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
+      <button class="homeTile" onclick="showCatalog()"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
       <button class="homeTile" onclick="showComingSoon('ミッション')"><span class="tileIcon">✥</span><span class="tileTitle">ミッション</span><span class="tileSub">報酬を獲得しよう</span></button>
     </div>
     <div class="newsHeader"><h2>お知らせ</h2><span>すべて見る ›</span></div>
@@ -131,8 +136,29 @@ button{font:inherit;touch-action:manipulation}
 
 <div class="homeToast" id="homeToast">準備中です</div>
 <nav class="homeNav" id="homeNav"><div class="homeNavInner">
-  <button class="navBtn active"><span>⌂</span>ホーム</button><button class="navBtn" onclick="showComingSoon('デッキ編集')"><span>▥</span>デッキ</button><button class="navBtn" onclick="showDeckSelect()"><span>⚔</span>バトル</button><button class="navBtn" onclick="showComingSoon('カード図鑑')"><span>▤</span>カード</button><button class="navBtn" onclick="showComingSoon('ショップ')"><span>▣</span>ショップ</button>
+  <button class="navBtn active"><span>⌂</span>ホーム</button><button class="navBtn" onclick="showComingSoon('デッキ編集')"><span>▥</span>デッキ</button><button class="navBtn" onclick="showDeckSelect()"><span>⚔</span>バトル</button><button class="navBtn" onclick="showCatalog()"><span>▤</span>カード</button><button class="navBtn" onclick="showComingSoon('ショップ')"><span>▣</span>ショップ</button>
 </div></nav>
+
+<section id="catalogScreen">
+  <div class="catalogShell">
+    <header class="catalogTop">
+      <div class="catalogTitleRow">
+        <button class="catalogBack" onclick="showHome()" aria-label="ホームへ戻る">←</button>
+        <div class="catalogHeading"><h1>カード図鑑</h1><span class="catalogCount" id="catalogCount">全カード</span></div>
+        <div class="catalogMark" aria-hidden="true">◇</div>
+      </div>
+      <div class="colorTabs" id="colorTabs" role="tablist" aria-label="カードの色">
+        <button class="colorTab green" data-catalog-color="緑" onclick="selectCatalogColor('緑')" role="tab">緑</button>
+        <button class="colorTab white" data-catalog-color="白" onclick="selectCatalogColor('白')" role="tab">白</button>
+        <button class="colorTab red" data-catalog-color="赤" onclick="selectCatalogColor('赤')" role="tab">赤</button>
+        <button class="colorTab blue" data-catalog-color="青" onclick="selectCatalogColor('青')" role="tab">青</button>
+        <button class="colorTab black" data-catalog-color="黒" onclick="selectCatalogColor('黒')" role="tab">黒</button>
+        <button class="colorTab yellow" data-catalog-color="黄" onclick="selectCatalogColor('黄')" role="tab">黄</button>
+      </div>
+    </header>
+    <div class="catalogGrid" id="catalogGrid" role="tabpanel"></div>
+  </div>
+</section>
 
 <section id="startScreen">
   <div class="startCard">
@@ -192,8 +218,8 @@ button{font:inherit;touch-action:manipulation}
 
 <div class="targetPrompt" id="targetPrompt" role="status" aria-live="polite">対象のカードをタップしてください</div>
 
-<div class="detailOverlay" id="detailOverlay" aria-hidden="true">
-  <div class="detailCard" id="detailCard"></div>
+<div class="detailOverlay" id="detailOverlay" aria-hidden="true" onclick="hideCardDetail()">
+  <div class="detailCard" id="detailCard" onclick="event.stopPropagation()"></div>
 </div>
 
 <div class="modal" id="pickerModal">
@@ -328,17 +354,47 @@ var CARD_RULES={
 };
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
 var selectedColor='青',setupMode='cpu',setupPlayerColor='青',setupEnemyColor='赤';
+var catalogColor='緑';
 var state=null;
 var toastTimer=null;
 
 function $(id){ return document.getElementById(id); }
 function showHome(){
   $('homeScreen').style.display='block'; $('homeNav').style.display='block';
-  $('startScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none';
+  $('catalogScreen').style.display='none'; $('startScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none';
 }
 function showDeckSelect(){
   $('homeScreen').style.display='none'; $('homeNav').style.display='none';
-  $('gameScreen').style.display='none'; $('controls').style.display='none'; $('startScreen').style.display='flex';
+  $('catalogScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none'; $('startScreen').style.display='flex';
+}
+function showCatalog(){
+  $('homeScreen').style.display='none'; $('homeNav').style.display='none'; $('startScreen').style.display='none';
+  $('gameScreen').style.display='none'; $('controls').style.display='none'; $('catalogScreen').style.display='block';
+  renderCatalog();window.scrollTo(0,0);
+}
+function selectCatalogColor(color){
+  if(!CARD_POOLS[color]) return;
+  catalogColor=color;renderCatalog();window.scrollTo(0,0);
+}
+function renderCatalog(){
+  var pool=CARD_POOLS[catalogColor]||[],root=$('catalogGrid'),tabs=document.querySelectorAll('[data-catalog-color]');
+  $('catalogCount').textContent=catalogColor+'のカード '+pool.length+'枚';root.innerHTML='';
+  for(var i=0;i<tabs.length;i++){
+    var selected=tabs[i].getAttribute('data-catalog-color')===catalogColor;
+    tabs[i].classList.toggle('selected',selected);tabs[i].setAttribute('aria-selected',selected?'true':'false');
+  }
+  if(!pool.length){root.innerHTML='<div class="catalogEmpty">カードがありません</div>';return;}
+  for(var j=0;j<pool.length;j++){
+    (function(card){
+      var button=document.createElement('button'),rules=rulesFor(card),keywords=[];
+      if(rules.revenge) keywords.push('報復 '+rules.revenge);
+      if(rules.dive!=null) keywords.push('潜水 '+rules.dive);
+      button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'');
+      button.setAttribute('aria-label',card.name+'の詳細を表示');
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(card.type)+(keywords.length?' ／ '+keywords.join(' ／ '):'')+'</span><span class="catalogCardText">'+escapeHtml(card.text||'効果なし')+'</span><span class="catalogCardPower">PWR '+card.power+'</span>';
+      button.onclick=function(){showCardDetail(card);};root.appendChild(button);
+    })(cloneCard(pool[j],catalogColor));
+  }
 }
 function showComingSoon(name){
   var toast=$('homeToast'); toast.textContent=name+'は準備中です'; toast.classList.add('show');
@@ -474,7 +530,7 @@ function showCardDetail(card){
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
 function attachCardHold(el,card,onTap){
   var timer=null,opened=false,suppress=false;
-  el.onpointerdown=function(){opened=false;timer=setTimeout(function(){opened=true;suppress=true;showCardDetail(card);},380);};
+  el.onpointerdown=function(e){opened=false;if(el.setPointerCapture)el.setPointerCapture(e.pointerId);timer=setTimeout(function(){opened=true;suppress=true;showCardDetail(card);},380);};
   el.onpointerup=el.onpointercancel=el.onpointerleave=function(){clearTimeout(timer);if(opened)hideCardDetail();};
   el.onclick=function(e){if(suppress){suppress=false;e.stopPropagation();return;}if(onTap)onTap(e);};
   el.oncontextmenu=function(e){e.preventDefault();};
