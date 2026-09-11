@@ -402,7 +402,6 @@ function diveCost(card,side){
 function lowestPlayableCost(card,side){
   var costs=[effectiveCost(card,side)], dive=diveCost(card,side);
   if(dive!=null) costs.push(dive);
-  if(card._revengeReady) costs.push(0);
   return Math.min.apply(Math,costs);
 }
 function showCardDetail(card){
@@ -423,7 +422,6 @@ function attachCardHold(el,card,onTap){
 function selectedSpecial(){
   if(!state || state.selectedCard<0) return null;
   var c=state.playerHand[state.selectedCard], rules=rulesFor(c);
-  if(c._revengeReady) return {mode:'revenge',label:'報復 '+rules.revenge,cost:0};
   if(rules.dive!=null){var cost=diveCost(c,'player');return {mode:'dive',label:'潜水 '+cost,cost:cost};}
   return null;
 }
@@ -525,15 +523,13 @@ function playSpecialCard(){var special=selectedSpecial();if(special)playSelected
 async function playSelectedCard(mode){
   if(state.selectedCard<0 || !state.playerTurn || state.gameOver || state.animating) return;
   mode=mode||'normal';
-  var c=state.playerHand[state.selectedCard], rules=rulesFor(c), cost=mode==='revenge'?0:(mode==='dive'?diveCost(c,'player'):effectiveCost(c,'player'));
-  if(mode==='revenge' && !c._revengeReady) return;
+  var c=state.playerHand[state.selectedCard], rules=rulesFor(c), cost=mode==='dive'?diveCost(c,'player'):effectiveCost(c,'player');
   if(mode==='dive' && rules.dive==null) return;
   if(cost>state.mana) return;
   var slot=state.selectedSlot;
   if(c.type!=='スペル' && (slot<0 || state.playerBoard[slot])){logMsg('空いているスロットを選択してください');return;}
   state.animating=true; state.mana-=cost;
   state.playerHand.splice(state.selectedCard,1); state.selectedCard=-1; state.selectedSlot=-1;
-  c._revengeReady=false;
   if(c.type==='スペル'){
     logMsg(c.name+'を使用'); render();
     await triggerCard(c,'onPlay','player',-1,{});
@@ -605,17 +601,32 @@ function chooseDiscoverUse(side,card){
     state.choiceRequest={kind:'discover',cards:[card],title:'発見効果を使用しますか？',resolve:resolve};renderPicker();
   });
 }
+function chooseRevengeCard(side,cards,damageAmount){
+  if(!cards.length) return Promise.resolve(null);
+  if(side==='enemy') return Promise.resolve(cards[0]);
+  return new Promise(function(resolve){
+    state.choiceRequest={kind:'revenge',cards:cards,title:'報復：'+damageAmount+'ダメージを受けました',resolve:resolve};renderPicker();
+  });
+}
+function chooseOpenSlot(actingSide,side,prompt){
+  var board=boardFor(side),candidates=[];
+  for(var i=0;i<board.length;i++) if(!board[i]) candidates.push(i);
+  if(!candidates.length) return Promise.resolve(null);
+  if(actingSide==='enemy') return Promise.resolve(candidates[0]);
+  return new Promise(function(resolve){state.targetRequest={targetSide:side,candidates:candidates,prompt:prompt,resolve:function(target){resolve(target.index);}};render();});
+}
 function renderPicker(){
   var request=state.choiceRequest, modal=$('pickerModal'), list=$('pickerList'), confirm=$('pickerConfirm'), cancel=$('pickerCancel'), actions=$('pickerActions');
   if(!request){modal.classList.remove('show');return;}
-  $('pickerTitle').textContent=request.title; list.innerHTML='';list.classList.toggle('discover',request.kind==='discover');actions.classList.toggle('discover',request.kind==='discover');
+  var decision=request.kind==='discover' || request.kind==='revenge';
+  $('pickerTitle').textContent=request.title; list.innerHTML='';list.classList.toggle('discover',request.kind==='discover');actions.classList.toggle('discover',decision);
   for(var i=0;i<request.cards.length;i++){
     (function(index){
       var c=request.cards[index], button=document.createElement('button');
       button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(COLOR_CLASS[c.color]||'');
-      button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':'');
+      button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':request.kind==='revenge'?'<span class="pickerState">報復 '+rulesFor(c).revenge+' ／ 今すぐ使用</span>':'');
       button.onclick=function(){
-        if(request.kind==='single') resolvePicker(index);
+        if(request.kind==='single' || request.kind==='revenge') resolvePicker(index);
         else if(request.kind==='explore'){request.destinations[index]=request.destinations[index]==='top'?'bottom':'top';renderPicker();}
       };
       list.appendChild(button);
@@ -623,10 +634,10 @@ function renderPicker(){
   }
   confirm.style.display=(request.kind==='explore' || request.kind==='discover')?'block':'none';
   confirm.textContent=request.kind==='discover'?'発見効果を使用':'振り分けを決定';
-  cancel.style.display=request.kind==='discover'?'block':'none';modal.classList.add('show');
+  cancel.style.display=decision?'block':'none';cancel.textContent=request.kind==='revenge'?'報復を使用しない':'使用しない';modal.classList.add('show');
 }
 function resolvePicker(index){
-  var request=state.choiceRequest;if(!request || request.kind!=='single') return;
+  var request=state.choiceRequest;if(!request || (request.kind!=='single' && request.kind!=='revenge')) return;
   state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.cards[index]);
 }
 function confirmPicker(){
@@ -634,7 +645,7 @@ function confirmPicker(){
   state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.kind==='discover'?true:request.destinations.slice());
 }
 function cancelPicker(){
-  var request=state.choiceRequest;if(!request || request.kind!=='discover') return;
+  var request=state.choiceRequest;if(!request || (request.kind!=='discover' && request.kind!=='revenge')) return;
   state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(false);
 }
 async function runExplore(side,amount){
@@ -677,9 +688,9 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.target==='allyUnit') target=await chooseTarget(side,side,'効果の対象にする味方カードをタップ',null);
     if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot]) target={side:enemySide,index:sourceSlot};
     if(a.type==='draw') for(j=0;j<a.amount;j++) drawCard(side);
-    else if(a.type==='heal') changeLife(side,a.amount);
+    else if(a.type==='heal') await changeLife(side,a.amount);
     else if(a.type==='gainMana') changeMana(side,a.amount);
-    else if(a.type==='damageLife') changeLife(a.target==='self'?side:enemySide,-a.amount);
+    else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-a.amount);
     else if(a.type==='damageUnit' && target) await damage(boardFor(target.side),target.index,a.amount,target.side,false);
     else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
     else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power+=a.amount;
@@ -769,20 +780,51 @@ function showDestroy(side,index){
   ghost.style.width=r.width+'px'; ghost.style.height=r.height+'px';
   document.body.appendChild(ghost); setTimeout(function(){ghost.remove();},580);
 }
-function changeLife(side,amount){
+async function changeLife(side,amount){
   var key=side==='player'?'playerLife':'enemyLife'; state[key]+=amount;
-  if(amount<0) markRevengeReady(side,-amount);
   var el=document.querySelector('.life.'+(side==='player'?'player':'enemy'));
   var number=$(side==='player'?'playerLife':'enemyLife'); if(number) number.textContent=state[key];
   floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');
   pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);
+  if(amount<0) await resolveRevenge(side,-amount);
 }
-function markRevengeReady(side,damageAmount){
+function revengeCards(side,damageAmount){
   var hand=side==='player'?state.playerHand:state.enemyHand;
+  var cards=[];
   for(var i=0;i<hand.length;i++){
     var rules=rulesFor(hand[i]);
-    if(rules.revenge!=null && damageAmount>=rules.revenge && (hand[i].name!=='異端審問' || relicCount(side)>=2)) hand[i]._revengeReady=true;
+    var hasSpace=hand[i].type==='スペル' || firstEmpty(boardFor(side))>=0;
+    if(hasSpace && rules.revenge!=null && damageAmount>=rules.revenge && (hand[i].name!=='異端審問' || relicCount(side)>=2)) cards.push(hand[i]);
   }
+  return cards;
+}
+async function resolveRevenge(side,damageAmount){
+  var available=revengeCards(side,damageAmount);
+  while(available.length && !state.gameOver){
+    var card=await chooseRevengeCard(side,available,damageAmount);
+    if(!card) break;
+    await useRevengeCard(side,card);
+    available=revengeCards(side,damageAmount);
+  }
+}
+async function useRevengeCard(side,card){
+  var hand=side==='player'?state.playerHand:state.enemyHand, index=hand.indexOf(card);
+  if(index<0) return;
+  var slot=-1;
+  if(card.type!=='スペル'){
+    slot=await chooseOpenSlot(side,side,'報復：配置する空きスロットをタップ');
+    if(slot==null) return;
+  }
+  hand.splice(index,1);
+  if(card.type==='スペル'){
+    logMsg((side==='player'?'あなた':'CPU')+'が'+card.name+'を報復使用');render();
+    await triggerCard(card,'onPlay',side,-1,{revenge:true});graveFor(side).push(card);
+  }else{
+    card.canAttack=hasKeyword(card,'haste',side);boardFor(side)[slot]=card;
+    logMsg((side==='player'?'あなた':'CPU')+'が'+card.name+'を報復配置');render();animateSummon(side,slot);await wait(220);
+    await triggerCard(card,'onPlay',side,slot,{revenge:true});
+  }
+  checkGame();render();
 }
 async function damage(board,index,amount,side,lethal){
   var u=board[index]; if(!u) return;
@@ -818,11 +860,11 @@ async function attack(i){
     var lethalA=hasKeyword(a,'lethal','player'), lethalT=hasKeyword(t,'lethal','enemy');
     await damage(state.enemyBoard,target,aPower,'enemy',lethalA);
     if(state.playerBoard[i]) await damage(state.playerBoard,i,tPower,'player',lethalT);
-    if(hasKeyword(a,'pierce','player') && aPower>tPower) changeLife('enemy',-(aPower-tPower));
+    if(hasKeyword(a,'pierce','player') && aPower>tPower) await changeLife('enemy',-(aPower-tPower));
     if(state.enemyBoard[target]) await triggerCard(state.enemyBoard[target],'onDefended','enemy',target,{attacker:a});
     logMsg(a.name+' → '+t.name);
   }else{
-    changeLife('enemy',-a.power);
+    await changeLife('enemy',-a.power);
     logMsg(a.name+' → 敵LIFE '+a.power+'ダメージ');
   }
   if(state.playerBoard[i]) state.playerBoard[i].canAttack=false;
@@ -852,13 +894,12 @@ async function cpuTurn(){
     for(var i=0;i<state.enemyHand.length;i++){
       var c=state.enemyHand[i];
       var normalCost=effectiveCost(c,'enemy'), specialDive=diveCost(c,'enemy');
-      var cpuMode=c._revengeReady?'revenge':(specialDive!=null && specialDive<normalCost?'dive':'normal');
-      var cost=cpuMode==='revenge'?0:(cpuMode==='dive'?specialDive:normalCost);
+      var cpuMode=specialDive!=null && specialDive<normalCost?'dive':'normal';
+      var cost=cpuMode==='dive'?specialDive:normalCost;
       if(cost<=state.enemyMana){
         if(c.type!=='スペル' && firstEmpty(state.enemyBoard)<0) continue;
         state.enemyMana-=cost;
         state.enemyHand.splice(i,1);
-        c._revengeReady=false;
         var s=-1;
         if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
         else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
@@ -878,10 +919,10 @@ async function cpuTurn(){
       var t=state.playerBoard[ti], uPower=u.power, tPower=t.power;
       await damage(state.playerBoard,ti,uPower,'player',hasKeyword(u,'lethal','enemy'));
       if(state.enemyBoard[lane]) await damage(state.enemyBoard,lane,tPower,'enemy',hasKeyword(t,'lethal','player'));
-      if(hasKeyword(u,'pierce','enemy') && uPower>tPower) changeLife('player',-(uPower-tPower));
+      if(hasKeyword(u,'pierce','enemy') && uPower>tPower) await changeLife('player',-(uPower-tPower));
       if(state.playerBoard[ti]) await triggerCard(state.playerBoard[ti],'onDefended','player',ti,{attacker:u});
     }else{
-      changeLife('player',-u.power);
+      await changeLife('player',-u.power);
     }
     if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
     if(checkGame()){render();return;}
