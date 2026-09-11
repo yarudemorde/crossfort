@@ -73,8 +73,8 @@ button{font:inherit;touch-action:manipulation}
 .modal.show{display:flex} .modalBox{width:min(520px,100%);background:#122034;border:1px solid var(--line);border-radius:18px;padding:20px;text-align:center}
 .modalBox h2{margin-top:0;color:var(--gold)} .modalBox button{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);font-weight:900}
 .detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#0009;pointer-events:none}.detailOverlay.show{display:flex}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
-.pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerConfirm{min-height:48px;margin-top:12px;border:1px solid #f2dcc0;border-radius:10px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900}
-.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
+.pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerList.discover{grid-template-columns:1fr}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected,.pickerCard.preview{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard.preview{min-height:132px}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.pickerActions.discover{grid-template-columns:1fr 1fr}.pickerConfirm,.pickerCancel{min-height:48px;border:1px solid #f2dcc0;border-radius:10px;font-weight:900}.pickerConfirm{background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d}.pickerCancel{display:none;background:#20262d;color:#d8cbbb;border-color:#62594d}
+.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
 @keyframes attackReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
 @keyframes targetReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.32)}}
 @keyframes playerStrike{0%{transform:translateY(0)}55%{transform:translateY(-42px) scale(1.05)}100%{transform:translateY(0)}}
@@ -84,6 +84,7 @@ button{font:inherit;touch-action:manipulation}
 @keyframes cardHit{0%,100%{transform:translateX(0);filter:brightness(1)}25%{transform:translateX(-5px);filter:brightness(1.8)}50%{transform:translateX(5px)}75%{transform:translateX(-2px)}}
 @keyframes healPulse{0%{color:#6fe09a;transform:scale(1)}45%{color:#a4f4bf;transform:scale(1.24);text-shadow:0 0 16px #6fe09a}100%{transform:scale(1)}}
 @keyframes summonCard{0%{opacity:0;transform:scale(.45);filter:brightness(2)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes diveReturn{0%{opacity:1;transform:translateY(0) scale(1)}65%{opacity:.75;transform:translateY(18px) scale(.82);filter:hue-rotate(18deg) brightness(1.35)}100%{opacity:0;transform:translateY(55px) scale(.35);filter:blur(4px)}}
 @keyframes destroyCard{0%{opacity:1;transform:scale(1);filter:brightness(1)}45%{opacity:.8;transform:scale(1.12) rotate(3deg);filter:brightness(2)}100%{opacity:0;transform:scale(.25) rotate(-12deg);filter:blur(5px)}}
 
 @media (min-width:760px){
@@ -193,7 +194,10 @@ button{font:inherit;touch-action:manipulation}
   <div class="pickerBox">
     <h2 id="pickerTitle">カードを選択</h2>
     <div class="pickerList" id="pickerList"></div>
-    <button class="pickerConfirm" id="pickerConfirm" onclick="confirmPicker()">決定</button>
+    <div class="pickerActions" id="pickerActions">
+      <button class="pickerConfirm" id="pickerConfirm" onclick="confirmPicker()">決定</button>
+      <button class="pickerCancel" id="pickerCancel" onclick="cancelPicker()">使用しない</button>
+    </div>
   </div>
 </div>
 
@@ -529,7 +533,7 @@ async function playSelectedCard(mode){
   if(c.type!=='スペル' && (slot<0 || state.playerBoard[slot])){logMsg('空いているスロットを選択してください');return;}
   state.animating=true; state.mana-=cost;
   state.playerHand.splice(state.selectedCard,1); state.selectedCard=-1; state.selectedSlot=-1;
-  c._revengeReady=false; c.dived=(mode==='dive');
+  c._revengeReady=false;
   if(c.type==='スペル'){
     logMsg(c.name+'を使用'); render();
     await triggerCard(c,'onPlay','player',-1,{});
@@ -539,7 +543,10 @@ async function playSelectedCard(mode){
     state.playerBoard[slot]=c;
     logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon('player',slot); await wait(240);
     await triggerCard(c,'onPlay','player',slot,{});
-    if(mode==='dive') await emitBoardEvent('player','onFriendlyDive',{dived:c});
+    if(mode==='dive'){
+      await emitBoardEvent('player','onFriendlyDive',{dived:c});
+      await returnDivedCard('player',slot,c);
+    }
   }
   state.animating=false; checkGame(); render();
 }
@@ -583,38 +590,59 @@ function chooseExploreDestinations(side,cards){
     state.choiceRequest={kind:'explore',cards:cards,title:'探査：各カードを山札の上か下へ',destinations:cards.map(function(){return 'top';}),resolve:resolve}; renderPicker();
   });
 }
+function canUseDiscover(card,side){
+  var actions=rulesFor(card).onDiscover||[];
+  if(!actions.length) return false;
+  for(var i=0;i<actions.length;i++){
+    if(actions[i].type==='deploySelf' && firstEmpty(boardFor(side))<0) return false;
+    if(actions[i].type==='claimDiscovered' && (side==='player'?state.playerHand:state.enemyHand).length>=8) return false;
+  }
+  return true;
+}
+function chooseDiscoverUse(side,card){
+  if(side==='enemy') return Promise.resolve(true);
+  return new Promise(function(resolve){
+    state.choiceRequest={kind:'discover',cards:[card],title:'発見効果を使用しますか？',resolve:resolve};renderPicker();
+  });
+}
 function renderPicker(){
-  var request=state.choiceRequest, modal=$('pickerModal'), list=$('pickerList'), confirm=$('pickerConfirm');
+  var request=state.choiceRequest, modal=$('pickerModal'), list=$('pickerList'), confirm=$('pickerConfirm'), cancel=$('pickerCancel'), actions=$('pickerActions');
   if(!request){modal.classList.remove('show');return;}
-  $('pickerTitle').textContent=request.title; list.innerHTML='';
+  $('pickerTitle').textContent=request.title; list.innerHTML='';list.classList.toggle('discover',request.kind==='discover');actions.classList.toggle('discover',request.kind==='discover');
   for(var i=0;i<request.cards.length;i++){
     (function(index){
       var c=request.cards[index], button=document.createElement('button');
-      button.className='pickerCard '+(COLOR_CLASS[c.color]||'');
+      button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(COLOR_CLASS[c.color]||'');
       button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':'');
       button.onclick=function(){
         if(request.kind==='single') resolvePicker(index);
-        else{request.destinations[index]=request.destinations[index]==='top'?'bottom':'top';renderPicker();}
+        else if(request.kind==='explore'){request.destinations[index]=request.destinations[index]==='top'?'bottom':'top';renderPicker();}
       };
       list.appendChild(button);
     })(i);
   }
-  confirm.style.display=request.kind==='explore'?'block':'none'; modal.classList.add('show');
+  confirm.style.display=(request.kind==='explore' || request.kind==='discover')?'block':'none';
+  confirm.textContent=request.kind==='discover'?'発見効果を使用':'振り分けを決定';
+  cancel.style.display=request.kind==='discover'?'block':'none';modal.classList.add('show');
 }
 function resolvePicker(index){
   var request=state.choiceRequest;if(!request || request.kind!=='single') return;
   state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.cards[index]);
 }
 function confirmPicker(){
-  var request=state.choiceRequest;if(!request || request.kind!=='explore') return;
-  state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.destinations.slice());
+  var request=state.choiceRequest;if(!request || (request.kind!=='explore' && request.kind!=='discover')) return;
+  state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.kind==='discover'?true:request.destinations.slice());
+}
+function cancelPicker(){
+  var request=state.choiceRequest;if(!request || request.kind!=='discover') return;
+  state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(false);
 }
 async function runExplore(side,amount){
   var deck=side==='player'?state.playerDeck:state.enemyDeck;
   var found=deck.splice(0,Math.min(amount,deck.length)), remaining=[];
   for(var i=0;i<found.length;i++){
     var context={discoveredCard:found[i],claimed:false};
-    await triggerCard(found[i],'onDiscover',side,-1,context);
+    if(canUseDiscover(found[i],side) && await chooseDiscoverUse(side,found[i])) await triggerCard(found[i],'onDiscover',side,-1,context);
     if(!context.claimed) remaining.push(found[i]);
   }
   var destinations=await chooseExploreDestinations(side,remaining), top=[], bottom=[];
@@ -626,6 +654,12 @@ async function runExplore(side,amount){
 async function emitBoardEvent(side,event,context){
   var snapshot=boardFor(side).slice();
   for(var i=0;i<snapshot.length;i++) if(snapshot[i] && boardFor(side)[i]===snapshot[i]) await triggerCard(snapshot[i],event,side,i,context||{});
+}
+async function returnDivedCard(side,slot,card){
+  var board=boardFor(side);
+  if(board[slot]!==card) return;
+  pulseClass(boardCard(side,slot),'divingOut',360);await wait(330);
+  if(board[slot]===card){board[slot]=null;(side==='player'?state.playerDeck:state.enemyDeck).push(card);logMsg(card.name+'が山札の下へ潜水');render();}
 }
 async function triggerCard(card,event,side,slot,context){
   if(!card) return;
@@ -763,9 +797,7 @@ async function destroy(side,index){
   var board=boardFor(side), grave=graveFor(side), destroyed=board[index];
   if(!destroyed) return;
   showDestroy(side,index);
-  board[index]=null;
-  if(destroyed.dived){destroyed.dived=false;(side==='player'?state.playerDeck:state.enemyDeck).push(destroyed);}
-  else grave.push(destroyed);
+  board[index]=null;grave.push(destroyed);
   var survivors=board.slice();
   for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed});
   await triggerCard(destroyed,'onDestroyed',side,index,{destroyed:destroyed});
@@ -826,10 +858,10 @@ async function cpuTurn(){
         if(c.type!=='スペル' && firstEmpty(state.enemyBoard)<0) continue;
         state.enemyMana-=cost;
         state.enemyHand.splice(i,1);
-        c._revengeReady=false;c.dived=(cpuMode==='dive');
+        c._revengeReady=false;
         var s=-1;
         if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
-        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='dive')await emitBoardEvent('enemy','onFriendlyDive',{dived:c});}
+        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
         render(); if(s>=0) animateSummon('enemy',s); await wait(520);
         if(checkGame()){render();return;}
         progress=true; break;
