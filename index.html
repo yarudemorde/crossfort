@@ -40,6 +40,8 @@ button{font:inherit;touch-action:manipulation}
 .boardWrap{overflow:visible;padding:4px 0 8px}
 .board{width:100%;min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
 .slot{height:108px;border:1px solid #554b3f;border-radius:8px;background:linear-gradient(180deg,#1d2226bb,#0b0f12dd);padding:4px;display:flex;align-items:stretch;position:relative;min-width:0;box-shadow:inset 0 0 22px #0007}.slot.selectable{cursor:pointer;border-color:#b99a6e;box-shadow:inset 0 0 22px #0007,0 0 12px #d1aa7140}.slot.selectedSlot{border:2px solid var(--gold2);box-shadow:0 0 0 2px #dfbd8d30,0 0 18px #dfbd8d55;background:linear-gradient(180deg,#393128,#131619)}.slotIndex{position:absolute;top:3px;right:5px;font-size:10px;color:#8c8174;font-weight:800}.slot.selectedSlot .slotIndex{color:var(--gold2)}
+.slot.targetable{cursor:pointer;border:2px solid #f2dcc0;z-index:6;box-shadow:0 0 0 3px #dfbd8d44,0 0 22px #efc989;animation:targetReady .85s ease-in-out infinite}.slot.targetable::before{content:"対象";position:absolute;left:50%;top:-10px;transform:translateX(-50%);z-index:8;padding:2px 7px;border-radius:11px;background:#f2dcc0;color:#20160d;font-size:9px;font-weight:900;white-space:nowrap}
+.slot.enemy.targetable::before{transform:translateX(-50%) rotate(180deg)}
 .slot.enemy{transform:rotate(180deg)} .slot.enemy>.card{transform:rotate(180deg)}
 .slot.empty::after{content:"◇";margin:auto;color:#756650;font-size:18px}
 .card{width:100%;border:1px solid #9b835f;border-radius:7px;background:#26303a;padding:5px;display:flex;flex-direction:column;gap:3px;justify-content:space-between;overflow:hidden;box-shadow:inset 0 0 0 1px #0b0e12,0 3px 9px #0008}
@@ -51,6 +53,7 @@ button{font:inherit;touch-action:manipulation}
 .effect{font-size:8px;line-height:1.16;opacity:.9;overflow:visible;word-break:break-word}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
 .log{background:#0c1014d9;border:1px solid #4c4339;border-radius:8px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#ded4c6;text-align:center}
+.targetPrompt{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:80;width:min(92%,520px);padding:11px 16px;border:1px solid #f2dcc0;border-radius:24px;background:#17130fee;color:#f4dfbf;text-align:center;font-size:13px;font-weight:900;box-shadow:0 8px 28px #000c,0 0 18px #d9b67844;backdrop-filter:blur(10px)}.targetPrompt.show{display:block}
 
 .hand{height:166px;position:relative;margin:0 5px;padding-top:7px;overflow:visible}
 .handCard{position:absolute;top:7px;left:50%;width:112px;height:150px;border:2px solid #8b775a;border-radius:10px;background:#26303a;padding:7px;display:flex;flex-direction:column;gap:4px;justify-content:space-between;overflow:hidden;transform:translateX(var(--hand-shift,-50%));transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;box-shadow:inset 0 0 0 1px #0a0d10,0 7px 18px #000a}
@@ -70,6 +73,7 @@ button{font:inherit;touch-action:manipulation}
 .modalBox h2{margin-top:0;color:var(--gold)} .modalBox button{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--gold);font-weight:900}
 .fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
 @keyframes attackReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
+@keyframes targetReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.32)}}
 @keyframes playerStrike{0%{transform:translateY(0)}55%{transform:translateY(-42px) scale(1.05)}100%{transform:translateY(0)}}
 @keyframes enemyStrike{0%{transform:rotate(180deg) translateY(0)}55%{transform:rotate(180deg) translateY(-42px) scale(1.05)}100%{transform:rotate(180deg) translateY(0)}}
 @keyframes damagePop{0%{opacity:0;transform:translate(-50%,-25%) scale(.65)}22%{opacity:1;transform:translate(-50%,-55%) scale(1.25)}100%{opacity:0;transform:translate(-50%,-120%) scale(.9)}}
@@ -175,6 +179,8 @@ button{font:inherit;touch-action:manipulation}
   </div>
 </div>
 
+<div class="targetPrompt" id="targetPrompt" role="status" aria-live="polite">対象のカードをタップしてください</div>
+
 <div class="modal" id="resultModal">
   <div class="modalBox">
     <h2 id="resultTitle">VICTORY</h2>
@@ -205,6 +211,61 @@ var CARD_POOLS = {
     ['サルベージ',1,0,'スペル','探査2。'],['砂漠の贈賄者',2,1,'ユニット','発見：資源+1。配置：1枚引く。'],['流砂乗り',2,2,'ユニット','攻撃：探査2。'],['水脈への地図',3,0,'スペル','発見：ライフ+1。ライフ+2。'],['砂漠の商隊狩り',3,1,'ユニット','配置：相手は手札1枚を破棄。'],['砂読みの案内人',3,2,'ユニット','配置：探査3。'],['オアシスの不法管理者',4,1,'ユニット','相手がドローする時、敵1体に1ダメージ。'],['武装商人ラズリウス',4,2,'ユニット','発見：1コストで配置可。配置：探査3後、敵に3ダメージ。'],['砂漠の先遣隊',5,4,'ユニット','配置：探査4。'],['黄金文明の遺物',5,0,'スペル','発見：味方全体+1。使用：味方全体+2。'],['奇襲する砂蜘蛛',5,3,'ユニット','発見：配置。守護。'],['アウロニアン・デスワーム',8,6,'ユニット','配置：探査10。'],['黄金色の金属片',1,0,'ランドマーク','発見：手札に加える。配置：1枚引く。'],['砂漠に沈む黄金門',1,0,'ランドマーク','発見：手札に加える。配置：探査2。'],['黄金の天秤',2,0,'ランドマーク','発見：手札に加える。配置：正面に2ダメージ。'],['アウロニア信者',2,2,'ユニット','信仰2 配置：自身+2。'],['異端審問',2,0,'スペル','信仰2で報復1。敵に2ダメージ。'],['遺跡荒らしの商隊',3,1,'ユニット','聖遺物1枚を破壊し、パワー3トークン。'],['アウロニアの重装神官',3,3,'ユニット','信仰2で守護。信仰3 配置：自身+2。'],['アウロニアの巫女',4,2,'ユニット','配置：山札からコスト2以下の聖遺物を配置。'],['女教皇アウローン',5,4,'ユニット','信仰3で防衛されない。魂響で復活。'],['黄金文明の再興',6,0,'スペル','聖遺物を破壊し、その枠にパワー5トークン。']
   ]
 };
+var CARD_RULES={
+  '原始的な投槍':{onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
+  '沼潜みの射手':{onPlay:[{type:'damageUnit',target:'opposing',amount:1}]},
+  '毒牙の蜥蜴':{keywords:['lethal'],auras:[{keyword:'lethal'}]},
+  '復讐者アーシュ':{onFriendlyDestroyed:[{type:'buffSelf',amount:1}]},
+  '鱗の頭領シャトゥルツカ':{keywords:['lethal']},
+  '反乱する蜥蜴軍':{onPlay:[{type:'buffOthers',amount:1}]},
+  'クロスフォートの城壁':{keywords:['cannotAttack']},
+  '農民':{onPlay:[{type:'gainMana',amount:1}]},
+  'クロスフォート兵':{keywords:['guard']},
+  '王国の重装歩兵':{keywords:['guard']},
+  '永遠樹の恩寵':{onPlay:[{type:'gainMana',amount:1}]},
+  '決闘場のチャンピオン':{onPlay:[{type:'moveEnemyToOpposing',target:'enemyUnit'}]},
+  '王室近衛兵':{damageReduction:1},
+  'クロスフォート城':{auras:[{keyword:'guard',minPower:3}]},
+  '白獅子の将軍':{onPlay:[{type:'gainMana',amount:2}]},
+  '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
+  'フィリポス山脈':{onTurnStart:[{type:'gainMana',amount:1},{type:'destroySelf'}]},
+  'イルデニアの鍛冶師':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:1}]},
+  '投獄':{onPlay:[{type:'setPower',target:'enemyUnit',amount:2}]},
+  'イルデニアの騎士団長':{onPlay:[{type:'heal',amount:5}]},
+  '銀嶺の騎士ゼルモント':{keywords:['guard'],onPlay:[{type:'buffOthers',amount:2}],onDefended:[{type:'heal',amount:1}]},
+  '帝国の突撃兵':{keywords:['haste']},
+  '帝国の投擲兵':{onPlay:[{type:'damageLife',target:'enemy',amount:1}]},
+  '帝国の騎馬隊':{keywords:['pierce']},
+  '捨て身の突撃兵':{keywords:['haste'],onTurnEnd:[{type:'damageSelf',amount:2}]},
+  '強襲の指揮官':{auras:[{keyword:'haste'}]},
+  '黒の将軍':{keywords:['pierce'],onAttack:[{type:'damageLife',target:'enemy',amount:2}]},
+  '処刑':{onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
+  '真紅の囁きアリオサ':{onFriendlyDestroyed:[{type:'damageLife',target:'enemy',amount:1}]},
+  '沈黙は破られた':{onPlay:[{type:'draw',amount:2},{type:'damageLife',target:'self',amount:3}]},
+  '緋帳の貴婦人':{keywords:['lethal']},
+  'ニルスタッドの影':{keywords:['haste']},
+  '海底の徘徊者':{onPlay:[{type:'draw',amount:1}]},
+  '人食いクラゲ':{onPlay:[{type:'heal',amount:1}]},
+  'アークルハーバーの夜笛守':{onPlay:[{type:'draw',amount:2}]},
+  '船喰らい':{onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
+  '廃船酒場の踊り子':{onTurnEnd:[{type:'mill',amount:1}]},
+  '沈没街の孤児':{onPlay:[{type:'mill',amount:2}]},
+  '死礁の貪り手':{keywords:['guard']},
+  '白龍エルレハイヌ':{onPlay:[{type:'draw',amount:3}]},
+  '終末の亀裂 ダルディエク':{onPlay:[{type:'destroyAllUnits'}]},
+  '亜龍イザルクリューネ':{onPlay:[{type:'damageAllEnemies',amount:3}]},
+  '起源の龍モルディヤルデ':{keywords:['pierce']},
+  '砂漠の贈賄者':{onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'gainMana',amount:1}]},
+  '水脈への地図':{onPlay:[{type:'heal',amount:2}],onDiscover:[{type:'heal',amount:1}]},
+  '黄金文明の遺物':{onPlay:[{type:'buffAll',amount:2}],onDiscover:[{type:'buffAll',amount:1}]},
+  '奇襲する砂蜘蛛':{keywords:['guard']},
+  '黄金色の金属片':{tags:['relic'],onPlay:[{type:'draw',amount:1}]},
+  '砂漠に沈む黄金門':{tags:['relic']},
+  '黄金の天秤':{tags:['relic'],onPlay:[{type:'damageUnit',target:'opposing',amount:2}]},
+  '異端審問':{onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
+  'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
+  '女教皇アウローン':{onDestroyed:[{type:'soulEcho'}]}
+};
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
 var selectedColor='青';
 var state=null;
@@ -223,6 +284,7 @@ function showComingSoon(name){
   var toast=$('homeToast'); toast.textContent=name+'は準備中です'; toast.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(function(){toast.classList.remove('show');},1600);
 }
+function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
   return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
 }
@@ -242,11 +304,11 @@ function startGame(color){
     var ci=colors.indexOf(color);
     var cpuColor=colors[(ci+2)%colors.length];
     state={
-      turn:1,maxMana:1,mana:1,playerLife:20,enemyLife:20,
+      turn:1,maxMana:1,mana:1,enemyMaxMana:1,enemyMana:1,playerLife:20,enemyLife:20,
       playerDeck:buildDeck(color),enemyDeck:buildDeck(cpuColor),
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
-      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false
+      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     $('startScreen').style.display='none';
@@ -272,7 +334,35 @@ function drawCard(side){
   var hand=side==='player'?state.playerHand:state.enemyHand;
   if(deck.length && hand.length<8) hand.push(deck.shift());
 }
+function boardFor(side){ return side==='player'?state.playerBoard:state.enemyBoard; }
+function graveFor(side){ return side==='player'?state.grave:state.enemyGrave; }
+function otherSide(side){ return side==='player'?'enemy':'player'; }
+function relicCount(side){
+  return boardFor(side).filter(function(c){return c && (rulesFor(c).tags||[]).indexOf('relic')>=0;}).length;
+}
+function hasKeyword(card,keyword,side){
+  if(!card) return false;
+  var rules=rulesFor(card);
+  if((rules.keywords||[]).indexOf(keyword)>=0) return true;
+  var conditional=rules.conditionalKeywords||[];
+  for(var i=0;i<conditional.length;i++) if(conditional[i].keyword===keyword && relicCount(side)>=conditional[i].relics) return true;
+  var board=boardFor(side);
+  for(var j=0;j<board.length;j++){
+    var source=board[j], auras=source?(rulesFor(source).auras||[]):[];
+    for(var k=0;k<auras.length;k++) if(auras[k].keyword===keyword && (!auras[k].minPower || card.power>=auras[k].minPower)) return true;
+  }
+  return false;
+}
+function effectiveCost(card,side){
+  var cost=card.cost;
+  if(card.name==='死礁の貪り手') cost-=graveFor(side).length;
+  if(card.name==='起源の龍モルディヤルデ' && graveFor(side).filter(function(c){return c.type==='ユニット';}).length>=5) cost=0;
+  return Math.max(0,cost);
+}
 function render(){
+  var prompt=$('targetPrompt');
+  if(state.targetRequest){prompt.textContent=state.targetRequest.prompt;prompt.classList.add('show');}
+  else prompt.classList.remove('show');
   $('enemyLife').textContent=state.enemyLife;
   $('playerLife').textContent=state.playerLife;
   $('enemyHandCount').textContent=state.enemyHand.length;
@@ -296,19 +386,22 @@ function renderBoard(side){
     (function(index){
       var slot=document.createElement('div');
       var isSelected=(side==='player' && state.selectedSlot===index);
+      var targetable=!!(state.targetRequest && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
       var canSelect=(side==='player' && !board[index] && state.playerTurn && state.selectedCard>=0 && state.playerHand[state.selectedCard] && state.playerHand[state.selectedCard].type!=='スペル');
-      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'');
+      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
       var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
-      if(canSelect) slot.onclick=function(){ selectSlot(index); };
+      if(targetable) slot.onclick=function(){ resolveTarget(side,index); };
+      else if(canSelect) slot.onclick=function(){ selectSlot(index); };
       var u=board[index];
       if(u){
         var card=document.createElement('div');
-        var attackable=(side==='player' && u.canAttack && u.type!=='ランドマーク' && u.text.indexOf('攻撃できない')<0 && state.playerTurn && !state.animating);
+        var attackable=(side==='player' && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && state.playerTurn && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(attackable?' attackable':'');
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
           +'<div class="power">'+u.power+'</div>';
-        if(side==='player') card.onclick=function(){ attack(index); };
+        if(targetable) card.onclick=function(e){e.stopPropagation();resolveTarget(side,index);};
+        else if(side==='player') card.onclick=function(){ attack(index); };
         slot.appendChild(card);
       }
       root.appendChild(slot);
@@ -321,7 +414,8 @@ function renderHand(){
   for(var i=0;i<state.playerHand.length;i++){
     (function(index){
       var c=state.playerHand[index], d=document.createElement('div');
-      var disabled=c.cost>state.mana || !state.playerTurn;
+      var shownCost=effectiveCost(c,'player');
+      var disabled=shownCost>state.mana || !state.playerTurn;
       var spread=count<=1?.5:index/(count-1);
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left=(spread*100)+'%';
@@ -329,8 +423,8 @@ function renderHand(){
       d.style.zIndex=String(index+1);
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
-      d.setAttribute('aria-label',c.name+' コスト'+c.cost+' パワー'+c.power);
-      d.innerHTML='<div class="cost">'+c.cost+'</div><div class="handName">'+escapeHtml(c.name)+'</div>'
+      d.setAttribute('aria-label',c.name+' コスト'+shownCost+' パワー'+c.power);
+      d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div>'
         +'<div class="handText">'+escapeHtml(c.text)+'</div>'
         +'<div class="handPower">'+c.power+'</div>';
       d.onclick=function(){ selectCard(index); };
@@ -341,7 +435,7 @@ function renderHand(){
 }
 function selectCard(i){
   if(!state.playerTurn || state.gameOver || state.animating) return;
-  if(state.playerHand[i].cost>state.mana){ logMsg('資源が足りません'); return; }
+  if(effectiveCost(state.playerHand[i],'player')>state.mana){ logMsg('資源が足りません'); return; }
   if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }
   else { state.selectedCard=i; state.selectedSlot=-1; }
   render();
@@ -354,59 +448,100 @@ function selectSlot(i){
   state.selectedSlot=(state.selectedSlot===i?-1:i);
   render();
 }
-function playSelectedCard(){
+async function playSelectedCard(){
   if(state.selectedCard<0 || !state.playerTurn || state.gameOver || state.animating) return;
-  var c=state.playerHand[state.selectedCard];
-  if(c.cost>state.mana) return;
-  state.mana-=c.cost;
-  state.playerHand.splice(state.selectedCard,1);
-  state.selectedCard=-1;
-  var placedSlot=-1;
+  var c=state.playerHand[state.selectedCard], cost=effectiveCost(c,'player');
+  if(cost>state.mana) return;
+  var slot=state.selectedSlot;
+  if(c.type!=='スペル' && (slot<0 || state.playerBoard[slot])){logMsg('空いているスロットを選択してください');return;}
+  state.animating=true; state.mana-=cost;
+  state.playerHand.splice(state.selectedCard,1); state.selectedCard=-1; state.selectedSlot=-1;
   if(c.type==='スペル'){
-    applyEffect(c,'player',-1);
+    logMsg(c.name+'を使用'); render();
+    await triggerCard(c,'onPlay','player',-1,{});
     state.grave.push(c);
-    logMsg(c.name+'を使用');
   }else{
-    var slot=state.selectedSlot;
-    if(slot<0 || state.playerBoard[slot]){ state.playerHand.push(c); state.mana+=c.cost; state.selectedSlot=-1; logMsg('空いているスロットを選択してください'); render(); return; }
-    c.canAttack=c.text.indexOf('猛襲')>=0;
+    c.canAttack=hasKeyword(c,'haste','player');
     state.playerBoard[slot]=c;
-    placedSlot=slot;
-    applyEffect(c,'player',slot);
-    logMsg(c.name+'をスロット'+(slot+1)+'に配置');
-    state.selectedSlot=-1;
+    logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon('player',slot); await wait(240);
+    await triggerCard(c,'onPlay','player',slot,{});
   }
-  checkGame(); render(); if(placedSlot>=0) animateSummon('player',placedSlot);
+  state.animating=false; checkGame(); render();
 }
 function firstEmpty(board){ for(var i=0;i<board.length;i++) if(!board[i]) return i; return -1; }
 function firstUnit(board){ for(var i=0;i<board.length;i++) if(board[i]) return i; return -1; }
-function guardIndex(board){ for(var i=0;i<board.length;i++) if(board[i] && board[i].text.indexOf('守護')>=0) return i; return -1; }
-
-function applyEffect(c,side,slot){
-  var ownBoard=side==='player'?state.playerBoard:state.enemyBoard;
-  var enemyBoard=side==='player'?state.enemyBoard:state.playerBoard;
-  var enemySide=side==='player'?'enemy':'player';
-  var t=c.text||'';
-  if(t.indexOf('1枚引く')>=0) drawCard(side);
-  if(t.indexOf('2枚引')>=0){drawCard(side);drawCard(side);}
-  if(t.indexOf('3枚引')>=0){drawCard(side);drawCard(side);drawCard(side);}
-  if(t.indexOf('ライフ+1')>=0) changeLife(side,1);
-  if(t.indexOf('ライフ+2')>=0) changeLife(side,2);
-  if(t.indexOf('ライフ+5')>=0) changeLife(side,5);
-  if(t.indexOf('相手ライフに1ダメージ')>=0) changeLife(enemySide,-1);
-  if(t.indexOf('自分に3ダメージ')>=0) changeLife(side,-3);
-  if(t.indexOf('正面の敵に1ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,1,enemySide,false);
-  if(t.indexOf('正面に2ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,2,enemySide,false);
-  if(t.indexOf('正面に3ダメージ')>=0 && slot>=0 && enemyBoard[slot]) damage(enemyBoard,slot,3,enemySide,false);
-  if(t.indexOf('敵ユニット1体を破壊')>=0 || t.indexOf('敵1体を破壊')>=0){
-    var x=firstUnit(enemyBoard); if(x>=0) destroy(side==='player'?'enemy':'player',x);
+function defenderIndex(side,lane){
+  var board=boardFor(side);
+  if(board[lane]) return lane;
+  var adjacent=[lane-1,lane+1];
+  for(var i=0;i<adjacent.length;i++){
+    var x=adjacent[i];
+    if(x>=0 && x<board.length && board[x] && hasKeyword(board[x],'guard',side)) return x;
   }
-  if(t.indexOf('他の味方すべてのパワー+1')>=0){
-    for(var i=0;i<ownBoard.length;i++) if(ownBoard[i] && i!==slot){ownBoard[i].power++;}
+  return -1;
+}
+function chooseTarget(actingSide,targetSide,prompt,filter){
+  var board=boardFor(targetSide), candidates=[];
+  for(var i=0;i<board.length;i++) if(board[i] && (!filter || filter(board[i],i))) candidates.push(i);
+  if(!candidates.length) return Promise.resolve(null);
+  if(actingSide==='enemy') return Promise.resolve({side:targetSide,index:candidates[0]});
+  return new Promise(function(resolve){
+    state.targetRequest={targetSide:targetSide,candidates:candidates,prompt:prompt,resolve:resolve}; render();
+  });
+}
+function resolveTarget(side,index){
+  var request=state.targetRequest;
+  if(!request || request.targetSide!==side || request.candidates.indexOf(index)<0) return;
+  state.targetRequest=null; request.resolve({side:side,index:index}); render();
+}
+async function triggerCard(card,event,side,slot,context){
+  if(!card) return;
+  var rules=rulesFor(card), actions=rules[event]||[];
+  await executeActions(actions,side,slot,card,context||{});
+  if(event==='onPlay'){
+    var conditional=rules.conditionalOnPlay||[];
+    for(var i=0;i<conditional.length;i++) if(relicCount(side)>=conditional[i].relics) await executeActions(conditional[i].actions,side,slot,card,context||{});
   }
-  if(t.indexOf('他の味方すべて+2')>=0){
-    for(var j=0;j<ownBoard.length;j++) if(ownBoard[j] && j!==slot){ownBoard[j].power+=2;}
+}
+async function executeActions(actions,side,sourceSlot,sourceCard,context){
+  for(var i=0;i<actions.length;i++){
+    var a=actions[i], own=boardFor(side), enemySide=otherSide(side), enemy=boardFor(enemySide), target=null, j;
+    if(a.target==='enemyUnit') target=await chooseTarget(side,enemySide,'効果の対象にする敵カードをタップ',null);
+    if(a.target==='allyUnit') target=await chooseTarget(side,side,'効果の対象にする味方カードをタップ',null);
+    if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot]) target={side:enemySide,index:sourceSlot};
+    if(a.type==='draw') for(j=0;j<a.amount;j++) drawCard(side);
+    else if(a.type==='heal') changeLife(side,a.amount);
+    else if(a.type==='gainMana') changeMana(side,a.amount);
+    else if(a.type==='damageLife') changeLife(a.target==='self'?side:enemySide,-a.amount);
+    else if(a.type==='damageUnit' && target) await damage(boardFor(target.side),target.index,a.amount,target.side,false);
+    else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
+    else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power+=a.amount;
+    else if(a.type==='setPower' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power=a.amount;
+    else if(a.type==='buffSelf' && own[sourceSlot]===sourceCard) sourceCard.power+=a.amount;
+    else if(a.type==='buffOthers'){for(j=0;j<own.length;j++) if(own[j] && own[j]!==sourceCard) own[j].power+=a.amount;}
+    else if(a.type==='buffAll'){for(j=0;j<own.length;j++) if(own[j]) own[j].power+=a.amount;}
+    else if(a.type==='damageSelf' && own[sourceSlot]===sourceCard) await damage(own,sourceSlot,a.amount,side,false);
+    else if(a.type==='mill'){for(j=0;j<a.amount;j++) if((side==='player'?state.playerDeck:state.enemyDeck).length) graveFor(side).push((side==='player'?state.playerDeck:state.enemyDeck).shift());}
+    else if(a.type==='destroySelf' && own[sourceSlot]===sourceCard) await destroy(side,sourceSlot);
+    else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
+    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j]) await damage(enemy,j,a.amount,enemySide,false);}
+    else if(a.type==='destroyAllUnits'){
+      for(j=0;j<5;j++) if(state.playerBoard[j] && state.playerBoard[j].type==='ユニット') await destroy('player',j);
+      for(j=0;j<5;j++) if(state.enemyBoard[j] && state.enemyBoard[j].type==='ユニット') await destroy('enemy',j);
+    }else if(a.type==='soulEcho') await resolveSoulEcho(side,sourceSlot,sourceCard);
+    render();
   }
+}
+function changeMana(side,amount){
+  if(side==='player') state.mana=Math.max(0,state.mana+amount);
+  else state.enemyMana=Math.max(0,state.enemyMana+amount);
+}
+async function resolveSoulEcho(side,sourceSlot,card){
+  var target=await chooseTarget(side,side,'魂響：破壊する聖遺物をタップ',function(c){return (rulesFor(c).tags||[]).indexOf('relic')>=0;});
+  if(!target) return;
+  await destroy(side,target.index);
+  var grave=graveFor(side), graveIndex=grave.lastIndexOf(card), slot=boardFor(side)[sourceSlot]?firstEmpty(boardFor(side)):sourceSlot;
+  if(slot>=0 && graveIndex>=0){grave.splice(graveIndex,1);boardFor(side)[slot]=card;card.canAttack=false;animateSummon(side,slot);}
 }
 function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
 function pulseClass(el,name,duration){
@@ -440,70 +575,81 @@ function changeLife(side,amount){
   floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');
   pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);
 }
-function damage(board,index,amount,side,lethal){
+async function damage(board,index,amount,side,lethal){
   var u=board[index]; if(!u) return;
   var dmg=amount;
-  if(u.text.indexOf('受けるダメージ-1')>=0) dmg=Math.max(0,dmg-1);
+  dmg=Math.max(0,dmg-(rulesFor(u).damageReduction||0));
   if(dmg>0){floatAt(boardCard(side,index),'-'+dmg,'damage');pulseClass(boardCard(side,index),'hit',380);}
   if(lethal && dmg>0) u.power=0;
   else u.power-=dmg;
-  if(u.power<=0) destroy(side,index);
+  if(u.power<=0) await destroy(side,index);
 }
-function destroy(side,index){
-  var board=side==='player'?state.playerBoard:state.enemyBoard;
-  var grave=side==='player'?state.grave:state.enemyGrave;
+async function destroy(side,index){
+  var board=boardFor(side), grave=graveFor(side), destroyed=board[index];
+  if(!destroyed) return;
   showDestroy(side,index);
-  if(board[index]) grave.push(board[index]);
-  board[index]=null;
+  grave.push(destroyed); board[index]=null;
+  var survivors=board.slice();
+  for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed});
+  await triggerCard(destroyed,'onDestroyed',side,index,{destroyed:destroyed});
 }
 async function attack(i){
   if(!state.playerTurn || state.gameOver || state.animating) return;
   var a=state.playerBoard[i];
   if(!a) return;
-  if(a.type==='ランドマーク' || a.text.indexOf('攻撃できない')>=0){logMsg('このカードは攻撃できません');return;}
+  if(a.type==='ランドマーク' || hasKeyword(a,'cannotAttack','player')){logMsg('このカードは攻撃できません');return;}
   if(!a.canAttack){logMsg('このユニットは次のターンから攻撃できます');return;}
   state.animating=true; $('playBtn').disabled=true; $('endBtn').disabled=true;
   animateCard('player',i); await wait(310);
-  var target=guardIndex(state.enemyBoard);
-  if(target<0 && state.enemyBoard[i]) target=i;
+  await triggerCard(a,'onAttack','player',i,{});
+  var target=defenderIndex('enemy',i);
   if(target>=0){
     var t=state.enemyBoard[target];
     var aPower=a.power, tPower=t.power;
-    var lethalA=a.text.indexOf('殺傷')>=0, lethalT=t.text.indexOf('殺傷')>=0;
-    damage(state.enemyBoard,target,aPower,'enemy',lethalA);
-    if(state.playerBoard[i]) damage(state.playerBoard,i,tPower,'player',lethalT);
-    if(a.text.indexOf('貫通')>=0 && aPower>tPower) changeLife('enemy',-(aPower-tPower));
+    var lethalA=hasKeyword(a,'lethal','player'), lethalT=hasKeyword(t,'lethal','enemy');
+    await damage(state.enemyBoard,target,aPower,'enemy',lethalA);
+    if(state.playerBoard[i]) await damage(state.playerBoard,i,tPower,'player',lethalT);
+    if(hasKeyword(a,'pierce','player') && aPower>tPower) changeLife('enemy',-(aPower-tPower));
+    if(state.enemyBoard[target]) await triggerCard(state.enemyBoard[target],'onDefended','enemy',target,{attacker:a});
     logMsg(a.name+' → '+t.name);
   }else{
     changeLife('enemy',-a.power);
-    if(a.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) changeLife('enemy',-2);
     logMsg(a.name+' → 敵LIFE '+a.power+'ダメージ');
   }
   if(state.playerBoard[i]) state.playerBoard[i].canAttack=false;
   state.animating=false;
   checkGame(); render();
 }
-function endTurn(){
+async function processTurnEvent(side,event){
+  var snapshot=boardFor(side).slice();
+  for(var i=0;i<snapshot.length;i++) if(snapshot[i] && boardFor(side)[i]===snapshot[i]) await triggerCard(snapshot[i],event,side,i,{});
+}
+async function endTurn(){
   if(!state.playerTurn || state.gameOver || state.animating) return;
-  state.playerTurn=false; state.selectedCard=-1; state.selectedSlot=-1; render(); logMsg('CPUのターン');
+  state.animating=true; state.selectedCard=-1; state.selectedSlot=-1;
+  await processTurnEvent('player','onTurnEnd');
+  if(checkGame()){render();return;}
+  state.playerTurn=false; state.animating=false; render(); logMsg('CPUのターン');
   setTimeout(cpuTurn,350);
 }
 async function cpuTurn(){
   if(state.gameOver) return;
   state.animating=true;
-  var mana=state.maxMana;
+  state.enemyMana=state.enemyMaxMana;
+  await processTurnEvent('enemy','onTurnStart');
   var progress=true;
   while(progress){
     progress=false;
     for(var i=0;i<state.enemyHand.length;i++){
       var c=state.enemyHand[i];
-      if(c.cost<=mana){
+      var cost=effectiveCost(c,'enemy');
+      if(cost<=state.enemyMana){
         if(c.type!=='スペル' && firstEmpty(state.enemyBoard)<0) continue;
-        mana-=c.cost;
+        state.enemyMana-=cost;
         state.enemyHand.splice(i,1);
         var s=-1;
-        if(c.type==='スペル'){applyEffect(c,'enemy',-1);state.enemyGrave.push(c);logMsg('CPUが'+c.name+'を使用');}
-        else{s=firstEmpty(state.enemyBoard);c.canAttack=c.text.indexOf('猛襲')>=0;state.enemyBoard[s]=c;applyEffect(c,'enemy',s);logMsg('CPUが'+c.name+'を配置');}
+        if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
+        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+'を配置');render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});}
         render(); if(s>=0) animateSummon('enemy',s); await wait(520);
         if(checkGame()){render();return;}
         progress=true; break;
@@ -512,30 +658,34 @@ async function cpuTurn(){
   }
   for(var lane=0;lane<5;lane++){
     var u=state.enemyBoard[lane];
-    if(!u || !u.canAttack || u.type==='ランドマーク' || u.text.indexOf('攻撃できない')>=0) continue;
+    if(!u || !u.canAttack || u.type==='ランドマーク' || hasKeyword(u,'cannotAttack','enemy')) continue;
     animateCard('enemy',lane); logMsg('CPUの'+u.name+'が攻撃'); await wait(320);
-    var ti=guardIndex(state.playerBoard);
-    if(ti<0 && state.playerBoard[lane]) ti=lane;
+    await triggerCard(u,'onAttack','enemy',lane,{});
+    var ti=defenderIndex('player',lane);
     if(ti>=0){
       var t=state.playerBoard[ti], uPower=u.power, tPower=t.power;
-      damage(state.playerBoard,ti,uPower,'player',u.text.indexOf('殺傷')>=0);
-      if(state.enemyBoard[lane]) damage(state.enemyBoard,lane,tPower,'enemy',t.text.indexOf('殺傷')>=0);
-      if(u.text.indexOf('貫通')>=0 && uPower>tPower) changeLife('player',-(uPower-tPower));
+      await damage(state.playerBoard,ti,uPower,'player',hasKeyword(u,'lethal','enemy'));
+      if(state.enemyBoard[lane]) await damage(state.enemyBoard,lane,tPower,'enemy',hasKeyword(t,'lethal','player'));
+      if(hasKeyword(u,'pierce','enemy') && uPower>tPower) changeLife('player',-(uPower-tPower));
+      if(state.playerBoard[ti]) await triggerCard(state.playerBoard[ti],'onDefended','player',ti,{attacker:u});
     }else{
       changeLife('player',-u.power);
-      if(u.text.indexOf('攻撃時：相手ライフに2ダメージ')>=0) changeLife('player',-2);
     }
     if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
     if(checkGame()){render();return;}
     render(); await wait(480);
   }
+  await processTurnEvent('enemy','onTurnEnd');
+  if(checkGame()){render();return;}
   state.turn++;
   state.maxMana=Math.min(12,state.maxMana+1);
+  state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
   state.mana=state.maxMana;
   drawCard('player'); drawCard('enemy');
   for(var p=0;p<5;p++) if(state.playerBoard[p]) state.playerBoard[p].canAttack=true;
   for(var e=0;e<5;e++) if(state.enemyBoard[e]) state.enemyBoard[e].canAttack=true;
   state.playerTurn=true;
+  await processTurnEvent('player','onTurnStart');
   state.animating=false;
   logMsg('あなたのターン');
   render();
