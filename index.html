@@ -55,7 +55,7 @@ button{font:inherit;touch-action:manipulation}
 .card.green{background:#244b36} .card.white{background:#ded7c7;color:#19212a} .card.red{background:#633033}
 .card.blue{background:#244967} .card.black{background:#282631} .card.yellow{background:#66551c}
 .cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
-.cardType{font-size:8px;opacity:.8}.power{font-size:12px;font-weight:900;text-align:right}.power::before{content:'PWR '}
+.cardType{font-size:8px;opacity:.8}.power{font-size:12px;font-weight:900;text-align:right}.power::before{content:'⚔ '}
 .effect{font-size:8px;line-height:1.16;opacity:.9;overflow:visible;word-break:break-word}
 .keywordRow{position:absolute;left:4px;bottom:4px;display:flex;flex-wrap:wrap;max-width:39px;gap:2px;z-index:2}.keywordIcon{width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
@@ -68,9 +68,9 @@ button{font:inherit;touch-action:manipulation}
 .handCard.selected{z-index:30!important;border-color:var(--gold2);box-shadow:0 0 0 2px #dfbd8d55,0 11px 28px #000;transform:translateX(var(--hand-shift,-50%)) translateY(-11px)}
 .handCard.disabled{opacity:.92;filter:grayscale(.78) saturate(.28) brightness(.74);border-color:#5d6063;box-shadow:0 5px 12px #000a}
 .cost{position:absolute;top:5px;left:5px;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);border:1px solid #5d4a34;color:#17110c;font-size:12px;font-weight:900}
-.handName{padding-left:28px;font-size:11px;font-weight:900;line-height:1.18;min-height:28px;word-break:break-word}
+.handName{padding-left:28px;font-size:11px;font-weight:900;line-height:1.18;min-height:28px;word-break:break-word}.handMeta{font-size:8px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .handText{font-size:10px;line-height:1.25;color:#e1d8cc;overflow:hidden;word-break:break-word}
-.handPower{font-family:Georgia,"Yu Mincho",serif;font-weight:900;font-size:13px;text-align:right;color:#f2dcc0}.handPower::before{content:'PWR '}
+.handPower{font-family:Georgia,"Yu Mincho",serif;font-weight:900;font-size:13px;text-align:right;color:#f2dcc0}.handPower::before{content:'⚔ '}
 
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,transparent,#090c10 24%)}
 .controlInner{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:8px;max-width:720px;margin:auto}.controlInner.hasSpecial{grid-template-columns:1fr .68fr .68fr 1fr}.controlInner.hasSpecial #specialBtn{display:block}
@@ -263,6 +263,16 @@ var CARD_POOLS = {
     ['サルベージ',1,0,'スペル','探査2。'],['砂漠の贈賄者',2,1,'ユニット','発見：資源+1。配置：1枚引く。'],['流砂乗り',2,2,'ユニット','攻撃：探査2。'],['水脈への地図',3,0,'スペル','発見：ライフ+1。ライフ+2。'],['砂漠の商隊狩り',3,1,'ユニット','配置：相手は手札1枚を破棄。'],['砂読みの案内人',3,2,'ユニット','配置：探査3。'],['オアシスの不法管理者',4,1,'ユニット','相手がドローする時、敵1体に1ダメージ。'],['武装商人ラズリウス',4,2,'ユニット','発見：1コストで配置可。配置：探査3後、敵に3ダメージ。'],['砂漠の先遣隊',5,4,'ユニット','配置：探査4。'],['黄金文明の遺物',5,0,'スペル','発見：味方全体+1。使用：味方全体+2。'],['奇襲する砂蜘蛛',5,3,'ユニット','発見：配置。守護。'],['アウロニアン・デスワーム',8,6,'ユニット','配置：探査10。'],['黄金色の金属片',1,0,'ランドマーク','発見：手札に加える。配置：1枚引く。'],['砂漠に沈む黄金門',1,0,'ランドマーク','発見：手札に加える。配置：探査2。'],['黄金の天秤',2,0,'ランドマーク','発見：手札に加える。配置：正面に2ダメージ。'],['アウロニア信者',2,2,'ユニット','信仰2 配置：自身+2。'],['異端審問',2,0,'スペル','信仰2で報復1。敵に2ダメージ。'],['遺跡荒らしの商隊',3,1,'ユニット','聖遺物1枚を破壊し、パワー3トークン。'],['アウロニアの重装神官',3,3,'ユニット','信仰2で守護。信仰3 配置：自身+2。'],['アウロニアの巫女',4,2,'ユニット','配置：山札からコスト2以下の聖遺物を配置。'],['女教皇アウローン',5,4,'ユニット','信仰3で防衛されない。魂響で復活。'],['黄金文明の再興',6,0,'スペル','聖遺物を破壊し、その枠にパワー5トークン。']
   ]
 };
+var CARD_SPECIES={
+  '群れ呼び蜥蜴':'リスカリ','沼潜みの射手':'リスカリ','毒牙の蜥蜴':'リスカリ','開戦の笛吹':'リスカリ','復讐者アーシュ':'リスカリ','鱗の頭領シャトゥルツカ':'リスカリ','反乱する蜥蜴軍':'リスカリ','集結するリスカリ軍':'リスカリ','反乱の先導者ボザヤ':'リスカリ',
+  '四都市の統合王 クルオケシュ':'ハストボーン','ハストボーンの西王':'ハストボーン','ハストボーンの東王':'ハストボーン','ハストボーンの北王':'ハストボーン',
+  'クロスフォートの城壁':'クロスフォート','農民':'クロスフォート','クロスフォート兵':'クロスフォート','王国の重装歩兵':'クロスフォート','永遠樹の恩寵':'クロスフォート','決闘場のチャンピオン':'クロスフォート','王室近衛兵':'クロスフォート','クロスフォート城':'クロスフォート','白獅子の将軍':'クロスフォート','王国の反逆者グレン':'クロスフォート',
+  '大正門の見張り手':'イルデニア','イルデニアの鍛冶師':'イルデニア','イルデニアの騎士団長':'イルデニア','銀嶺の騎士ゼルモント':'イルデニア',
+  '帝国の突撃兵':'アヴィス','帝国の投擲兵':'アヴィス','帝国の騎馬隊':'アヴィス','皇帝軍':'アヴィス','捨て身の突撃兵':'アヴィス','強襲の指揮官':'アヴィス','黒の将軍':'アヴィス','龍皇帝ヴァンビエッタⅢ':'アヴィス',
+  '人食いクラゲ':'海獣','深海ピラニア':'海獣','深海の大渦バルメデ':'海獣','船喰らい':'海獣','激浪のアクルティス':'海獣',
+  '白龍エルレハイヌ':'ドラゴン','亜龍イザルクリューネ':'ドラゴン','起源の龍モルディヤルデ':'ドラゴン',
+  '黄金色の金属片':'聖遺物','砂漠に沈む黄金門':'聖遺物','黄金の天秤':'聖遺物','アウロニアの重装神官':'アウロニア聖教','女教皇アウローン':'アウロニア聖教'
+};
 var CARD_RULES={
   '原始的な投槍':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
   '群れ呼び蜥蜴':{onPlay:[{type:'createTokens',amount:1,power:1}]},
@@ -391,7 +401,7 @@ function renderCatalog(){
       if(rules.dive!=null) keywords.push('潜水 '+rules.dive);
       button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
-      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(card.type)+(keywords.length?' ／ '+keywords.join(' ／ '):'')+'</span><span class="catalogCardText">'+escapeHtml(card.text||'効果なし')+'</span><span class="catalogCardPower">PWR '+card.power+'</span>';
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+keywords.join(' ／ '):'')+'</span><span class="catalogCardText">'+escapeHtml(card.text||'効果なし')+'</span><span class="catalogCardPower">⚔ '+card.power+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
     })(cloneCard(pool[j],catalogColor));
   }
@@ -412,8 +422,9 @@ function selectSetupDeck(side,color){
 function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupMode);}
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
-  return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
+  return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,canAttack:false};
 }
+function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
 function shuffle(a){
   for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
   return a;
@@ -505,6 +516,10 @@ function effectDamageAmount(sourceCard,side,amount){
 }
 function effectiveCost(card,side){
   var cost=card.cost;
+  if(card.type==='ユニット' && card.species==='リスカリ'){
+    var leaders=boardFor(side).filter(function(c){return c && c.name==='鱗の頭領シャトゥルツカ';}).length;
+    cost-=leaders;
+  }
   if(card.name==='死礁の貪り手') cost-=graveFor(side).length;
   if(card.name==='起源の龍モルディヤルデ' && graveFor(side).filter(function(c){return c.type==='ユニット';}).length>=5) cost=0;
   return Math.max(0,cost);
@@ -524,7 +539,7 @@ function showCardDetail(card){
   var rules=rulesFor(card), badges=[];
   if(rules.revenge) badges.push('報復 '+rules.revenge);
   if(rules.dive!=null) badges.push('潜水 '+rules.dive);
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(card.type)+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">PWR '+card.power+'</div>';
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">⚔ '+card.power+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -590,7 +605,7 @@ function renderBoard(side,rootId,asOpponent){
         var card=document.createElement('div');
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(attackable?' attackable':'');
-        card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
+        card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(cardTypeLine(u))+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
@@ -617,7 +632,7 @@ function renderHand(){
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
       d.setAttribute('aria-label',c.name+' コスト'+shownCost+' パワー'+c.power);
-      d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div>'
+      d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardTypeLine(c))+'</div>'
         +'<div class="handText">'+escapeHtml(c.text)+'</div>'
         +'<div class="handPower">'+c.power+'</div>';
       d.onclick=function(){ selectCard(index); };
@@ -817,7 +832,7 @@ async function triggerCard(card,event,side,slot,context){
   }
 }
 function makeToken(power,color){
-  return {name:'パワー'+power+'トークン',cost:0,power:power,type:'ユニット',text:'トークン',color:color,canAttack:false,isToken:true};
+  return {name:'パワー'+power+'トークン',cost:0,power:power,type:'ユニット',species:'',text:'トークン',color:color,canAttack:false,isToken:true};
 }
 function zoneCandidates(cards,action){
   return cards.filter(function(c){
