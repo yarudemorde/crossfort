@@ -12,15 +12,17 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100%;}
 button{font:inherit;touch-action:manipulation}
-#startScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px 34px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 15%,#293039 0,transparent 34%),linear-gradient(180deg,#11161c,#080b0f 72%)}
-.startCard{width:min(560px,100%);background:linear-gradient(165deg,#171c22ee,#0b0e12f5);border:1px solid #75644f;border-radius:15px;padding:18px;box-shadow:inset 0 1px #ffffff0b,0 24px 70px #000a;position:relative}.startCard::before{content:"";position:absolute;inset:6px;border:1px solid #d7b88625;border-radius:10px;pointer-events:none}
+#startScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px 34px;display:none;align-items:flex-start;justify-content:center;background:radial-gradient(circle at 50% 15%,#293039 0,transparent 34%),linear-gradient(180deg,#11161c,#080b0f 72%)}
+.startCard{width:min(680px,100%);margin:auto 0;background:linear-gradient(165deg,#171c22ee,#0b0e12f5);border:1px solid #75644f;border-radius:15px;padding:18px;box-shadow:inset 0 1px #ffffff0b,0 24px 70px #000a;position:relative}.startCard::before{content:"";position:absolute;inset:6px;border:1px solid #d7b88625;border-radius:10px;pointer-events:none}
 .logo{font-family:Georgia,"Yu Mincho",serif;font-size:31px;font-weight:700;letter-spacing:.12em;color:var(--gold2);text-align:center;text-shadow:0 2px 16px #d7aa6550}
 .subtitle{text-align:center;color:#c8b89f;font-size:14px;margin:7px 0 18px;letter-spacing:.14em}
 .rules{font-size:13px;line-height:1.7;color:#c9c1b7;background:#0b0f13aa;border:1px solid #34383d;border-radius:9px;padding:11px 13px;margin-bottom:13px}
 .deckGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
 .deckBtn{min-height:76px;border:1px solid #6d604f;border-radius:10px;color:#f3eadf;font-family:Georgia,"Yu Mincho",serif;font-weight:800;font-size:17px;background:linear-gradient(145deg,#24221f,#111418);box-shadow:inset 0 1px #fff1;position:relative;overflow:hidden}.deckBtn::before{content:"◆";display:block;font-size:16px;margin-bottom:5px;color:var(--deck-accent,#d9b983);text-shadow:0 0 14px currentColor}.deckBtn::after{content:"30 CARDS";display:block;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10px;font-weight:600;letter-spacing:.12em;color:#99928a;margin-top:3px}
 .deckBtn:active{transform:scale(.98);filter:brightness(1.12)}
+.deckBtn.compact{min-height:58px;font-size:14px}.deckBtn.compact::before{display:inline;margin:0 6px 0 0}.deckBtn.compact::after{display:none}.deckBtn.selected{border:2px solid var(--gold2);box-shadow:0 0 0 2px #dfbd8d33,0 0 17px #dfbd8d55;filter:brightness(1.15)}
 .deckBtn.green{--deck-accent:#78a985}.deckBtn.white{--deck-accent:#eee4d0}.deckBtn.red{--deck-accent:#d9786f}.deckBtn.blue{--deck-accent:#719dc4}.deckBtn.black{--deck-accent:#978aa6}.deckBtn.yellow{--deck-accent:#dfc767}
+.setupSection{position:relative;margin-top:14px}.setupLabel{font-family:Georgia,"Yu Mincho",serif;color:#e3cfaf;font-size:14px;font-weight:800;margin:0 2px 7px}.modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.modeBtn{min-height:62px;border:1px solid #665947;border-radius:10px;background:#151a20;color:#d8cbbb;font-weight:900}.modeBtn.selected{border-color:#f2dcc0;background:linear-gradient(135deg,#3b3228,#1b1b1c);color:#f5dfbd;box-shadow:0 0 14px #dfbd8d44}.startBattleBtn{position:relative;width:100%;min-height:55px;margin-top:17px;border:1px solid #f2dcc0;border-radius:11px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900;font-size:16px}
 #startError{display:none;color:#ff9f9f;background:#321c24;padding:10px;border-radius:10px;margin-top:12px;font-size:12px;white-space:pre-wrap}
 
 #homeScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 86px);background:radial-gradient(circle at 82% 9%,#28313a 0,transparent 27%),linear-gradient(180deg,#10151b,#080b0f 68%);}
@@ -111,7 +113,7 @@ button{font:inherit;touch-action:manipulation}
       <span class="seasonCopy"><span class="seasonTag">シーズン1</span><br><span class="seasonTitle">暁の要塞</span><br><span class="seasonSub">新たな戦いが始まる</span></span><span class="seasonArrow">→</span>
     </button>
     <div class="homeGrid">
-      <button class="homeTile primary" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPUと対戦</span></button>
+      <button class="homeTile primary" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPU戦・対人テスト</span></button>
       <button class="homeTile" onclick="showComingSoon('デッキ編集')"><span class="tileIcon">♛</span><span class="tileTitle">デッキ編集</span><span class="tileSub">あなただけの戦略を</span></button>
       <button class="homeTile" onclick="showComingSoon('カード図鑑')"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
       <button class="homeTile" onclick="showComingSoon('ミッション')"><span class="tileIcon">✥</span><span class="tileTitle">ミッション</span><span class="tileSub">報酬を獲得しよう</span></button>
@@ -134,20 +136,22 @@ button{font:inherit;touch-action:manipulation}
   <div class="startCard">
     <button class="backHome" onclick="showHome()">← ホーム</button>
     <div class="logo">CROSSFORT</div>
-    <div class="subtitle">デッキを選択</div>
+    <div class="subtitle">対戦設定</div>
     <div class="rules">
       <b>5レーン制 / LIFE 20 / 初期手札5枚</b><br>
-      色を選ぶと30枚デッキを自動構築してCPU戦を開始します。<br>
-      カードは攻撃力・体力ではなく、1つの「パワー」だけを持ちます。
+      対戦形式と両者のデッキを選択してください。対人戦は1台の端末を交互に操作する開発用テストモードです。
     </div>
-    <div class="deckGrid">
-      <button class="deckBtn green" onclick="startGame('緑')">緑デッキ</button>
-      <button class="deckBtn white" onclick="startGame('白')">白デッキ</button>
-      <button class="deckBtn red" onclick="startGame('赤')">赤デッキ</button>
-      <button class="deckBtn blue" onclick="startGame('青')">青デッキ</button>
-      <button class="deckBtn black" onclick="startGame('黒')">黒デッキ</button>
-      <button class="deckBtn yellow" onclick="startGame('黄')">黄デッキ</button>
+    <div class="setupSection"><div class="setupLabel">対戦形式</div><div class="modeGrid">
+      <button class="modeBtn selected" data-mode="cpu" onclick="setMatchMode('cpu')">プレイヤー1 VS CPU</button>
+      <button class="modeBtn" data-mode="local" onclick="setMatchMode('local')">プレイヤー1 VS プレイヤー2</button>
+    </div></div>
+    <div class="setupSection"><div class="setupLabel">プレイヤー1 デッキ</div><div class="deckGrid" id="playerDeckChoices">
+      <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('player','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('player','白')">白</button><button class="deckBtn compact red" data-color="赤" onclick="selectSetupDeck('player','赤')">赤</button><button class="deckBtn compact blue selected" data-color="青" onclick="selectSetupDeck('player','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('player','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('player','黄')">黄</button>
+    </div></div>
+    <div class="setupSection"><div class="setupLabel" id="opponentDeckLabel">CPU デッキ</div><div class="deckGrid" id="opponentDeckChoices">
+      <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('enemy','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('enemy','白')">白</button><button class="deckBtn compact red selected" data-color="赤" onclick="selectSetupDeck('enemy','赤')">赤</button><button class="deckBtn compact blue" data-color="青" onclick="selectSetupDeck('enemy','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('enemy','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('enemy','黄')">黄</button>
     </div>
+    <button class="startBattleBtn" onclick="beginConfiguredGame()">対戦開始</button>
     <div id="startError"></div>
   </div>
 </section>
@@ -155,9 +159,9 @@ button{font:inherit;touch-action:manipulation}
 <section id="gameScreen">
   <div class="topbar">
     <div class="scoreRow">
-      <div><span class="small">CPU</span> <span class="life enemy">♥ <span id="enemyLife">20</span></span></div>
+      <div><span class="small" id="enemyName">CPU</span> <span class="life enemy">♥ <span id="enemyLife">20</span></span></div>
       <div class="turn" id="turnLabel">TURN 1</div>
-      <div><span class="life player">♥ <span id="playerLife">20</span></span> <span class="small">YOU</span></div>
+      <div><span class="life player">♥ <span id="playerLife">20</span></span> <span class="small" id="playerName">PLAYER 1</span></div>
     </div>
     <div class="scoreRow small" style="margin-top:4px">
       <div>敵手札 <span id="enemyHandCount">5</span> / 山札 <span id="enemyDeckCount">25</span></div>
@@ -166,12 +170,12 @@ button{font:inherit;touch-action:manipulation}
     </div>
   </div>
 
-  <div class="sectionTitle"><span>CPU FIELD</span><span>← 5レーン →</span></div>
+  <div class="sectionTitle"><span id="topFieldLabel">CPU FIELD</span><span>← 5レーン →</span></div>
   <div class="boardWrap"><div class="board" id="enemyBoard"></div></div>
   <div class="log" id="battleLog">ゲーム開始</div>
-  <div class="sectionTitle"><span>YOUR FIELD</span><span>手札→空きスロット→配置</span></div>
+  <div class="sectionTitle"><span id="bottomFieldLabel">PLAYER 1 FIELD</span><span>手札→空きスロット→配置</span></div>
   <div class="boardWrap"><div class="board" id="playerBoard"></div></div>
-  <div class="sectionTitle"><span>HAND</span><span>カードをタップして選択</span></div>
+  <div class="sectionTitle"><span id="handLabel">PLAYER 1 HAND</span><span>カードをタップして選択</span></div>
   <div class="hand" id="playerHand"></div>
 </section>
 
@@ -205,7 +209,7 @@ button{font:inherit;touch-action:manipulation}
   <div class="modalBox">
     <h2 id="resultTitle">VICTORY</h2>
     <p id="resultText"></p>
-    <button onclick="startGame(selectedColor)">もう一度</button>
+    <button onclick="beginConfiguredGame()">もう一度</button>
     <button onclick="returnToDecks()" style="margin-top:8px;background:#b9c7d6">デッキ選択へ</button>
   </div>
 </div>
@@ -301,7 +305,7 @@ var CARD_RULES={
   '女教皇アウローン':{onDestroyed:[{type:'soulEcho'}]}
 };
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
-var selectedColor='青';
+var selectedColor='青',setupMode='cpu',setupPlayerColor='青',setupEnemyColor='赤';
 var state=null;
 var toastTimer=null;
 
@@ -318,6 +322,16 @@ function showComingSoon(name){
   var toast=$('homeToast'); toast.textContent=name+'は準備中です'; toast.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(function(){toast.classList.remove('show');},1600);
 }
+function setMatchMode(mode){
+  setupMode=mode;$('opponentDeckLabel').textContent=mode==='local'?'プレイヤー2 デッキ':'CPU デッキ';
+  var buttons=document.querySelectorAll('[data-mode]');for(var i=0;i<buttons.length;i++)buttons[i].classList.toggle('selected',buttons[i].getAttribute('data-mode')===mode);
+}
+function selectSetupDeck(side,color){
+  if(side==='player')setupPlayerColor=color;else setupEnemyColor=color;
+  var root=$(side==='player'?'playerDeckChoices':'opponentDeckChoices'),buttons=root.querySelectorAll('[data-color]');
+  for(var i=0;i<buttons.length;i++)buttons[i].classList.toggle('selected',buttons[i].getAttribute('data-color')===color);
+}
+function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupMode);}
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
   return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],text:a[4]||'',color:color,canAttack:false};
@@ -331,15 +345,12 @@ function buildDeck(color){
   for(var i=0;i<30;i++) deck.push(cloneCard(pool[i%pool.length],color));
   return shuffle(deck);
 }
-function startGame(color){
+function startGame(color,opponentColor,mode){
   try{
-    selectedColor=color;
-    var colors=Object.keys(CARD_POOLS);
-    var ci=colors.indexOf(color);
-    var cpuColor=colors[(ci+2)%colors.length];
+    selectedColor=color;opponentColor=opponentColor||setupEnemyColor;mode=mode||setupMode;
     state={
       turn:1,maxMana:1,mana:1,enemyMaxMana:1,enemyMana:1,playerLife:20,enemyLife:20,
-      playerDeck:buildDeck(color),enemyDeck:buildDeck(cpuColor),
+      playerDeck:buildDeck(color),enemyDeck:buildDeck(opponentColor),matchMode:mode,playerColor:color,enemyColor:opponentColor,
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
       selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null,choiceRequest:null
@@ -349,7 +360,7 @@ function startGame(color){
     $('gameScreen').style.display='block';
     $('controls').style.display='block';
     $('resultModal').classList.remove('show');
-    logMsg(color+'デッキ VS '+cpuColor+'デッキ');
+    logMsg(color+'デッキ VS '+opponentColor+'デッキ');
     render();
   }catch(e){
     var box=$('startError');
@@ -368,6 +379,14 @@ function drawCard(side){
   var hand=side==='player'?state.playerHand:state.enemyHand;
   if(deck.length && hand.length<8) hand.push(deck.shift());
 }
+function activeSide(){return state.playerTurn?'player':'enemy';}
+function handFor(side){return side==='player'?state.playerHand:state.enemyHand;}
+function deckFor(side){return side==='player'?state.playerDeck:state.enemyDeck;}
+function manaFor(side){return side==='player'?state.mana:state.enemyMana;}
+function maxManaFor(side){return side==='player'?state.maxMana:state.enemyMaxMana;}
+function spendMana(side,amount){if(side==='player')state.mana-=amount;else state.enemyMana-=amount;}
+function isHumanSide(side){return side==='player' || state.matchMode==='local';}
+function sideLabel(side){return side==='player'?'プレイヤー1':state.matchMode==='local'?'プレイヤー2':'CPU';}
 function boardFor(side){ return side==='player'?state.playerBoard:state.enemyBoard; }
 function graveFor(side){ return side==='player'?state.grave:state.enemyGrave; }
 function otherSide(side){ return side==='player'?'enemy':'player'; }
@@ -421,8 +440,8 @@ function attachCardHold(el,card,onTap){
 }
 function selectedSpecial(){
   if(!state || state.selectedCard<0) return null;
-  var c=state.playerHand[state.selectedCard], rules=rulesFor(c);
-  if(rules.dive!=null){var cost=diveCost(c,'player');return {mode:'dive',label:'潜水 '+cost,cost:cost};}
+  var side=activeSide(),c=handFor(side)[state.selectedCard],rules=rulesFor(c);
+  if(rules.dive!=null){var cost=diveCost(c,side);return {mode:'dive',label:'潜水 '+cost,cost:cost};}
   return null;
 }
 function render(){
@@ -431,48 +450,54 @@ function render(){
   else prompt.classList.remove('show');
   $('enemyLife').textContent=state.enemyLife;
   $('playerLife').textContent=state.playerLife;
-  $('enemyHandCount').textContent=state.enemyHand.length;
-  $('enemyDeckCount').textContent=state.enemyDeck.length;
-  $('playerDeckCount').textContent=state.playerDeck.length;
-  $('graveCount').textContent=state.grave.length;
-  $('mana').textContent=state.mana+'/'+state.maxMana;
-  $('turnLabel').textContent='TURN '+state.turn+' / '+(state.playerTurn?'あなた':'CPU');
-  var selected=state.selectedCard>=0?state.playerHand[state.selectedCard]:null;
+  var side=activeSide(),humanTurn=isHumanSide(side),bottomSide=state.matchMode==='local'?side:'player',topSide=otherSide(bottomSide);
+  $('enemyHandCount').textContent=handFor(topSide).length;
+  $('enemyDeckCount').textContent=deckFor(topSide).length;
+  $('playerDeckCount').textContent=deckFor(bottomSide).length;
+  $('graveCount').textContent=graveFor(bottomSide).length;
+  $('mana').textContent=manaFor(side)+'/'+maxManaFor(side);
+  $('enemyName').textContent=state.matchMode==='local'?'PLAYER 2':'CPU';
+  $('turnLabel').textContent='TURN '+state.turn+' / '+(side==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU');
+  $('topFieldLabel').textContent=(topSide==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU')+' FIELD';
+  $('bottomFieldLabel').textContent=(bottomSide==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU')+' FIELD';
+  $('handLabel').textContent=(state.matchMode==='local'?(side==='player'?'PLAYER 1':'PLAYER 2'):'PLAYER 1')+' HAND';
+  var selected=state.selectedCard>=0?handFor(side)[state.selectedCard]:null;
   var special=selectedSpecial(), controls=$('controls').querySelector('.controlInner');
   controls.classList.toggle('hasSpecial',!!special);
   $('playBtn').textContent=special?'通常':'配置';
   $('specialBtn').textContent=special?special.label:'特殊';
-  $('specialBtn').disabled=!special || !state.playerTurn || state.gameOver || state.animating || special.cost>state.mana || !selected || (selected.type!=='スペル' && state.selectedSlot<0);
-  $('playBtn').disabled=(!state.playerTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,'player')>state.mana) || (selected && selected.type!=='スペル' && state.selectedSlot<0));
-  $('endBtn').disabled=(!state.playerTurn || state.gameOver || state.animating);
-  renderBoard('enemy');
-  renderBoard('player');
+  $('specialBtn').disabled=!special || !humanTurn || state.gameOver || state.animating || special.cost>manaFor(side) || !selected || (selected.type!=='スペル' && state.selectedSlot<0);
+  $('playBtn').disabled=(!humanTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type!=='スペル' && state.selectedSlot<0));
+  $('endBtn').disabled=(!humanTurn || state.gameOver || state.animating);
+  renderBoard(topSide,'enemyBoard',true);
+  renderBoard(bottomSide,'playerBoard',false);
   renderHand();
 }
-function renderBoard(side){
-  var root=$(side+'Board');
+function renderBoard(side,rootId,asOpponent){
+  var root=$(rootId);
   root.innerHTML='';
   var board=side==='player'?state.playerBoard:state.enemyBoard;
   for(var i=0;i<5;i++){
     (function(index){
       var slot=document.createElement('div');
-      var isSelected=(side==='player' && state.selectedSlot===index);
+      var acting=activeSide(),humanTurn=isHumanSide(acting);
+      var isSelected=(side===acting && state.selectedSlot===index);
       var targetable=!!(state.targetRequest && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
-      var canSelect=(side==='player' && !board[index] && state.playerTurn && state.selectedCard>=0 && state.playerHand[state.selectedCard] && state.playerHand[state.selectedCard].type!=='スペル');
-      slot.className='slot '+(side==='enemy'?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
+      var activeHand=handFor(acting),canSelect=(side===acting && humanTurn && !board[index] && state.selectedCard>=0 && activeHand[state.selectedCard] && activeHand[state.selectedCard].type!=='スペル');
+      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
       var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
       if(targetable) slot.onclick=function(){ resolveTarget(side,index); };
       else if(canSelect) slot.onclick=function(){ selectSlot(index); };
       var u=board[index];
       if(u){
         var card=document.createElement('div');
-        var attackable=(side==='player' && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && state.playerTurn && !state.animating);
+        var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(attackable?' attackable':'');
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(u.type)+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
           +'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
-        else attachCardHold(card,u,side==='player'?function(){attack(index);}:null);
+        else attachCardHold(card,u,side===acting && humanTurn?function(){attack(side,index);}:null);
         slot.appendChild(card);
       }
       root.appendChild(slot);
@@ -481,12 +506,12 @@ function renderBoard(side){
 }
 function renderHand(){
   var root=$('playerHand'); root.innerHTML='';
-  var count=state.playerHand.length;
-  for(var i=0;i<state.playerHand.length;i++){
+  var side=state.matchMode==='local'?activeSide():'player',hand=handFor(side),humanTurn=isHumanSide(activeSide()) && side===activeSide(),count=hand.length;
+  for(var i=0;i<hand.length;i++){
     (function(index){
-      var c=state.playerHand[index], d=document.createElement('div');
-      var shownCost=effectiveCost(c,'player');
-      var disabled=lowestPlayableCost(c,'player')>state.mana || !state.playerTurn;
+      var c=hand[index], d=document.createElement('div');
+      var shownCost=effectiveCost(c,side);
+      var disabled=lowestPlayableCost(c,side)>manaFor(side) || !humanTurn;
       var spread=count<=1?.5:index/(count-1);
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left=(spread*100)+'%';
@@ -505,43 +530,46 @@ function renderHand(){
   }
 }
 function selectCard(i){
-  if(!state.playerTurn || state.gameOver || state.animating) return;
-  if(lowestPlayableCost(state.playerHand[i],'player')>state.mana){ logMsg('資源が足りません'); return; }
+  var side=activeSide(),hand=handFor(side);
+  if(!isHumanSide(side) || state.gameOver || state.animating) return;
+  if(lowestPlayableCost(hand[i],side)>manaFor(side)){ logMsg('資源が足りません'); return; }
   if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }
   else { state.selectedCard=i; state.selectedSlot=-1; }
   render();
 }
 function selectSlot(i){
-  if(!state.playerTurn || state.gameOver || state.animating || state.selectedCard<0) return;
-  var c=state.playerHand[state.selectedCard];
+  var side=activeSide(),hand=handFor(side),board=boardFor(side);
+  if(!isHumanSide(side) || state.gameOver || state.animating || state.selectedCard<0) return;
+  var c=hand[state.selectedCard];
   if(!c || c.type==='スペル') return;
-  if(state.playerBoard[i]){ logMsg('そのスロットにはすでにカードがあります'); return; }
+  if(board[i]){ logMsg('そのスロットにはすでにカードがあります'); return; }
   state.selectedSlot=(state.selectedSlot===i?-1:i);
   render();
 }
 function playSpecialCard(){var special=selectedSpecial();if(special)playSelectedCard(special.mode);}
 async function playSelectedCard(mode){
-  if(state.selectedCard<0 || !state.playerTurn || state.gameOver || state.animating) return;
+  var side=activeSide(),hand=handFor(side),board=boardFor(side);
+  if(state.selectedCard<0 || !isHumanSide(side) || state.gameOver || state.animating) return;
   mode=mode||'normal';
-  var c=state.playerHand[state.selectedCard], rules=rulesFor(c), cost=mode==='dive'?diveCost(c,'player'):effectiveCost(c,'player');
+  var c=hand[state.selectedCard],rules=rulesFor(c),cost=mode==='dive'?diveCost(c,side):effectiveCost(c,side);
   if(mode==='dive' && rules.dive==null) return;
-  if(cost>state.mana) return;
+  if(cost>manaFor(side)) return;
   var slot=state.selectedSlot;
-  if(c.type!=='スペル' && (slot<0 || state.playerBoard[slot])){logMsg('空いているスロットを選択してください');return;}
-  state.animating=true; state.mana-=cost;
-  state.playerHand.splice(state.selectedCard,1); state.selectedCard=-1; state.selectedSlot=-1;
+  if(c.type!=='スペル' && (slot<0 || board[slot])){logMsg('空いているスロットを選択してください');return;}
+  state.animating=true;spendMana(side,cost);
+  hand.splice(state.selectedCard,1);state.selectedCard=-1;state.selectedSlot=-1;
   if(c.type==='スペル'){
     logMsg(c.name+'を使用'); render();
-    await triggerCard(c,'onPlay','player',-1,{});
-    state.grave.push(c);
+    await triggerCard(c,'onPlay',side,-1,{});
+    graveFor(side).push(c);
   }else{
-    c.canAttack=hasKeyword(c,'haste','player');
-    state.playerBoard[slot]=c;
-    logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon('player',slot); await wait(240);
-    await triggerCard(c,'onPlay','player',slot,{});
+    c.canAttack=hasKeyword(c,'haste',side);
+    board[slot]=c;
+    logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon(side,slot); await wait(240);
+    await triggerCard(c,'onPlay',side,slot,{});
     if(mode==='dive'){
-      await emitBoardEvent('player','onFriendlyDive',{dived:c});
-      await returnDivedCard('player',slot,c);
+      await emitBoardEvent(side,'onFriendlyDive',{dived:c});
+      await returnDivedCard(side,slot,c);
     }
   }
   state.animating=false; checkGame(); render();
@@ -562,7 +590,7 @@ function chooseTarget(actingSide,targetSide,prompt,filter){
   var board=boardFor(targetSide), candidates=[];
   for(var i=0;i<board.length;i++) if(board[i] && (!filter || filter(board[i],i))) candidates.push(i);
   if(!candidates.length) return Promise.resolve(null);
-  if(actingSide==='enemy') return Promise.resolve({side:targetSide,index:candidates[0]});
+  if(!isHumanSide(actingSide)) return Promise.resolve({side:targetSide,index:candidates[0]});
   return new Promise(function(resolve){
     state.targetRequest={targetSide:targetSide,candidates:candidates,prompt:prompt,resolve:resolve}; render();
   });
@@ -574,14 +602,14 @@ function resolveTarget(side,index){
 }
 function chooseZoneCard(actingSide,cards,title){
   if(!cards.length) return Promise.resolve(null);
-  if(actingSide==='enemy') return Promise.resolve(cards[0]);
+  if(!isHumanSide(actingSide)) return Promise.resolve(cards[0]);
   return new Promise(function(resolve){
     state.choiceRequest={kind:'single',cards:cards,title:title,resolve:resolve}; renderPicker();
   });
 }
 function chooseExploreDestinations(side,cards){
   if(!cards.length) return Promise.resolve([]);
-  if(side==='enemy') return Promise.resolve(cards.map(function(){return 'top';}));
+  if(!isHumanSide(side)) return Promise.resolve(cards.map(function(){return 'top';}));
   return new Promise(function(resolve){
     state.choiceRequest={kind:'explore',cards:cards,title:'探査：各カードを山札の上か下へ',destinations:cards.map(function(){return 'top';}),resolve:resolve}; renderPicker();
   });
@@ -596,14 +624,14 @@ function canUseDiscover(card,side){
   return true;
 }
 function chooseDiscoverUse(side,card){
-  if(side==='enemy') return Promise.resolve(true);
+  if(!isHumanSide(side)) return Promise.resolve(true);
   return new Promise(function(resolve){
     state.choiceRequest={kind:'discover',cards:[card],title:'発見効果を使用しますか？',resolve:resolve};renderPicker();
   });
 }
 function chooseRevengeCard(side,cards,damageAmount){
   if(!cards.length) return Promise.resolve(null);
-  if(side==='enemy') return Promise.resolve(cards[0]);
+  if(!isHumanSide(side)) return Promise.resolve(cards[0]);
   return new Promise(function(resolve){
     state.choiceRequest={kind:'revenge',cards:cards,title:'報復：'+damageAmount+'ダメージを受けました',resolve:resolve};renderPicker();
   });
@@ -612,7 +640,7 @@ function chooseOpenSlot(actingSide,side,prompt){
   var board=boardFor(side),candidates=[];
   for(var i=0;i<board.length;i++) if(!board[i]) candidates.push(i);
   if(!candidates.length) return Promise.resolve(null);
-  if(actingSide==='enemy') return Promise.resolve(candidates[0]);
+  if(!isHumanSide(actingSide)) return Promise.resolve(candidates[0]);
   return new Promise(function(resolve){state.targetRequest={targetSide:side,candidates:candidates,prompt:prompt,resolve:function(target){resolve(target.index);}};render();});
 }
 function renderPicker(){
@@ -768,7 +796,8 @@ function floatAt(el,text,type){
   document.body.appendChild(f); setTimeout(function(){f.remove();},760);
 }
 function boardCard(side,index){
-  var root=$(side+'Board'), slot=root&&root.children[index];
+  var rootId=state && state.matchMode==='local'?(side===activeSide()?'playerBoard':'enemyBoard'):side+'Board';
+  var root=$(rootId), slot=root&&root.children[index];
   return slot?slot.querySelector('.card'):null;
 }
 function animateCard(side,index){var el=boardCard(side,index);pulseClass(el,'attacking',340);}
@@ -817,11 +846,11 @@ async function useRevengeCard(side,card){
   }
   hand.splice(index,1);
   if(card.type==='スペル'){
-    logMsg((side==='player'?'あなた':'CPU')+'が'+card.name+'を報復使用');render();
+    logMsg(sideLabel(side)+'が'+card.name+'を報復使用');render();
     await triggerCard(card,'onPlay',side,-1,{revenge:true});graveFor(side).push(card);
   }else{
     card.canAttack=hasKeyword(card,'haste',side);boardFor(side)[slot]=card;
-    logMsg((side==='player'?'あなた':'CPU')+'が'+card.name+'を報復配置');render();animateSummon(side,slot);await wait(220);
+    logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();animateSummon(side,slot);await wait(220);
     await triggerCard(card,'onPlay',side,slot,{revenge:true});
   }
   checkGame();render();
@@ -844,30 +873,30 @@ async function destroy(side,index){
   for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed});
   await triggerCard(destroyed,'onDestroyed',side,index,{destroyed:destroyed});
 }
-async function attack(i){
-  if(!state.playerTurn || state.gameOver || state.animating) return;
-  var a=state.playerBoard[i];
+async function attack(side,i){
+  if(activeSide()!==side || !isHumanSide(side) || state.gameOver || state.animating) return;
+  var own=boardFor(side),enemySide=otherSide(side),enemy=boardFor(enemySide),a=own[i];
   if(!a) return;
-  if(a.type==='ランドマーク' || hasKeyword(a,'cannotAttack','player')){logMsg('このカードは攻撃できません');return;}
+  if(a.type==='ランドマーク' || hasKeyword(a,'cannotAttack',side)){logMsg('このカードは攻撃できません');return;}
   if(!a.canAttack){logMsg('このユニットは次のターンから攻撃できます');return;}
   state.animating=true; $('playBtn').disabled=true; $('endBtn').disabled=true;
-  animateCard('player',i); await wait(310);
-  await triggerCard(a,'onAttack','player',i,{});
-  var target=defenderIndex('enemy',i);
+  animateCard(side,i); await wait(310);
+  await triggerCard(a,'onAttack',side,i,{});
+  var target=defenderIndex(enemySide,i);
   if(target>=0){
-    var t=state.enemyBoard[target];
+    var t=enemy[target];
     var aPower=a.power, tPower=t.power;
-    var lethalA=hasKeyword(a,'lethal','player'), lethalT=hasKeyword(t,'lethal','enemy');
-    await damage(state.enemyBoard,target,aPower,'enemy',lethalA);
-    if(state.playerBoard[i]) await damage(state.playerBoard,i,tPower,'player',lethalT);
-    if(hasKeyword(a,'pierce','player') && aPower>tPower) await changeLife('enemy',-(aPower-tPower));
-    if(state.enemyBoard[target]) await triggerCard(state.enemyBoard[target],'onDefended','enemy',target,{attacker:a});
+    var lethalA=hasKeyword(a,'lethal',side),lethalT=hasKeyword(t,'lethal',enemySide);
+    await damage(enemy,target,aPower,enemySide,lethalA);
+    if(own[i]) await damage(own,i,tPower,side,lethalT);
+    if(hasKeyword(a,'pierce',side) && aPower>tPower) await changeLife(enemySide,-(aPower-tPower));
+    if(enemy[target]) await triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a});
     logMsg(a.name+' → '+t.name);
   }else{
-    await changeLife('enemy',-a.power);
-    logMsg(a.name+' → 敵LIFE '+a.power+'ダメージ');
+    await changeLife(enemySide,-a.power);
+    logMsg(a.name+' → 相手LIFE '+a.power+'ダメージ');
   }
-  if(state.playerBoard[i]) state.playerBoard[i].canAttack=false;
+  if(own[i]) own[i].canAttack=false;
   state.animating=false;
   checkGame(); render();
 }
@@ -876,12 +905,27 @@ async function processTurnEvent(side,event){
   for(var i=0;i<snapshot.length;i++) if(snapshot[i] && boardFor(side)[i]===snapshot[i]) await triggerCard(snapshot[i],event,side,i,{});
 }
 async function endTurn(){
-  if(!state.playerTurn || state.gameOver || state.animating) return;
+  var side=activeSide();
+  if(!isHumanSide(side) || state.gameOver || state.animating) return;
   state.animating=true; state.selectedCard=-1; state.selectedSlot=-1;
-  await processTurnEvent('player','onTurnEnd');
+  await processTurnEvent(side,'onTurnEnd');
   if(checkGame()){render();return;}
+  if(state.matchMode==='local'){await advanceLocalTurn(side);return;}
   state.playerTurn=false; state.animating=false; render(); logMsg('CPUのターン');
   setTimeout(cpuTurn,350);
+}
+async function advanceLocalTurn(side){
+  if(side==='player'){
+    state.playerTurn=false;state.enemyMana=state.enemyMaxMana;
+    await processTurnEvent('enemy','onTurnStart');
+    state.animating=false;logMsg('プレイヤー2のターン');render();return;
+  }
+  state.turn++;state.maxMana=Math.min(12,state.maxMana+1);state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
+  state.mana=state.maxMana;drawCard('player');drawCard('enemy');
+  for(var p=0;p<5;p++)if(state.playerBoard[p])state.playerBoard[p].canAttack=true;
+  for(var e=0;e<5;e++)if(state.enemyBoard[e])state.enemyBoard[e].canAttack=true;
+  state.playerTurn=true;await processTurnEvent('player','onTurnStart');
+  state.animating=false;logMsg('プレイヤー1のターン');render();
 }
 async function cpuTurn(){
   if(state.gameOver) return;
@@ -944,13 +988,13 @@ async function cpuTurn(){
   render();
 }
 function checkGame(){
-  if(state.enemyLife<=0){finish(true,'敵のLIFEを0にしました');return true;}
-  if(state.playerLife<=0){finish(false,'あなたのLIFEが0になりました');return true;}
+  if(state.enemyLife<=0){finish(true,state.matchMode==='local'?'プレイヤー1の勝利です':'敵のLIFEを0にしました');return true;}
+  if(state.playerLife<=0){finish(false,state.matchMode==='local'?'プレイヤー2の勝利です':'あなたのLIFEが0になりました');return true;}
   return false;
 }
 function finish(win,text){
   state.gameOver=true; state.animating=false;
-  $('resultTitle').textContent=win?'VICTORY':'DEFEAT';
+  $('resultTitle').textContent=state.matchMode==='local'?(win?'PLAYER 1 WIN':'PLAYER 2 WIN'):(win?'VICTORY':'DEFEAT');
   $('resultText').textContent=text;
   $('resultModal').classList.add('show');
 }
