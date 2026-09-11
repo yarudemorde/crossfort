@@ -422,9 +422,16 @@ function selectSetupDeck(side,color){
 function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupMode);}
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
-  return {name:a[0],cost:a[1],power:Math.max(0,a[2]||0),type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,canAttack:false};
+  var printedPower=Math.max(0,a[2]||0);
+  return {name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,canAttack:false};
 }
 function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
+function resetCardAfterGrave(card){
+  if(!card) return card;
+  if(card.basePower!=null) card.power=card.basePower;
+  card.canAttack=false;
+  return card;
+}
 function shuffle(a){
   for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
   return a;
@@ -832,7 +839,7 @@ async function triggerCard(card,event,side,slot,context){
   }
 }
 function makeToken(power,color){
-  return {name:'パワー'+power+'トークン',cost:0,power:power,type:'ユニット',species:'',text:'トークン',color:color,canAttack:false,isToken:true};
+  return {name:'パワー'+power+'トークン',cost:0,power:power,basePower:power,type:'ユニット',species:'',text:'トークン',color:color,canAttack:false,isToken:true};
 }
 function zoneCandidates(cards,action){
   return cards.filter(function(c){
@@ -847,7 +854,7 @@ async function deployFromZone(side,zone,action){
   var slot=await chooseOpenSlot(side,side,'配置先の空きスロットをタップ');
   if(slot==null) return null;
   var index=zone.indexOf(card);if(index<0 || own[slot]) return null;
-  zone.splice(index,1);own[slot]=card;card.canAttack=hasKeyword(card,'haste',side);render();animateSummon(side,slot);await wait(220);
+  zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;card.canAttack=hasKeyword(card,'haste',side);render();animateSummon(side,slot);await wait(220);
   await triggerCard(card,'onPlay',side,slot,{});
   return card;
 }
@@ -922,7 +929,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     }else if(a.type==='recoverGrave'){
       var ownGrave=graveFor(side), recoverable=ownGrave.filter(function(c){return !a.unitOnly || c.type==='ユニット';});
       var recovered=await chooseZoneCard(side,recoverable,a.unitOnly?'墓地からユニットを選択':'墓地からカードを選択');
-      if(recovered && (side==='player'?state.playerHand:state.enemyHand).length<8){var recoveredIndex=ownGrave.indexOf(recovered);if(recoveredIndex>=0)(side==='player'?state.playerHand:state.enemyHand).push(ownGrave.splice(recoveredIndex,1)[0]);}
+      if(recovered && (side==='player'?state.playerHand:state.enemyHand).length<8){var recoveredIndex=ownGrave.indexOf(recovered);if(recoveredIndex>=0){var recoveredCard=ownGrave.splice(recoveredIndex,1)[0];resetCardAfterGrave(recoveredCard);(side==='player'?state.playerHand:state.enemyHand).push(recoveredCard);}}
     }else if(a.type==='deployFromGrave'){
       a.title='墓地から配置するカードを選択';await deployFromZone(side,graveFor(side),a);
     }else if(a.type==='sendUnitToBottom' && target){
@@ -1053,7 +1060,7 @@ async function destroy(side,index){
   var board=boardFor(side), grave=graveFor(side), destroyed=board[index];
   if(!destroyed) return;
   showDestroy(side,index);
-  board[index]=null;if(!destroyed.isToken)grave.push(destroyed);
+  board[index]=null;if(!destroyed.isToken){resetCardAfterGrave(destroyed);grave.push(destroyed);}
   var survivors=board.slice();
   for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed});
   await triggerCard(destroyed,'onDestroyed',side,index,{destroyed:destroyed});
