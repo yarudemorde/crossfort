@@ -245,6 +245,7 @@ var CARD_RULES={
   '復讐者アーシュ':{onFriendlyDestroyed:[{type:'buffSelf',amount:1}]},
   '鱗の頭領シャトゥルツカ':{keywords:['lethal']},
   '反乱する蜥蜴軍':{onPlay:[{type:'buffOthers',amount:1}]},
+  '反乱の先導者ボザヤ':{damageMultiplier:2},
   '開戦の笛吹':{onPlay:[{type:'createTokens',amount:2,power:1}]},
   '集結するリスカリ軍':{onPlay:[{type:'createTokens',amount:2,power:2}]},
   'ハストボーンの北王':{onPlay:[{type:'returnUnitToHand',target:'otherAllyUnit'},{type:'draw',amount:1,requiresReturned:true}]},
@@ -261,6 +262,7 @@ var CARD_RULES={
   '王室近衛兵':{damageReduction:1},
   'クロスフォート城':{auras:[{keyword:'guard',minPower:3}]},
   '白獅子の将軍':{onPlay:[{type:'gainMana',amount:2}]},
+  '王国の反逆者グレン':{onHandPlay:[{type:'addTurn',amount:1}]},
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
   'フィリポス山脈':{onTurnStart:[{type:'gainMana',amount:1},{type:'destroySelf'}]},
   'イルデニアの鍛冶師':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:1}]},
@@ -294,6 +296,7 @@ var CARD_RULES={
   'コールティガの港湾労働者':{onPlay:[{type:'recoverGrave',unitOnly:true}]},
   '座礁船の縫合士':{onPlay:[{type:'recoverGrave'}]},
   '港印卿の拒絶':{onPlay:[{type:'sendUnitToBottom',target:'enemyUnit'}]},
+  'コールティガの船骸書記':{onPlay:[{type:'buffSelfByGraveCount'}]},
   '港印卿コルドロッホ':{onPlay:[{type:'deployFromGrave',maxCost:8,unitOnly:true}]},
   '死礁の貪り手':{keywords:['guard']},
   '白龍エルレハイヌ':{tags:['dragon'],onPlay:[{type:'draw',amount:3}]},
@@ -304,14 +307,18 @@ var CARD_RULES={
   '砂漠の贈賄者':{onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'gainMana',amount:1}]},
   '流砂乗り':{onAttack:[{type:'explore',amount:2}]},
   '水脈への地図':{onPlay:[{type:'heal',amount:2}],onDiscover:[{type:'heal',amount:1}]},
+  '砂漠の商隊狩り':{onPlay:[{type:'opponentDiscard'}]},
   '黄金文明の遺物':{onPlay:[{type:'buffAll',amount:2}],onDiscover:[{type:'buffAll',amount:1}]},
   '砂読みの案内人':{onPlay:[{type:'explore',amount:3}]},
+  'オアシスの不法管理者':{onOpponentDraw:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
+  '武装商人ラズリウス':{onPlay:[{type:'explore',amount:3},{type:'damageUnit',target:'enemyUnit',amount:3}],onDiscover:[{type:'deployDiscoveredForCost',cost:1}]},
   '砂漠の先遣隊':{onPlay:[{type:'explore',amount:4}]},
   '奇襲する砂蜘蛛':{keywords:['guard'],onDiscover:[{type:'deploySelf'}]},
   'アウロニアン・デスワーム':{onPlay:[{type:'explore',amount:10}]},
   '黄金色の金属片':{tags:['relic'],onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'claimDiscovered'}]},
   '砂漠に沈む黄金門':{tags:['relic'],onPlay:[{type:'explore',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
   '黄金の天秤':{tags:['relic'],onPlay:[{type:'damageUnit',target:'opposing',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
+  'アウロニア信者':{conditionalOnPlay:[{relics:2,actions:[{type:'buffSelf',amount:2}]}]},
   '異端審問':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
   '遺跡荒らしの商隊':{onPlay:[{type:'destroyRelicForToken',power:3}]},
   'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
@@ -368,7 +375,8 @@ function startGame(color,opponentColor,mode){
       playerDeck:buildDeck(color),enemyDeck:buildDeck(opponentColor),matchMode:mode,playerColor:color,enemyColor:opponentColor,
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
-      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null,choiceRequest:null
+      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
+      extraTurns:{player:0,enemy:0}
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     $('startScreen').style.display='none';
@@ -389,10 +397,15 @@ function returnToDecks(){
   $('controls').style.display='none';
   $('startScreen').style.display='flex';
 }
-function drawCard(side){
+async function drawCard(side){
   var deck=side==='player'?state.playerDeck:state.enemyDeck;
   var hand=side==='player'?state.playerHand:state.enemyHand;
-  if(deck.length && hand.length<8) hand.push(deck.shift());
+  if(deck.length && hand.length<8){
+    var drawn=deck.shift();hand.push(drawn);
+    await emitBoardEvent(otherSide(side),'onOpponentDraw',{drawingSide:side,drawnCard:drawn});
+    return drawn;
+  }
+  return null;
 }
 function activeSide(){return state.playerTurn?'player':'enemy';}
 function handFor(side){return side==='player'?state.playerHand:state.enemyHand;}
@@ -425,6 +438,14 @@ function keywordBadges(card,side){
   var definitions=[['guard','盾','守護'],['lethal','殺','殺傷'],['pierce','貫','貫通'],['haste','襲','猛襲'],['cannotAttack','禁','攻撃不可']],html='';
   for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][2]+'" aria-label="'+definitions[i][2]+'">'+definitions[i][1]+'</span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
+}
+function damageMultiplierFor(side){
+  var board=boardFor(side),multiplier=1;
+  for(var i=0;i<board.length;i++) if(board[i] && rulesFor(board[i]).damageMultiplier) multiplier*=rulesFor(board[i]).damageMultiplier;
+  return multiplier;
+}
+function effectDamageAmount(sourceCard,side,amount){
+  return sourceCard && sourceCard.type==='ユニット'?amount*damageMultiplierFor(side):amount;
 }
 function effectiveCost(card,side){
   var cost=card.cost;
@@ -587,6 +608,7 @@ async function playSelectedCard(mode){
     board[slot]=c;
     logMsg(c.name+'をスロット'+(slot+1)+'に配置'); render(); animateSummon(side,slot); await wait(240);
     await triggerCard(c,'onPlay',side,slot,{});
+    if(mode==='normal')await triggerCard(c,'onHandPlay',side,slot,{});
     if(mode==='dive'){
       await emitBoardEvent(side,'onFriendlyDive',{dived:c});
       await returnDivedCard(side,slot,c);
@@ -646,6 +668,7 @@ function canUseDiscover(card,side){
   if(!actions.length) return false;
   for(var i=0;i<actions.length;i++){
     if(actions[i].type==='deploySelf' && firstEmpty(boardFor(side))<0) return false;
+    if(actions[i].type==='deployDiscoveredForCost' && (firstEmpty(boardFor(side))<0 || manaFor(side)<actions[i].cost)) return false;
     if(actions[i].type==='claimDiscovered' && (side==='player'?state.playerHand:state.enemyHand).length>=8) return false;
   }
   return true;
@@ -765,22 +788,29 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.target==='allyUnit') target=await chooseTarget(side,side,'効果の対象にする味方カードをタップ',function(c){return c.type==='ユニット';});
     if(a.target==='otherAllyUnit') target=await chooseTarget(side,side,'手札に戻す味方ユニットをタップ',function(c){return c!==sourceCard && c.type==='ユニット';});
     if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot]) target={side:enemySide,index:sourceSlot};
-    if(a.type==='draw') for(j=0;j<a.amount;j++) drawCard(side);
+    if(a.type==='draw') for(j=0;j<a.amount;j++) await drawCard(side);
     else if(a.type==='heal') await changeLife(side,a.amount);
     else if(a.type==='gainMana') changeMana(side,a.amount);
-    else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-a.amount);
-    else if(a.type==='damageUnit' && target) await damage(boardFor(target.side),target.index,a.amount,target.side,false);
+    else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount)));
+    else if(a.type==='damageUnit' && target) await damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false);
     else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
     else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power+=a.amount;
     else if(a.type==='setPower' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power=a.amount;
     else if(a.type==='buffSelf' && own[sourceSlot]===sourceCard) sourceCard.power+=a.amount;
+    else if(a.type==='buffSelfByGraveCount' && own[sourceSlot]===sourceCard) sourceCard.power+=graveFor(side).length;
     else if(a.type==='buffOthers'){for(j=0;j<own.length;j++) if(own[j] && own[j]!==sourceCard) own[j].power+=a.amount;}
     else if(a.type==='buffAll'){for(j=0;j<own.length;j++) if(own[j]) own[j].power+=a.amount;}
     else if(a.type==='damageSelf' && own[sourceSlot]===sourceCard) await damage(own,sourceSlot,a.amount,side,false);
     else if(a.type==='mill'){for(j=0;j<a.amount;j++) if((side==='player'?state.playerDeck:state.enemyDeck).length) graveFor(side).push((side==='player'?state.playerDeck:state.enemyDeck).shift());}
     else if(a.type==='destroySelf' && own[sourceSlot]===sourceCard) await destroy(side,sourceSlot);
     else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
-    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j]) await damage(enemy,j,a.amount,enemySide,false);}
+    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j]) await damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false);}
+    else if(a.type==='addTurn'){
+      if(!state.extraTurns)state.extraTurns={player:0,enemy:0};state.extraTurns[side]+=(a.amount||1);logMsg(sideLabel(side)+'が追加ターンを獲得');
+    }else if(a.type==='opponentDiscard'){
+      var discardHand=handFor(enemySide),discarded=await chooseZoneCard(enemySide,discardHand.slice(),'捨てる手札を選択');
+      if(discarded){var discardIndex=discardHand.indexOf(discarded);if(discardIndex>=0){discardHand.splice(discardIndex,1);graveFor(enemySide).push(discarded);logMsg(sideLabel(enemySide)+'が'+discarded.name+'を捨てた');}}
+    }
     else if(a.type==='createTokens'){
       var tokenColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor);
       if(a.fillAll){for(j=0;j<own.length;j++) if(!own[j]){own[j]=makeToken(a.power,tokenColor);render();animateSummon(side,j);}}
@@ -839,6 +869,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
       var discoverySlot=firstEmpty(own);
       if(discoverySlot>=0){own[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;animateSummon(side,discoverySlot);await triggerCard(sourceCard,'onPlay',side,discoverySlot,{});}
+    }else if(a.type==='deployDiscoveredForCost' && context.discoveredCard===sourceCard){
+      if(manaFor(side)>=a.cost){
+        var paidDiscoverySlot=await chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ');
+        if(paidDiscoverySlot!=null){spendMana(side,a.cost);own[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=hasKeyword(sourceCard,'haste',side);context.claimed=true;render();animateSummon(side,paidDiscoverySlot);await wait(220);await triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{});}
+      }
     }else if(a.type==='deployDiveFromBottom'){
       var ownDeck=side==='player'?state.playerDeck:state.enemyDeck, start=Math.max(0,ownDeck.length-a.amount), bottomCards=ownDeck.splice(start), diveCards=bottomCards.filter(function(c){return rulesFor(c).dive!=null && c.type!=='スペル';});
       var diveCard=await chooseZoneCard(side,diveCards,'山札下から配置する潜水カードを選択');
@@ -964,16 +999,16 @@ async function attack(side,i){
   var target=defenderIndex(enemySide,i);
   if(target>=0){
     var t=enemy[target];
-    var aPower=a.power, tPower=t.power;
+    var aPower=a.power*damageMultiplierFor(side), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor(enemySide);
     var lethalA=hasKeyword(a,'lethal',side),lethalT=hasKeyword(t,'lethal',enemySide);
     await damage(enemy,target,aPower,enemySide,lethalA);
     if(own[i]) await damage(own,i,tPower,side,lethalT);
-    if(hasKeyword(a,'pierce',side) && aPower>tPower) await changeLife(enemySide,-(aPower-tPower));
+    if(hasKeyword(a,'pierce',side) && aPower>tBasePower) await changeLife(enemySide,-(aPower-tBasePower));
     if(enemy[target]) await triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a});
     logMsg(a.name+' → '+t.name);
   }else{
-    await changeLife(enemySide,-a.power);
-    logMsg(a.name+' → 相手LIFE '+a.power+'ダメージ');
+    var directPower=a.power*damageMultiplierFor(side);await changeLife(enemySide,-directPower);
+    logMsg(a.name+' → 相手LIFE '+directPower+'ダメージ');
   }
   if(own[i]) own[i].canAttack=false;
   state.animating=false;
@@ -983,12 +1018,22 @@ async function processTurnEvent(side,event){
   var snapshot=boardFor(side).slice();
   for(var i=0;i<snapshot.length;i++) if(snapshot[i] && boardFor(side)[i]===snapshot[i]) await triggerCard(snapshot[i],event,side,i,{});
 }
+async function beginExtraTurn(side){
+  if(!state.extraTurns || !state.extraTurns[side]) return false;
+  state.extraTurns[side]--;state.playerTurn=side==='player';
+  if(side==='player')state.mana=state.maxMana;else state.enemyMana=state.enemyMaxMana;
+  await drawCard(side);
+  var board=boardFor(side);for(var i=0;i<board.length;i++)if(board[i])board[i].canAttack=true;
+  await processTurnEvent(side,'onTurnStart');
+  state.animating=false;logMsg(sideLabel(side)+'の追加ターン');render();return true;
+}
 async function endTurn(){
   var side=activeSide();
   if(!isHumanSide(side) || state.gameOver || state.animating) return;
   state.animating=true; state.selectedCard=-1; state.selectedSlot=-1;
   await processTurnEvent(side,'onTurnEnd');
   if(checkGame()){render();return;}
+  if(await beginExtraTurn(side))return;
   if(state.matchMode==='local'){await advanceLocalTurn(side);return;}
   state.playerTurn=false; state.animating=false; render(); logMsg('CPUのターン');
   setTimeout(cpuTurn,350);
@@ -1000,17 +1045,16 @@ async function advanceLocalTurn(side){
     state.animating=false;logMsg('プレイヤー2のターン');render();return;
   }
   state.turn++;state.maxMana=Math.min(12,state.maxMana+1);state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
-  state.mana=state.maxMana;drawCard('player');drawCard('enemy');
+  state.mana=state.maxMana;await drawCard('player');await drawCard('enemy');
   for(var p=0;p<5;p++)if(state.playerBoard[p])state.playerBoard[p].canAttack=true;
   for(var e=0;e<5;e++)if(state.enemyBoard[e])state.enemyBoard[e].canAttack=true;
   state.playerTurn=true;await processTurnEvent('player','onTurnStart');
   state.animating=false;logMsg('プレイヤー1のターン');render();
 }
-async function cpuTurn(){
+async function cpuTurn(prepared){
   if(state.gameOver) return;
   state.animating=true;
-  state.enemyMana=state.enemyMaxMana;
-  await processTurnEvent('enemy','onTurnStart');
+  if(!prepared){state.enemyMana=state.enemyMaxMana;await processTurnEvent('enemy','onTurnStart');}
   var progress=true;
   while(progress){
     progress=false;
@@ -1025,7 +1069,7 @@ async function cpuTurn(){
         state.enemyHand.splice(i,1);
         var s=-1;
         if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
-        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
+        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='normal')await triggerCard(c,'onHandPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
         render(); if(s>=0) animateSummon('enemy',s); await wait(520);
         if(checkGame()){render();return;}
         progress=true; break;
@@ -1039,13 +1083,13 @@ async function cpuTurn(){
     await triggerCard(u,'onAttack','enemy',lane,{});
     var ti=defenderIndex('player',lane);
     if(ti>=0){
-      var t=state.playerBoard[ti], uPower=u.power, tPower=t.power;
+      var t=state.playerBoard[ti], uPower=u.power*damageMultiplierFor('enemy'), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor('player');
       await damage(state.playerBoard,ti,uPower,'player',hasKeyword(u,'lethal','enemy'));
       if(state.enemyBoard[lane]) await damage(state.enemyBoard,lane,tPower,'enemy',hasKeyword(t,'lethal','player'));
-      if(hasKeyword(u,'pierce','enemy') && uPower>tPower) await changeLife('player',-(uPower-tPower));
+      if(hasKeyword(u,'pierce','enemy') && uPower>tBasePower) await changeLife('player',-(uPower-tBasePower));
       if(state.playerBoard[ti]) await triggerCard(state.playerBoard[ti],'onDefended','player',ti,{attacker:u});
     }else{
-      await changeLife('player',-u.power);
+      await changeLife('player',-(u.power*damageMultiplierFor('enemy')));
     }
     if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
     if(checkGame()){render();return;}
@@ -1053,11 +1097,12 @@ async function cpuTurn(){
   }
   await processTurnEvent('enemy','onTurnEnd');
   if(checkGame()){render();return;}
+  if(await beginExtraTurn('enemy')){setTimeout(function(){cpuTurn(true);},350);return;}
   state.turn++;
   state.maxMana=Math.min(12,state.maxMana+1);
   state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
   state.mana=state.maxMana;
-  drawCard('player'); drawCard('enemy');
+  await drawCard('player'); await drawCard('enemy');
   for(var p=0;p<5;p++) if(state.playerBoard[p]) state.playerBoard[p].canAttack=true;
   for(var e=0;e<5;e++) if(state.enemyBoard[e]) state.enemyBoard[e].canAttack=true;
   state.playerTurn=true;
