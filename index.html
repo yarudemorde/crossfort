@@ -54,6 +54,8 @@ button{font:inherit;touch-action:manipulation}
 .card.attackable{border-color:#f2dcc0;box-shadow:inset 0 0 0 1px #0b0e12,0 0 0 2px #dfbd8d55,0 0 18px #f0ca8caa;animation:attackReady 1.15s ease-in-out infinite}.slot:has(.card.attackable){overflow:visible;z-index:3}.slot:has(.card.attackable)::before{content:"攻撃可";position:absolute;top:-9px;left:50%;transform:translateX(-50%);z-index:4;background:#edcf9f;color:#21170d;border:1px solid #fff0d3;border-radius:12px;padding:2px 6px;font-size:9px;font-weight:900;white-space:nowrap}
 .card.green{background:#244b36} .card.white{background:#ded7c7;color:#19212a} .card.red{background:#633033}
 .card.blue{background:#244967} .card.black{background:#282631} .card.yellow{background:#66551c}
+.card.green,.handCard.green,.catalogCard.green{--summon-color:#72d997}.card.white,.handCard.white,.catalogCard.white{--summon-color:#fff4d7}.card.red,.handCard.red,.catalogCard.red{--summon-color:#ff746c}.card.blue,.handCard.blue,.catalogCard.blue{--summon-color:#66baff}.card.black,.handCard.black,.catalogCard.black{--summon-color:#b58bd7}.card.yellow,.handCard.yellow,.catalogCard.yellow{--summon-color:#ffe067}
+.card.legendary,.handCard.legendary,.catalogCard.legendary,.detailCard.legendary,.pickerCard.legendary{border-color:#f4d99e;box-shadow:inset 0 0 0 1px #fff3c833,0 0 15px #e8bd674d,0 8px 20px #0008}.card.legendary::before,.handCard.legendary::before,.catalogCard.legendary::before,.detailCard.legendary::before,.pickerCard.legendary::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;background:linear-gradient(115deg,transparent 8%,#75e9ff22 28%,#fff4ba66 42%,#f89cff33 55%,transparent 74%);background-size:260% 100%;background-position:130% 0;mix-blend-mode:screen;pointer-events:none;animation:holoShift 2.8s linear infinite}.card.legendary::after,.handCard.legendary::after{content:"✦";position:absolute;right:5px;top:4px;z-index:4;color:#fff1b5;font-size:10px;text-shadow:0 0 7px #fff,0 0 13px #e89cff;pointer-events:none}.pickerCard.legendary{position:relative;overflow:hidden}
 .cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
 .cardType{font-size:8px;opacity:.8}.power{font-size:12px;font-weight:900;text-align:right}.power::before{content:'⚔ '}
 .effect{font-size:8px;line-height:1.16;opacity:.9;overflow:visible;word-break:break-word}
@@ -82,7 +84,7 @@ button{font:inherit;touch-action:manipulation}
 .detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#000b;pointer-events:none}.detailOverlay.show{display:flex;pointer-events:auto}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column;position:relative}.detailCard::after{content:"背景をタップして閉じる";position:absolute;left:0;right:0;bottom:-31px;text-align:center;color:#c9b99f;font-size:10px}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
 .pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerList.discover{grid-template-columns:1fr}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected,.pickerCard.preview{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard.preview{min-height:132px}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.pickerActions.discover{grid-template-columns:1fr 1fr}.pickerConfirm,.pickerCancel{min-height:48px;border:1px solid #f2dcc0;border-radius:10px;font-weight:900}.pickerConfirm{background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d}.pickerCancel{display:none;background:#20262d;color:#d8cbbb;border-color:#62594d}
 .pickerActions.multi{grid-template-columns:1fr 1fr}
-.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .4s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
+.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .52s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
 @keyframes attackReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
 @keyframes targetReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.32)}}
 @keyframes playerStrike{0%{transform:translateY(0)}55%{transform:translateY(-42px) scale(1.05)}100%{transform:translateY(0)}}
@@ -91,7 +93,8 @@ button{font:inherit;touch-action:manipulation}
 @keyframes lifeShake{0%,100%{transform:translateX(0)}22%{transform:translateX(-7px)}45%{transform:translateX(6px)}67%{transform:translateX(-4px)}84%{transform:translateX(2px)}}
 @keyframes cardHit{0%,100%{transform:translateX(0);filter:brightness(1)}25%{transform:translateX(-5px);filter:brightness(1.8)}50%{transform:translateX(5px)}75%{transform:translateX(-2px)}}
 @keyframes healPulse{0%{color:#6fe09a;transform:scale(1)}45%{color:#a4f4bf;transform:scale(1.24);text-shadow:0 0 16px #6fe09a}100%{transform:scale(1)}}
-@keyframes summonCard{0%{opacity:0;transform:scale(.45);filter:brightness(2)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes summonCard{0%{opacity:0;filter:brightness(2.8) saturate(1.8);box-shadow:0 0 2px var(--summon-color)}45%{opacity:1;filter:brightness(1.65) saturate(1.4);box-shadow:0 0 34px 9px var(--summon-color)}100%{filter:brightness(1);box-shadow:inset 0 0 0 1px #0b0e12,0 3px 9px #0008}}
+@keyframes holoShift{0%{background-position:135% 0}100%{background-position:-135% 0}}
 @keyframes diveReturn{0%{opacity:1;transform:translateY(0) scale(1)}65%{opacity:.75;transform:translateY(18px) scale(.82);filter:hue-rotate(18deg) brightness(1.35)}100%{opacity:0;transform:translateY(55px) scale(.35);filter:blur(4px)}}
 @keyframes destroyCard{0%{opacity:1;transform:scale(1);filter:brightness(1)}45%{opacity:.8;transform:scale(1.12) rotate(3deg);filter:brightness(2)}100%{opacity:0;transform:scale(.25) rotate(-12deg);filter:blur(5px)}}
 
@@ -104,6 +107,7 @@ button{font:inherit;touch-action:manipulation}
   .deckGrid{grid-template-columns:repeat(3,1fr)}
   .catalogGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+@media (prefers-reduced-motion:reduce){.card.legendary::before,.handCard.legendary::before,.catalogCard.legendary::before,.detailCard.legendary::before,.pickerCard.legendary::before{animation:none;background-position:50% 0}.card.summoning{animation:none}}
 </style>
 </head>
 <body>
@@ -273,6 +277,9 @@ var CARD_SPECIES={
   '白龍エルレハイヌ':'ドラゴン','亜龍イザルクリューネ':'ドラゴン','起源の龍モルディヤルデ':'ドラゴン',
   '黄金色の金属片':'聖遺物','砂漠に沈む黄金門':'聖遺物','黄金の天秤':'聖遺物','アウロニアの重装神官':'アウロニア聖教','女教皇アウローン':'アウロニア聖教'
 };
+var CARD_LEGENDARY={
+  '鱗の頭領シャトゥルツカ':true,'王国の反逆者グレン':true,'龍皇帝ヴァンビエッタⅢ':true,'深海の大渦バルメデ':true,'起源の龍モルディヤルデ':true,'武装商人ラズリウス':true,'四都市の統合王 クルオケシュ':true,'銀嶺の騎士ゼルモント':true,'真紅の囁きアリオサ':true,'港印卿コルドロッホ':true,'女教皇アウローン':true
+};
 var CARD_RULES={
   '原始的な投槍':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
   '群れ呼び蜥蜴':{onPlay:[{type:'createTokens',amount:1,power:1}]},
@@ -399,7 +406,7 @@ function renderCatalog(){
       var button=document.createElement('button'),rules=rulesFor(card),keywords=[];
       if(rules.revenge) keywords.push('報復 '+rules.revenge);
       if(rules.dive!=null) keywords.push('潜水 '+rules.dive);
-      button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'');
+      button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
       button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+keywords.join(' ／ '):'')+'</span><span class="catalogCardText">'+escapeHtml(card.text||'効果なし')+'</span><span class="catalogCardPower">⚔ '+card.power+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
@@ -423,7 +430,7 @@ function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupM
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
   var printedPower=Math.max(0,a[2]||0);
-  return {name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,canAttack:false};
+  return {name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,legendary:!!CARD_LEGENDARY[a[0]],canAttack:false};
 }
 function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
 function resetCardAfterGrave(card){
@@ -546,7 +553,8 @@ function showCardDetail(card){
   var rules=rulesFor(card), badges=[];
   if(rules.revenge) badges.push('報復 '+rules.revenge);
   if(rules.dive!=null) badges.push('潜水 '+rules.dive);
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">⚔ '+card.power+'</div>';
+  $('detailCard').classList.toggle('legendary',!!card.legendary);
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">⚔ '+card.power+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -611,7 +619,7 @@ function renderBoard(side,rootId,asOpponent){
       if(u){
         var card=document.createElement('div');
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
-        card.className='card '+(COLOR_CLASS[u.color]||'')+(attackable?' attackable':'');
+        card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(cardTypeLine(u))+'</div></div>'
           +'<div class="effect">'+escapeHtml(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
@@ -632,7 +640,7 @@ function renderHand(){
       var shownCost=effectiveCost(c,side);
       var disabled=lowestPlayableCost(c,side)>manaFor(side) || !humanTurn;
       var spread=count<=1?.5:index/(count-1);
-      d.className='handCard '+(COLOR_CLASS[c.color]||'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
+      d.className='handCard '+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left=(spread*100)+'%';
       d.style.setProperty('--hand-shift',(-spread*100)+'%');
       d.style.zIndex=String(index+1);
@@ -779,7 +787,7 @@ function renderPicker(){
   for(var i=0;i<request.cards.length;i++){
     (function(index){
       var c=request.cards[index], button=document.createElement('button');
-      button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(request.kind==='multi' && request.selected.indexOf(index)>=0?'selected ':'')+(COLOR_CLASS[c.color]||'');
+      button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(request.kind==='multi' && request.selected.indexOf(index)>=0?'selected ':'')+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'');
       button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':request.kind==='revenge'?'<span class="pickerState">報復 '+rulesFor(c).revenge+' ／ 今すぐ使用</span>':request.kind==='multi'?'<span class="pickerState">'+(request.selected.indexOf(index)>=0?'選択中':'タップで選択')+'</span>':'');
       button.onclick=function(){
         if(request.kind==='single' || request.kind==='revenge') resolvePicker(index);
