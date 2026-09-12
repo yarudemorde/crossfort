@@ -76,6 +76,7 @@ button{font:inherit;touch-action:manipulation}
 .cost{position:absolute;top:5px;left:5px;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);border:1px solid #5d4a34;color:#17110c;font-size:12px;font-weight:900}
 .handName{padding-left:28px;font-size:11px;font-weight:900;line-height:1.18;min-height:28px;word-break:break-word}.handMeta{font-size:8px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .handText{font-size:10px;line-height:1.25;color:#e1d8cc;overflow:hidden;word-break:break-word}
+.keywordText{display:inline;font-weight:900;color:var(--keyword-color)!important;text-shadow:0 0 8px color-mix(in srgb,var(--keyword-color) 55%,transparent)}.keyword-guard{--keyword-color:#75c8ff}.keyword-lethal{--keyword-color:#ff7770}.keyword-haste{--keyword-color:#ffb45e}.keyword-pierce{--keyword-color:#f3d177}.keyword-dive{--keyword-color:#62d6df}.keyword-revenge{--keyword-color:#d49aff}.keyword-explore,.keyword-discover{--keyword-color:#ffd85f}.keyword-faith{--keyword-color:#fff0bd}.keyword-soul{--keyword-color:#82e7aa}.keyword-disabled{--keyword-color:#adb4bd}
 .handPower{font-family:Georgia,"Yu Mincho",serif;font-weight:900;font-size:13px;text-align:right;color:#f2dcc0}.handPower::before{content:'⚔ '}
 
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,transparent,#090c10 24%)}
@@ -523,7 +524,7 @@ function renderCatalog(){
       if(rules.dive!=null) keywords.push('潜水 '+rules.dive);
       button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
-      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+keywords.join(' ／ '):'')+'</span><span class="catalogCardText">'+escapeHtml(card.text||'効果なし')+'</span><span class="catalogCardPower">⚔ '+card.power+'</span>';
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower">⚔ '+card.power+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
     })(cloneCard(pool[j],catalogColor));
   }
@@ -650,6 +651,10 @@ function keywordBadges(card,side){
   for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][2]+'" aria-label="'+definitions[i][2]+'">'+definitions[i][1]+'</span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
 }
+function formatCardText(text){
+  var classes={'守護':'guard','殺傷':'lethal','猛襲':'haste','貫通':'pierce','潜水':'dive','報復':'revenge','探査':'explore','発見':'discover','信仰':'faith','魂響':'soul','攻撃不可':'disabled'};
+  return escapeHtml(text||'').replace(/守護|殺傷|猛襲|貫通|潜水|報復|探査|発見|信仰|魂響|攻撃不可/g,function(keyword){return '<span class="keywordText keyword-'+classes[keyword]+'">'+keyword+'</span>';});
+}
 function damageMultiplierFor(side){
   var board=boardFor(side),multiplier=1;
   for(var i=0;i<board.length;i++) if(board[i] && rulesFor(board[i]).damageMultiplier) multiplier*=rulesFor(board[i]).damageMultiplier;
@@ -684,7 +689,7 @@ function showCardDetail(card){
   if(rules.revenge) badges.push('報復 '+rules.revenge);
   if(rules.dive!=null) badges.push('潜水 '+rules.dive);
   $('detailCard').classList.toggle('legendary',!!card.legendary);
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+badges.join(' ／ '):'')+'</div><div class="detailText">'+escapeHtml(card.text||'効果なし')+'</div><div class="detailPower">⚔ '+card.power+'</div>';
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div><div class="detailPower">⚔ '+card.power+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -753,7 +758,7 @@ function renderBoard(side,rootId,asOpponent){
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
         card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(cardTypeLine(u))+'</div></div>'
-          +'<div class="effect">'+escapeHtml(u.text)+'</div>'
+          +'<div class="effect">'+formatCardText(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
         else attachCardHold(card,u,side===acting && humanTurn?function(){attack(side,index);}:null);
@@ -780,7 +785,7 @@ function renderHand(){
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
       d.setAttribute('aria-label',c.name+' コスト'+shownCost+' パワー'+c.power);
       d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardTypeLine(c))+'</div>'
-        +'<div class="handText">'+escapeHtml(c.text)+'</div>'
+        +'<div class="handText">'+formatCardText(c.text)+'</div>'
         +'<div class="handPower">'+c.power+'</div>';
       d.onclick=function(){ selectCard(index); };
       d.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){e.preventDefault();selectCard(index);} };
@@ -838,7 +843,8 @@ function firstEmpty(board){ for(var i=0;i<board.length;i++) if(!board[i]) return
 function firstUnit(board){ for(var i=0;i<board.length;i++) if(board[i]) return i; return -1; }
 function defenderIndex(side,lane){
   var board=boardFor(side);
-  for(var i=0;i<board.length;i++) if(board[i] && hasKeyword(board[i],'guard',side)) return i;
+  var first=Math.max(0,lane-1),last=Math.min(board.length-1,lane+1);
+  for(var i=first;i<=last;i++) if(board[i] && hasKeyword(board[i],'guard',side)) return i;
   if(board[lane]) return lane;
   return -1;
 }
@@ -849,10 +855,9 @@ function attackMoveCandidates(side,index){
 }
 function cpuAttackDestination(side,candidates){
   var enemySide=otherSide(side),enemy=boardFor(enemySide);
-  for(var g=0;g<enemy.length;g++)if(enemy[g]&&hasKeyword(enemy[g],'guard',enemySide))return candidates[0];
-  for(var i=0;i<candidates.length;i++)if(!enemy[candidates[i]])return candidates[i];
-  var best=candidates[0];
-  for(var j=1;j<candidates.length;j++)if(enemy[candidates[j]].power<enemy[best].power)best=candidates[j];
+  for(var i=0;i<candidates.length;i++)if(defenderIndex(enemySide,candidates[i])<0)return candidates[i];
+  var best=candidates[0],bestDefender=defenderIndex(enemySide,best);
+  for(var j=1;j<candidates.length;j++){var defender=defenderIndex(enemySide,candidates[j]);if(enemy[defender].power<enemy[bestDefender].power){best=candidates[j];bestDefender=defender;}}
   return best;
 }
 function chooseAttackDestination(side,index){
@@ -945,7 +950,7 @@ function renderPicker(){
     (function(index){
       var c=request.cards[index], button=document.createElement('button');
       button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(request.kind==='multi' && request.selected.indexOf(index)>=0?'selected ':'')+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'');
-      button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+escapeHtml(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':request.kind==='revenge'?'<span class="pickerState">報復 '+rulesFor(c).revenge+' ／ 今すぐ使用</span>':request.kind==='multi'?'<span class="pickerState">'+(request.selected.indexOf(index)>=0?'選択中':'タップで選択')+'</span>':'');
+      button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+formatCardText(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':request.kind==='revenge'?'<span class="pickerState">'+formatCardText('報復')+' '+rulesFor(c).revenge+' ／ 今すぐ使用</span>':request.kind==='multi'?'<span class="pickerState">'+(request.selected.indexOf(index)>=0?'選択中':'タップで選択')+'</span>':'');
       button.onclick=function(){
         if(request.kind==='single' || request.kind==='revenge') resolvePicker(index);
         else if(request.kind==='explore'){request.destinations[index]=request.destinations[index]==='top'?'bottom':'top';renderPicker();}
