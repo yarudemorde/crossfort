@@ -63,7 +63,7 @@ button{font:inherit;touch-action:manipulation}
 .cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
 .cardType{font-size:8px;opacity:.8}.power{position:absolute;right:4px;bottom:4px;z-index:5;min-width:31px;padding:2px 4px;border:1px solid #d7bb8d88;border-radius:5px;background:#0a0e12e6;color:#f2dcc0;font-size:12px;font-weight:900;line-height:1.15;text-align:right;box-shadow:0 2px 6px #0008}.power::before{content:'⚔ '}
 .effect{flex:1;min-height:0;font-size:8px;line-height:1.16;opacity:.9;overflow:hidden;word-break:break-word}
-.keywordRow{position:absolute;left:4px;bottom:4px;display:flex;flex-wrap:wrap;max-width:39px;gap:2px;z-index:2}.keywordIcon{width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
+.card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.unblockable{background:#51426f}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
 .log{background:#0c1014d9;border:1px solid #4c4339;border-radius:8px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#ded4c6;text-align:center}
 .targetPrompt{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:80;width:min(92%,520px);padding:11px 16px;border:1px solid #f2dcc0;border-radius:24px;background:#17130fee;color:#f4dfbf;text-align:center;font-size:13px;font-weight:900;box-shadow:0 8px 28px #000c,0 0 18px #d9b67844;backdrop-filter:blur(10px)}.targetPrompt.show{display:block}
@@ -488,7 +488,7 @@ var CARD_RULES={
   '遺跡荒らしの商隊':{onPlay:[{type:'destroyRelicForToken',power:3}]},
   'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
   'アウロニアの巫女':{onPlay:[{type:'deployFromDeck',maxCost:2,tag:'relic'}]},
-  '女教皇アウローン':{onDestroyed:[{type:'soulEcho'}]},
+  '女教皇アウローン':{conditionalKeywords:[{keyword:'unblockable',relics:3}],onDestroyed:[{type:'soulEcho'}]},
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
@@ -730,7 +730,7 @@ function hasKeyword(card,keyword,side){
   return false;
 }
 function keywordBadges(card,side){
-  var definitions=[['guard','盾','守護'],['lethal','殺','殺傷'],['pierce','貫','貫通'],['haste','襲','猛襲'],['cannotAttack','禁','攻撃不可']],html='';
+  var definitions=[['guard','盾','守護'],['lethal','殺','殺傷'],['pierce','貫','貫通'],['haste','襲','猛襲'],['unblockable','抜','防衛されない'],['cannotAttack','禁','攻撃不可']],html='';
   for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][2]+'" aria-label="'+definitions[i][2]+'">'+definitions[i][1]+'</span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
 }
@@ -1198,8 +1198,8 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       var claimHand=side==='player'?state.playerHand:state.enemyHand;
       if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
     }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
-      var discoverySlot=firstEmpty(own);
-      if(discoverySlot>=0){own[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;animateSummon(side,discoverySlot);await triggerCard(sourceCard,'onPlay',side,discoverySlot,{});}
+      var discoverySlot=await chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ');
+      if(discoverySlot!=null&&!own[discoverySlot]){own[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();animateSummon(side,discoverySlot);await wait(220);await triggerCard(sourceCard,'onPlay',side,discoverySlot,{});}
     }else if(a.type==='deployDiscoveredForCost' && context.discoveredCard===sourceCard){
       if(manaFor(side)>=a.cost){
         var paidDiscoverySlot=await chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ');
@@ -1207,9 +1207,14 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       }
     }else if(a.type==='deployDiveFromBottom'){
       var ownDeck=side==='player'?state.playerDeck:state.enemyDeck, start=Math.max(0,ownDeck.length-a.amount), bottomCards=ownDeck.splice(start), diveCards=bottomCards.filter(function(c){return rulesFor(c).dive!=null && c.type!=='スペル';});
-      var diveCard=await chooseZoneCard(side,diveCards,'山札下から配置する潜水カードを選択');
-      if(diveCard && firstEmpty(own)>=0){var diveIndex=bottomCards.indexOf(diveCard);bottomCards.splice(diveIndex,1);var diveSlot=firstEmpty(own);own[diveSlot]=diveCard;diveCard.canAttack=false;animateSummon(side,diveSlot);await triggerCard(diveCard,'onPlay',side,diveSlot,{});}
-      ownDeck.push.apply(ownDeck,bottomCards);
+      while(diveCards.length&&firstEmpty(own)>=0){
+        var diveCard=await chooseZoneCard(side,diveCards,'山札下から配置する潜水カードを選択');
+        if(!diveCard)break;
+        var diveSlot=await chooseOpenSlot(side,side,diveCard.name+'の配置先を選択');
+        if(diveSlot==null||own[diveSlot])break;
+        diveCards.splice(diveCards.indexOf(diveCard),1);bottomCards.splice(bottomCards.indexOf(diveCard),1);own[diveSlot]=diveCard;diveCard.canAttack=false;render();animateSummon(side,diveSlot);await wait(220);await triggerCard(diveCard,'onPlay',side,diveSlot,{});
+      }
+      graveFor(side).push.apply(graveFor(side),bottomCards);
     }else if(a.type==='destroyAllUnits'){
       for(j=0;j<5;j++) if(state.playerBoard[j] && state.playerBoard[j].type==='ユニット') await destroy('player',j);
       for(j=0;j<5;j++) if(state.enemyBoard[j] && state.enemyBoard[j].type==='ユニット') await destroy('enemy',j);
@@ -1328,7 +1333,7 @@ async function attack(side,i){
   i=await prepareAttackLane(side,i,a);
   animateCard(side,i); await wait(310);
   await triggerCard(a,'onAttack',side,i,{});
-  var target=defenderIndex(enemySide,i);
+  var target=hasKeyword(a,'unblockable',side)?-1:defenderIndex(enemySide,i);
   if(target>=0){
     var t=enemy[target];
     var aPower=a.power*damageMultiplierFor(side), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor(enemySide);
@@ -1426,7 +1431,7 @@ async function cpuTurn(prepared){
     var attackLane=await prepareAttackLane('enemy',lane,u);
     animateCard('enemy',attackLane); logMsg('CPUの'+u.name+'が攻撃'); await wait(320);
     await triggerCard(u,'onAttack','enemy',attackLane,{});
-    var ti=defenderIndex('player',attackLane);
+    var ti=hasKeyword(u,'unblockable','enemy')?-1:defenderIndex('player',attackLane);
     if(ti>=0){
       var t=state.playerBoard[ti], uPower=u.power*damageMultiplierFor('enemy'), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor('player');
       await damage(state.playerBoard,ti,uPower,'player',hasKeyword(u,'lethal','enemy'));
