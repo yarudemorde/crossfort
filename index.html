@@ -1249,21 +1249,33 @@ async function endTurn(){
   if(checkGame()){render();return;}
   if(await beginExtraTurn(side))return;
   if(state.matchMode==='local'){await advanceLocalTurn(side);return;}
-  state.playerTurn=false; state.animating=false; render(); logMsg('CPUのターン');
-  setTimeout(cpuTurn,350);
+  await prepareNextTurn('enemy');
+  state.animating=false; render(); logMsg('CPUのターン');
+  setTimeout(function(){cpuTurn(true);},350);
+}
+async function prepareNextTurn(nextSide){
+  var startsNewRound=nextSide===state.firstSide;
+  if(startsNewRound){
+    state.turn++;
+    state.maxMana=Math.min(12,state.maxMana+1);
+    state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
+    state.mana=state.maxMana;
+    state.enemyMana=state.enemyMaxMana;
+    await drawCard('player');await drawCard('enemy');
+    for(var p=0;p<5;p++)if(state.playerBoard[p])state.playerBoard[p].canAttack=true;
+    for(var e=0;e<5;e++)if(state.enemyBoard[e])state.enemyBoard[e].canAttack=true;
+  }else if(nextSide==='player'){
+    state.mana=state.maxMana;
+  }else{
+    state.enemyMana=state.enemyMaxMana;
+  }
+  state.playerTurn=nextSide==='player';
+  await processTurnEvent(nextSide,'onTurnStart');
 }
 async function advanceLocalTurn(side){
-  if(side==='player'){
-    state.playerTurn=false;state.enemyMana=state.enemyMaxMana;
-    await processTurnEvent('enemy','onTurnStart');
-    state.animating=false;logMsg('プレイヤー2のターン');render();return;
-  }
-  state.turn++;state.maxMana=Math.min(12,state.maxMana+1);state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
-  state.mana=state.maxMana;await drawCard('player');await drawCard('enemy');
-  for(var p=0;p<5;p++)if(state.playerBoard[p])state.playerBoard[p].canAttack=true;
-  for(var e=0;e<5;e++)if(state.enemyBoard[e])state.enemyBoard[e].canAttack=true;
-  state.playerTurn=true;await processTurnEvent('player','onTurnStart');
-  state.animating=false;logMsg('プレイヤー1のターン');render();
+  var nextSide=otherSide(side);
+  await prepareNextTurn(nextSide);
+  state.animating=false;logMsg(sideLabel(nextSide)+'のターン');render();
 }
 async function cpuTurn(prepared){
   if(state.gameOver) return;
@@ -1312,15 +1324,7 @@ async function cpuTurn(prepared){
   await processTurnEvent('enemy','onTurnEnd');
   if(checkGame()){render();return;}
   if(await beginExtraTurn('enemy')){setTimeout(function(){cpuTurn(true);},350);return;}
-  state.turn++;
-  state.maxMana=Math.min(12,state.maxMana+1);
-  state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
-  state.mana=state.maxMana;
-  await drawCard('player'); await drawCard('enemy');
-  for(var p=0;p<5;p++) if(state.playerBoard[p]) state.playerBoard[p].canAttack=true;
-  for(var e=0;e<5;e++) if(state.enemyBoard[e]) state.enemyBoard[e].canAttack=true;
-  state.playerTurn=true;
-  await processTurnEvent('player','onTurnStart');
+  await prepareNextTurn('player');
   state.animating=false;
   logMsg('あなたのターン');
   render();
