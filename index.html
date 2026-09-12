@@ -88,7 +88,7 @@ button{font:inherit;touch-action:manipulation}
 .detailOverlay{display:none;position:fixed;inset:0;z-index:120;align-items:center;justify-content:center;padding:22px;background:#000b;pointer-events:none}.detailOverlay.show{display:flex;pointer-events:auto}.detailCard{width:min(290px,82vw);min-height:390px;border:2px solid #dabb8b;border-radius:18px;padding:18px;background:linear-gradient(160deg,#29323a,#101419);box-shadow:0 25px 70px #000,0 0 25px #d8b57844;display:flex;flex-direction:column;position:relative}.detailCard::after{content:"背景をタップして閉じる";position:absolute;left:0;right:0;bottom:-31px;text-align:center;color:#c9b99f;font-size:10px}.detailCost{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;color:#21170d;font-size:20px;font-weight:900}.detailName{font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin:18px 0 5px}.detailType{font-size:13px;color:#c9b99f}.detailText{margin-top:auto;padding:18px 0;font-size:16px;line-height:1.6;border-top:1px solid #6b5a45;border-bottom:1px solid #6b5a45}.detailPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:24px;font-weight:900;margin-top:14px;color:#f2dcc0}
 .pickerBox{width:min(560px,100%);max-height:82vh;display:flex;flex-direction:column;background:#11171d;border:1px solid #846f55;border-radius:16px;padding:14px}.pickerBox h2{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae;margin:2px 0 11px}.pickerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:auto}.pickerList.discover{grid-template-columns:1fr}.pickerCard{min-height:92px;border:1px solid #6f604f;border-radius:10px;background:#20272e;color:#eee4d7;text-align:left;padding:9px}.pickerCard.selected,.pickerCard.preview{border-color:#f2dcc0;box-shadow:0 0 14px #e6bd7b88}.pickerCard.preview{min-height:132px}.pickerCard strong{display:block;font-size:12px;margin-bottom:5px}.pickerCard span{font-size:10px;line-height:1.3;color:#c2b9ae}.pickerState{display:block;margin-top:7px;color:#e8c28b!important;font-weight:900}.pickerActions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.pickerActions.discover{grid-template-columns:1fr 1fr}.pickerConfirm,.pickerCancel{min-height:48px;border:1px solid #f2dcc0;border-radius:10px;font-weight:900}.pickerConfirm{background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d}.pickerCancel{display:none;background:#20262d;color:#d8cbbb;border-color:#62594d}
 .pickerActions.multi{grid-template-columns:1fr 1fr}
-.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .34s ease-out}.card.legendary.summoning{animation:summonLegendary .64s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
+.fxFloat{position:fixed;z-index:100;pointer-events:none;font-family:Georgia,"Yu Mincho",serif;font-size:27px;font-weight:900;text-shadow:0 3px 8px #000,0 0 10px currentColor;transform:translate(-50%,-50%);animation:damagePop .72s ease-out forwards}.fxFloat.damage{color:#ff7f72}.fxFloat.heal{color:#6fe09a}.fxGhost{position:fixed;z-index:90;pointer-events:none;margin:0!important;animation:destroyCard .55s ease-in forwards}.life.hit{animation:lifeShake .35s ease-out}.life.healed{animation:healPulse .65s ease-out}.card.hit{animation:cardHit .35s ease-out}.card.summoning{animation:summonCard .34s ease-out}.card.legendary.summoning{animation:summonLegendary .64s ease-out}.card.divingOut{animation:diveReturn .34s ease-in forwards}.card.repositioning{animation:repositionCard .34s ease-out}.card.attacking{animation:playerStrike .32s ease-in-out}.slot.enemy .card.attacking{animation:enemyStrike .32s ease-in-out}
 @keyframes attackReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
 @keyframes targetReady{0%,100%{filter:brightness(1)}50%{filter:brightness(1.32)}}
 @keyframes playerStrike{0%{transform:translateY(0)}55%{transform:translateY(-42px) scale(1.05)}100%{transform:translateY(0)}}
@@ -98,6 +98,7 @@ button{font:inherit;touch-action:manipulation}
 @keyframes cardHit{0%,100%{transform:translateX(0);filter:brightness(1)}25%{transform:translateX(-5px);filter:brightness(1.8)}50%{transform:translateX(5px)}75%{transform:translateX(-2px)}}
 @keyframes healPulse{0%{color:#6fe09a;transform:scale(1)}45%{color:#a4f4bf;transform:scale(1.24);text-shadow:0 0 16px #6fe09a}100%{transform:scale(1)}}
 @keyframes summonCard{0%{opacity:0;filter:brightness(1.8)}65%{opacity:1;filter:brightness(1.18)}100%{filter:brightness(1)}}
+@keyframes repositionCard{0%{opacity:.25;transform:scale(.78);filter:blur(3px) brightness(1.8)}65%{opacity:1;transform:scale(1.07);filter:blur(0) brightness(1.35)}100%{transform:scale(1);filter:brightness(1)}}
 @keyframes summonLegendary{0%{opacity:0;filter:brightness(3) saturate(1.9);box-shadow:0 0 2px var(--summon-color)}42%{opacity:1;filter:brightness(1.75) saturate(1.5);box-shadow:0 0 38px 11px var(--summon-color)}72%{box-shadow:0 0 24px 5px var(--summon-color),inset 0 0 15px var(--summon-color)}100%{filter:brightness(1);box-shadow:inset 0 0 0 1px #fff3c833,0 0 15px #e8bd674d,0 8px 20px #0008}}
 @keyframes holoShift{0%{background-position:135% 0}100%{background-position:-135% 0}}
 @keyframes diveReturn{0%{opacity:1;transform:translateY(0) scale(1)}65%{opacity:.75;transform:translateY(18px) scale(.82);filter:hue-rotate(18deg) brightness(1.35)}100%{opacity:0;transform:translateY(55px) scale(.35);filter:blur(4px)}}
@@ -358,7 +359,7 @@ var CARD_RULES={
   '龍皇帝ヴァンビエッタⅢ':{onPlay:[{type:'deployFromHand',unitOnly:true,tag:'dragon'}]},
   '処刑':{revenge:4,onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
   '帝国の黒騎士団':{onPlay:[{type:'createTokens',fillAll:true,power:2}]},
-  '真紅の囁きアリオサ':{onFriendlyDestroyed:[{type:'damageLife',target:'enemy',amount:1}]},
+  '真紅の囁きアリオサ':{moveOnAttack:true,onFriendlyDestroyed:[{type:'damageLife',target:'enemy',amount:1}]},
   '沈黙は破られた':{onPlay:[{type:'draw',amount:2},{type:'damageLife',target:'self',amount:3}]},
   'ニルスタッドの諜報員':{revenge:2},
   '緋帳の貴婦人':{revenge:3,keywords:['lethal']},
@@ -837,13 +838,38 @@ function firstEmpty(board){ for(var i=0;i<board.length;i++) if(!board[i]) return
 function firstUnit(board){ for(var i=0;i<board.length;i++) if(board[i]) return i; return -1; }
 function defenderIndex(side,lane){
   var board=boardFor(side);
+  for(var i=0;i<board.length;i++) if(board[i] && hasKeyword(board[i],'guard',side)) return i;
   if(board[lane]) return lane;
-  var adjacent=[lane-1,lane+1];
-  for(var i=0;i<adjacent.length;i++){
-    var x=adjacent[i];
-    if(x>=0 && x<board.length && board[x] && hasKeyword(board[x],'guard',side)) return x;
-  }
   return -1;
+}
+function attackMoveCandidates(side,index){
+  var board=boardFor(side),candidates=[index],adjacent=[index-1,index+1];
+  for(var i=0;i<adjacent.length;i++){var slot=adjacent[i];if(slot>=0&&slot<board.length&&!board[slot])candidates.push(slot);}
+  return candidates;
+}
+function cpuAttackDestination(side,candidates){
+  var enemySide=otherSide(side),enemy=boardFor(enemySide);
+  for(var g=0;g<enemy.length;g++)if(enemy[g]&&hasKeyword(enemy[g],'guard',enemySide))return candidates[0];
+  for(var i=0;i<candidates.length;i++)if(!enemy[candidates[i]])return candidates[i];
+  var best=candidates[0];
+  for(var j=1;j<candidates.length;j++)if(enemy[candidates[j]].power<enemy[best].power)best=candidates[j];
+  return best;
+}
+function chooseAttackDestination(side,index){
+  var candidates=attackMoveCandidates(side,index);
+  if(candidates.length===1)return Promise.resolve(index);
+  if(!isHumanSide(side))return Promise.resolve(cpuAttackDestination(side,candidates));
+  return new Promise(function(resolve){
+    state.targetRequest={targetSide:side,candidates:candidates,prompt:'アリオサの攻撃位置を選択（現在位置または隣接スロット）',resolve:function(target){resolve(target.index);}};render();
+  });
+}
+async function prepareAttackLane(side,index,card){
+  if(!rulesFor(card).moveOnAttack)return index;
+  var destination=await chooseAttackDestination(side,index),board=boardFor(side);
+  if(destination!==index&&board[index]===card&&!board[destination]){
+    board[index]=null;board[destination]=card;render();pulseClass(boardCard(side,destination),'repositioning',380);logMsg(card.name+'がスロット'+(destination+1)+'へ移動');await wait(300);
+  }
+  return destination;
 }
 function chooseTarget(actingSide,targetSide,prompt,filter){
   var board=boardFor(targetSide), candidates=[];
@@ -1211,6 +1237,7 @@ async function attack(side,i){
   if(a.type==='ランドマーク' || hasKeyword(a,'cannotAttack',side)){logMsg('このカードは攻撃できません');return;}
   if(!a.canAttack){logMsg('このユニットは次のターンから攻撃できます');return;}
   state.animating=true; $('playBtn').disabled=true; $('endBtn').disabled=true;
+  i=await prepareAttackLane(side,i,a);
   animateCard(side,i); await wait(310);
   await triggerCard(a,'onAttack',side,i,{});
   var target=defenderIndex(enemySide,i);
@@ -1308,19 +1335,20 @@ async function cpuTurn(prepared){
   for(var lane=0;lane<5;lane++){
     var u=state.enemyBoard[lane];
     if(!u || !u.canAttack || u.type==='ランドマーク' || hasKeyword(u,'cannotAttack','enemy')) continue;
-    animateCard('enemy',lane); logMsg('CPUの'+u.name+'が攻撃'); await wait(320);
-    await triggerCard(u,'onAttack','enemy',lane,{});
-    var ti=defenderIndex('player',lane);
+    var attackLane=await prepareAttackLane('enemy',lane,u);
+    animateCard('enemy',attackLane); logMsg('CPUの'+u.name+'が攻撃'); await wait(320);
+    await triggerCard(u,'onAttack','enemy',attackLane,{});
+    var ti=defenderIndex('player',attackLane);
     if(ti>=0){
       var t=state.playerBoard[ti], uPower=u.power*damageMultiplierFor('enemy'), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor('player');
       await damage(state.playerBoard,ti,uPower,'player',hasKeyword(u,'lethal','enemy'));
-      if(state.enemyBoard[lane]) await damage(state.enemyBoard,lane,tPower,'enemy',hasKeyword(t,'lethal','player'));
+      if(state.enemyBoard[attackLane]) await damage(state.enemyBoard,attackLane,tPower,'enemy',hasKeyword(t,'lethal','player'));
       if(hasKeyword(u,'pierce','enemy') && uPower>tBasePower) await changeLife('player',-(uPower-tBasePower));
       if(state.playerBoard[ti]) await triggerCard(state.playerBoard[ti],'onDefended','player',ti,{attacker:u});
     }else{
       await changeLife('player',-(u.power*damageMultiplierFor('enemy')));
     }
-    if(state.enemyBoard[lane]) state.enemyBoard[lane].canAttack=false;
+    if(state.enemyBoard[attackLane]) state.enemyBoard[attackLane].canAttack=false;
     if(checkGame()){render();return;}
     render(); await wait(480);
   }
