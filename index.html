@@ -76,7 +76,7 @@ button{font:inherit;touch-action:manipulation}
 .cost{position:absolute;top:5px;left:5px;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--gold2);border:1px solid #5d4a34;color:#17110c;font-size:12px;font-weight:900}
 .handName{padding-left:28px;font-size:11px;font-weight:900;line-height:1.18;min-height:28px;word-break:break-word}.handMeta{font-size:8px;opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .handText{font-size:10px;line-height:1.25;color:#e1d8cc;overflow:hidden;word-break:break-word}
-.keywordText{display:inline;font-weight:900;color:var(--keyword-color)!important;text-shadow:0 0 8px color-mix(in srgb,var(--keyword-color) 55%,transparent)}.keyword-guard{--keyword-color:#75c8ff}.keyword-lethal{--keyword-color:#ff7770}.keyword-haste{--keyword-color:#ffb45e}.keyword-pierce{--keyword-color:#f3d177}.keyword-dive{--keyword-color:#62d6df}.keyword-revenge{--keyword-color:#d49aff}.keyword-explore,.keyword-discover{--keyword-color:#ffd85f}.keyword-faith{--keyword-color:#fff0bd}.keyword-soul{--keyword-color:#82e7aa}.keyword-disabled{--keyword-color:#adb4bd}
+.keywordText{display:inline;font-weight:900;color:inherit!important;text-shadow:none}
 .handPower{font-family:Georgia,"Yu Mincho",serif;font-weight:900;font-size:13px;text-align:right;color:#f2dcc0}.handPower::before{content:'⚔ '}
 
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:linear-gradient(180deg,transparent,#090c10 24%)}
@@ -653,7 +653,7 @@ function keywordBadges(card,side){
 }
 function formatCardText(text){
   var classes={'守護':'guard','殺傷':'lethal','猛襲':'haste','貫通':'pierce','潜水':'dive','報復':'revenge','探査':'explore','発見':'discover','信仰':'faith','魂響':'soul','攻撃不可':'disabled'};
-  return escapeHtml(text||'').replace(/守護|殺傷|猛襲|貫通|潜水|報復|探査|発見|信仰|魂響|攻撃不可/g,function(keyword){return '<span class="keywordText keyword-'+classes[keyword]+'">'+keyword+'</span>';});
+  return escapeHtml(text||'').replace(/守護|殺傷|猛襲|貫通|潜水|報復|探査|発見|信仰|魂響|攻撃不可/g,function(keyword){return '<span class="keywordText keyword-'+classes[keyword]+'">『'+keyword+'』</span>';});
 }
 function damageMultiplierFor(side){
   var board=boardFor(side),multiplier=1;
