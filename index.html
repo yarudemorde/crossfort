@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 31470)
-Total output lines: 1339
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -373,7 +370,79 @@ var CARD_RULES={
   'コールティガの港湾労働者':{onPlay:[{type:'recoverGrave',unitOnly:true}]},
   '座礁船の縫合士':{onPlay:[{type:'recoverGrave'}]},
   '港印卿の拒絶':{onPlay:[{type:'sendUnitToBottom',target:'enemyUnit'}]},
-  'コールティガの船骸書記':{onPlay:[{type:'buffSelfByGrave…1470 tokens truncated…="savedDeckActions"><button type="button">編集</button><button type="button" class="deleteDeckBtn">削除</button></div>';
+  'コールティガの船骸書記':{onPlay:[{type:'buffSelfByGraveCount'}]},
+  '港印卿コルドロッホ':{onPlay:[{type:'deployFromGrave',maxCost:8,unitOnly:true}]},
+  '死礁の貪り手':{keywords:['guard']},
+  '白龍エルレハイヌ':{tags:['dragon'],onPlay:[{type:'draw',amount:3}]},
+  '終末の亀裂 ダルディエク':{onPlay:[{type:'destroyAllUnits'}]},
+  '亜龍イザルクリューネ':{tags:['dragon'],onPlay:[{type:'damageAllEnemies',amount:3}]},
+  '起源の龍モルディヤルデ':{tags:['dragon'],keywords:['pierce']},
+  'サルベージ':{onPlay:[{type:'explore',amount:2}]},
+  '砂漠の贈賄者':{onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'gainMana',amount:1}]},
+  '流砂乗り':{onAttack:[{type:'explore',amount:2}]},
+  '水脈への地図':{onPlay:[{type:'heal',amount:2}],onDiscover:[{type:'heal',amount:1}]},
+  '砂漠の商隊狩り':{onPlay:[{type:'opponentDiscard'}]},
+  '黄金文明の遺物':{onPlay:[{type:'buffAll',amount:2}],onDiscover:[{type:'buffAll',amount:1}]},
+  '砂読みの案内人':{onPlay:[{type:'explore',amount:3}]},
+  'オアシスの不法管理者':{onOpponentDraw:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
+  '武装商人ラズリウス':{onPlay:[{type:'explore',amount:3},{type:'damageUnit',target:'enemyUnit',amount:3}],onDiscover:[{type:'deployDiscoveredForCost',cost:1}]},
+  '砂漠の先遣隊':{onPlay:[{type:'explore',amount:4}]},
+  '奇襲する砂蜘蛛':{keywords:['guard'],onDiscover:[{type:'deploySelf'}]},
+  'アウロニアン・デスワーム':{onPlay:[{type:'explore',amount:10}]},
+  '黄金色の金属片':{tags:['relic'],onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'claimDiscovered'}]},
+  '砂漠に沈む黄金門':{tags:['relic'],onPlay:[{type:'explore',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
+  '黄金の天秤':{tags:['relic'],onPlay:[{type:'damageUnit',target:'opposing',amount:2}],onDiscover:[{type:'claimDiscovered'}]},
+  'アウロニア信者':{conditionalOnPlay:[{relics:2,actions:[{type:'buffSelf',amount:2}]}]},
+  '異端審問':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
+  '遺跡荒らしの商隊':{onPlay:[{type:'destroyRelicForToken',power:3}]},
+  'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
+  'アウロニアの巫女':{onPlay:[{type:'deployFromDeck',maxCost:2,tag:'relic'}]},
+  '女教皇アウローン':{onDestroyed:[{type:'soulEcho'}]},
+  '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
+};
+var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
+var selectedColor='青',setupMode='cpu',setupPlayerColor='青',setupEnemyColor='赤';
+var setupPlayerDeckId='',setupEnemyDeckId='';
+var catalogColor='緑';
+var savedDecks=loadSavedDecks(),editingDeckId='',editorColors=[],editorCounts={};
+var state=null;
+var toastTimer=null;
+
+function $(id){ return document.getElementById(id); }
+function showHome(){
+  $('homeScreen').style.display='block'; $('homeNav').style.display='block';
+  $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none'; $('startScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none';
+}
+function showDeckSelect(){
+  $('homeScreen').style.display='none'; $('homeNav').style.display='none';
+  $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none'; $('startScreen').style.display='flex';
+  renderSavedDeckSelectors();
+}
+function showCatalog(){
+  $('homeScreen').style.display='none'; $('homeNav').style.display='none'; $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';
+  $('gameScreen').style.display='none'; $('controls').style.display='none'; $('catalogScreen').style.display='block';
+  renderCatalog();window.scrollTo(0,0);
+}
+function loadSavedDecks(){
+  try{var raw=JSON.parse(localStorage.getItem('crossfort_decks_v1')||'[]');return Array.isArray(raw)?raw:[];}catch(e){return [];}
+}
+function persistSavedDecks(){try{localStorage.setItem('crossfort_decks_v1',JSON.stringify(savedDecks));return true;}catch(e){return false;}}
+function getSavedDeck(id){for(var i=0;i<savedDecks.length;i++)if(savedDecks[i].id===id)return savedDecks[i];return null;}
+function totalDeckCards(counts){var total=0;for(var name in counts)if(Object.prototype.hasOwnProperty.call(counts,name))total+=Number(counts[name])||0;return total;}
+function cardTemplateByName(name){
+  for(var color in CARD_POOLS){var pool=CARD_POOLS[color];for(var i=0;i<pool.length;i++)if(pool[i][0]===name)return {row:pool[i],color:color};}
+  return null;
+}
+function showDeckLibrary(){
+  $('homeScreen').style.display='none';$('homeNav').style.display='none';$('catalogScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';$('gameScreen').style.display='none';$('controls').style.display='none';
+  $('deckLibraryScreen').style.display='block';renderDeckLibrary();window.scrollTo(0,0);
+}
+function renderDeckLibrary(){
+  var root=$('savedDeckList');root.innerHTML='';
+  if(!savedDecks.length){root.innerHTML='<div class="noDecks">登録済みのデッキはありません<br>最初のデッキを作成しましょう</div>';return;}
+  for(var i=0;i<savedDecks.length;i++)(function(deck){
+    var card=document.createElement('div');card.className='savedDeckCard';
+    card.innerHTML='<div class="savedDeckTop"><div><div class="savedDeckName">'+escapeHtml(deck.name)+'</div><div class="savedDeckMeta">'+escapeHtml((deck.colors||[]).join('・'))+' ／ '+totalDeckCards(deck.cards||{})+'枚</div></div><span>▥</span></div><div class="savedDeckActions"><button type="button">編集</button><button type="button" class="deleteDeckBtn">削除</button></div>';
     var buttons=card.querySelectorAll('button');buttons[0].onclick=function(){showDeckEditor(deck.id);};buttons[1].onclick=function(){deleteSavedDeck(deck.id);};root.appendChild(card);
   })(savedDecks[i]);
 }
