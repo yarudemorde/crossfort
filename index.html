@@ -22,7 +22,7 @@ button{font:inherit;touch-action:manipulation}
 .deckBtn:active{transform:scale(.98);filter:brightness(1.12)}
 .deckBtn.compact{min-height:58px;font-size:14px}.deckBtn.compact::before{display:inline;margin:0 6px 0 0}.deckBtn.compact::after{display:none}.deckBtn.selected{border:2px solid var(--gold2);box-shadow:0 0 0 2px #dfbd8d33,0 0 17px #dfbd8d55;filter:brightness(1.15)}
 .deckBtn.green{--deck-accent:#78a985}.deckBtn.white{--deck-accent:#eee4d0}.deckBtn.red{--deck-accent:#d9786f}.deckBtn.blue{--deck-accent:#719dc4}.deckBtn.black{--deck-accent:#978aa6}.deckBtn.yellow{--deck-accent:#dfc767}
-.setupSection{position:relative;margin-top:14px}.setupLabel{font-family:Georgia,"Yu Mincho",serif;color:#e3cfaf;font-size:14px;font-weight:800;margin:0 2px 7px}.modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.modeBtn{min-height:62px;border:1px solid #665947;border-radius:10px;background:#151a20;color:#d8cbbb;font-weight:900}.modeBtn.selected{border-color:#f2dcc0;background:linear-gradient(135deg,#3b3228,#1b1b1c);color:#f5dfbd;box-shadow:0 0 14px #dfbd8d44}.startBattleBtn{position:relative;width:100%;min-height:55px;margin-top:17px;border:1px solid #f2dcc0;border-radius:11px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900;font-size:16px}
+.setupSection{position:relative;margin-top:14px}.setupLabel{font-family:Georgia,"Yu Mincho",serif;color:#e3cfaf;font-size:14px;font-weight:800;margin:0 2px 7px}.modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.firstGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.modeBtn{min-height:62px;border:1px solid #665947;border-radius:10px;background:#151a20;color:#d8cbbb;font-weight:900}.firstGrid .modeBtn{min-height:50px;font-size:12px}.modeBtn.selected{border-color:#f2dcc0;background:linear-gradient(135deg,#3b3228,#1b1b1c);color:#f5dfbd;box-shadow:0 0 14px #dfbd8d44}.startBattleBtn{position:relative;width:100%;min-height:55px;margin-top:17px;border:1px solid #f2dcc0;border-radius:11px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900;font-size:16px}
 #startError{display:none;color:#ff9f9f;background:#321c24;padding:10px;border-radius:10px;margin-top:12px;font-size:12px;white-space:pre-wrap}
 
 #homeScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 86px);background:radial-gradient(circle at 82% 9%,#28313a 0,transparent 27%),linear-gradient(180deg,#10151b,#080b0f 68%);}
@@ -207,6 +207,11 @@ button{font:inherit;touch-action:manipulation}
     <div class="setupSection"><div class="setupLabel">対戦形式</div><div class="modeGrid">
       <button class="modeBtn selected" data-mode="cpu" onclick="setMatchMode('cpu')">プレイヤー1 VS CPU</button>
       <button class="modeBtn" data-mode="local" onclick="setMatchMode('local')">プレイヤー1 VS プレイヤー2</button>
+    </div></div>
+    <div class="setupSection"><div class="setupLabel">先攻を選択</div><div class="firstGrid">
+      <button class="modeBtn" data-first="player" onclick="setFirstPlayerChoice('player')">自分が先攻</button>
+      <button class="modeBtn" data-first="enemy" onclick="setFirstPlayerChoice('enemy')">相手が先攻</button>
+      <button class="modeBtn selected" data-first="random" onclick="setFirstPlayerChoice('random')">ランダム</button>
     </div></div>
     <div class="setupSection"><div class="setupLabel">プレイヤー1 デッキ</div><div class="deckGrid" id="playerDeckChoices">
       <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('player','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('player','白')">白</button><button class="deckBtn compact red" data-color="赤" onclick="selectSetupDeck('player','赤')">赤</button><button class="deckBtn compact blue selected" data-color="青" onclick="selectSetupDeck('player','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('player','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('player','黄')">黄</button>
@@ -401,7 +406,7 @@ var CARD_RULES={
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
-var selectedColor='青',setupMode='cpu',setupPlayerColor='青',setupEnemyColor='赤';
+var selectedColor='青',setupMode='cpu',setupFirstChoice='random',setupPlayerColor='青',setupEnemyColor='赤';
 var setupPlayerDeckId='',setupEnemyDeckId='';
 var catalogColor='緑';
 var savedDecks=loadSavedDecks(),editingDeckId='',editorColors=[],editorCounts={};
@@ -529,12 +534,16 @@ function setMatchMode(mode){
   setupMode=mode;$('opponentDeckLabel').textContent=mode==='local'?'プレイヤー2 デッキ':'CPU デッキ';
   var buttons=document.querySelectorAll('[data-mode]');for(var i=0;i<buttons.length;i++)buttons[i].classList.toggle('selected',buttons[i].getAttribute('data-mode')===mode);
 }
+function setFirstPlayerChoice(choice){
+  if(['player','enemy','random'].indexOf(choice)<0)return;setupFirstChoice=choice;
+  var buttons=document.querySelectorAll('[data-first]');for(var i=0;i<buttons.length;i++)buttons[i].classList.toggle('selected',buttons[i].getAttribute('data-first')===choice);
+}
 function selectSetupDeck(side,color){
   if(side==='player'){setupPlayerColor=color;setupPlayerDeckId='';$('playerSavedDeck').value='';}else{setupEnemyColor=color;setupEnemyDeckId='';$('enemySavedDeck').value='';}
   var root=$(side==='player'?'playerDeckChoices':'opponentDeckChoices'),buttons=root.querySelectorAll('[data-color]');
   for(var i=0;i<buttons.length;i++)buttons[i].classList.toggle('selected',buttons[i].getAttribute('data-color')===color);
 }
-function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupMode,setupPlayerDeckId,setupEnemyDeckId);}
+function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupMode,setupPlayerDeckId,setupEnemyDeckId,setupFirstChoice);}
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
   var printedPower=Math.max(0,a[2]||0);
@@ -561,11 +570,12 @@ function buildSavedDeck(deck){
   for(var name in deck.cards){var template=cardTemplateByName(name),count=Math.min(4,Math.max(0,Number(deck.cards[name])||0));if(!template)continue;for(var i=0;i<count;i++)cards.push(cloneCard(template.row,template.color));}
   return shuffle(cards);
 }
-function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId){
+function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice){
   try{
     var playerDefinition=getSavedDeck(playerDeckId),enemyDefinition=getSavedDeck(enemyDeckId);
     if(playerDeckId&&!playerDefinition)throw new Error('プレイヤー1の登録デッキが見つかりません');if(enemyDeckId&&!enemyDefinition)throw new Error('相手の登録デッキが見つかりません');
-    color=playerDefinition?playerDefinition.colors[0]:color;opponentColor=enemyDefinition?enemyDefinition.colors[0]:(opponentColor||setupEnemyColor);selectedColor=color;mode=mode||setupMode;
+    color=playerDefinition?playerDefinition.colors[0]:color;opponentColor=enemyDefinition?enemyDefinition.colors[0]:(opponentColor||setupEnemyColor);selectedColor=color;mode=mode||setupMode;firstChoice=firstChoice||setupFirstChoice;
+    var firstSide=firstChoice==='player'?'player':firstChoice==='enemy'?'enemy':(Math.random()<.5?'player':'enemy');
     var playerCards=playerDefinition?buildSavedDeck(playerDefinition):buildDeck(color),enemyCards=enemyDefinition?buildSavedDeck(enemyDefinition):buildDeck(opponentColor);
     if(playerDefinition&&playerCards.length!==40)throw new Error('プレイヤー1の登録デッキが40枚ではありません');if(enemyDefinition&&enemyCards.length!==40)throw new Error('相手の登録デッキが40枚ではありません');
     state={
@@ -573,7 +583,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId){
       playerDeck:playerCards,enemyDeck:enemyCards,matchMode:mode,playerColor:color,enemyColor:opponentColor,
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
-      selectedCard:-1,selectedSlot:-1,playerTurn:true,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
+      selectedCard:-1,selectedSlot:-1,playerTurn:firstSide==='player',firstSide:firstSide,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
       extraTurns:{player:0,enemy:0}
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
@@ -581,8 +591,9 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId){
     $('gameScreen').style.display='block';
     $('controls').style.display='block';
     $('resultModal').classList.remove('show');
-    logMsg((playerDefinition?playerDefinition.name:color+'デッキ')+' VS '+(enemyDefinition?enemyDefinition.name:opponentColor+'デッキ'));
+    logMsg((playerDefinition?playerDefinition.name:color+'デッキ')+' VS '+(enemyDefinition?enemyDefinition.name:opponentColor+'デッキ')+' ／ '+sideLabel(firstSide)+'が先攻');
     render();
+    if(firstSide==='enemy'&&mode==='cpu')setTimeout(function(){cpuTurn();},550);
   }catch(e){
     var box=$('startError');
     box.style.display='block';
