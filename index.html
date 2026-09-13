@@ -24,6 +24,16 @@ button{font:inherit;touch-action:manipulation}
 .deckBtn.green{--deck-accent:#78a985}.deckBtn.white{--deck-accent:#eee4d0}.deckBtn.red{--deck-accent:#d9786f}.deckBtn.blue{--deck-accent:#719dc4}.deckBtn.black{--deck-accent:#978aa6}.deckBtn.yellow{--deck-accent:#dfc767}
 .setupSection{position:relative;margin-top:14px}.setupLabel{font-family:Georgia,"Yu Mincho",serif;color:#e3cfaf;font-size:14px;font-weight:800;margin:0 2px 7px}.modeGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.firstGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.modeBtn{min-height:62px;border:1px solid #665947;border-radius:10px;background:#151a20;color:#d8cbbb;font-weight:900}.firstGrid .modeBtn{min-height:50px;font-size:12px}.modeBtn.selected{border-color:#f2dcc0;background:linear-gradient(135deg,#3b3228,#1b1b1c);color:#f5dfbd;box-shadow:0 0 14px #dfbd8d44}.startBattleBtn{position:relative;width:100%;min-height:55px;margin-top:17px;border:1px solid #f2dcc0;border-radius:11px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900;font-size:16px}
 #startError{display:none;color:#ff9f9f;background:#321c24;padding:10px;border-radius:10px;margin-top:12px;font-size:12px;white-space:pre-wrap}
+html[data-view-mode="mobile"] body{width:min(430px,100%);margin:0 auto;box-shadow:0 0 70px #000}
+html[data-view-mode="mobile"] .homeNav,html[data-view-mode="mobile"] .controls{left:50%;right:auto;width:min(430px,100%);transform:translateX(-50%)}
+html[data-view-mode="pc"] #gameScreen{width:min(1180px,100%);margin:0 auto;padding-left:18px;padding-right:18px}
+html[data-view-mode="pc"] .homeShell,html[data-view-mode="pc"] .startCard{width:min(980px,100%)}
+html[data-view-mode="pc"] .slot{height:148px}
+html[data-view-mode="pc"] .hand{height:196px}
+html[data-view-mode="pc"] .handCard{width:138px;height:180px}
+html[data-view-mode="pc"] .catalogShell,html[data-view-mode="pc"] .deckManagerShell{width:min(1050px,100%)}
+html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:600px){html[data-view-mode="auto"] .slot{height:108px}}
 
 #homeScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 86px);background:radial-gradient(circle at 82% 9%,#28313a 0,transparent 27%),linear-gradient(180deg,#10151b,#080b0f 68%);}
 .homeShell{width:min(680px,100%);margin:auto}.homeHeader{display:flex;align-items:center;gap:11px;padding:7px 3px 14px}.avatar{width:44px;height:44px;border-radius:50%;border:1px solid #d8b986;background:radial-gradient(circle at 45% 35%,#d9c3a1 0 7%,#695b4c 8% 20%,#242a30 21% 48%,#0c1014 49%);box-shadow:0 0 0 3px #d8b98618}.profile{flex:1}.profileName{font-family:Georgia,"Yu Mincho",serif;font-size:16px;font-weight:800}.profileTitle{font-size:10px;color:#b8aa97;margin-top:2px}.headerIcon{border:0;background:transparent;color:#e8dcc9;font-size:22px;width:39px;height:39px;border-radius:50%}.headerIcon:active{background:#ffffff10}
@@ -66,6 +76,9 @@ button{font:inherit;touch-action:manipulation}
 .card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.unblockable{background:#51426f}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
 .log{background:#0c1014d9;border:1px solid #4c4339;border-radius:8px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#ded4c6;text-align:center}
+.battleTools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:5px 0 8px}.battleToolBtn{min-height:35px;border:1px solid #5d5245;border-radius:8px;background:#141a20;color:#dfd2c0;font-size:11px;font-weight:800}.battleToolBtn:active{filter:brightness(1.2)}
+.infoBox{width:min(620px,94vw);max-height:min(78vh,720px);overflow:hidden;display:flex;flex-direction:column}.infoBox h2{margin:0 0 5px;font-family:Georgia,"Yu Mincho",serif;color:#efd8b5}.infoSub{font-size:10px;color:#aaa197;margin:0 0 10px}.infoTabs{display:flex;gap:6px;margin-bottom:9px}.infoTab{flex:1;min-height:38px;border:1px solid #5c5144;border-radius:8px;background:#151a20;color:#cfc3b2;font-weight:800}.infoTab.selected{border-color:#efd8b5;background:#32291f;color:#fff1dd}.infoList{display:grid;gap:7px;overflow-y:auto;min-height:80px;padding:2px}.infoEmpty{padding:28px 10px;text-align:center;color:#8f8880;border:1px dashed #4b4640;border-radius:9px}.graveItem{display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;border:1px solid #514a42;border-radius:9px;background:#151a20;padding:9px;color:#eee5d8;text-align:left}.graveCost{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#ead3b1;color:#1b140d;font-weight:900}.graveName{font-size:12px;font-weight:900}.graveMeta{font-size:9px;color:#aaa197;margin-top:3px}.gravePower{font-weight:900;color:#e7c994}.historyItem{display:grid;grid-template-columns:64px 1fr;gap:8px;border-bottom:1px solid #35383c;padding:8px 4px;font-size:11px;line-height:1.45}.historyTurn{color:#c6a879;font-weight:800}.keywordList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.keywordItem{border:1px solid #514a42;border-radius:9px;background:#151a20;padding:10px}.keywordItem strong{display:block;color:#efd4aa;margin-bottom:5px}.keywordItem span{font-size:10px;line-height:1.5;color:#c8c0b6}.settingChoices{display:grid;gap:8px;margin:12px 0}.settingChoice{min-height:52px;border:1px solid #5c5144;border-radius:10px;background:#151a20;color:#e4d8c7;font-weight:900}.settingChoice.selected{border:2px solid #efd8b5;background:#352c22;color:#fff1dd}.modalClose{width:100%;min-height:45px;margin-top:12px;border:1px solid #806c51;border-radius:9px;background:#dcb984;color:#21170d;font-weight:900}
+@media(max-width:520px){.keywordList{grid-template-columns:1fr}}
 .targetPrompt{display:none;position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);transform:translateX(-50%);z-index:80;width:min(92%,520px);padding:11px 16px;border:1px solid #f2dcc0;border-radius:24px;background:#17130fee;color:#f4dfbf;text-align:center;font-size:13px;font-weight:900;box-shadow:0 8px 28px #000c,0 0 18px #d9b67844;backdrop-filter:blur(10px)}.targetPrompt.show{display:block}
 
 .hand{height:166px;position:relative;margin:0 5px;padding-top:7px;overflow:visible}
@@ -125,7 +138,7 @@ button{font:inherit;touch-action:manipulation}
       <div class="avatar" aria-hidden="true"></div>
       <div class="profile"><div class="profileName">プレイヤー</div><div class="profileTitle">見習いの指揮官</div></div>
       <button class="headerIcon" onclick="showComingSoon('お知らせ')" aria-label="お知らせ">♢</button>
-      <button class="headerIcon" onclick="showComingSoon('設定')" aria-label="設定">⚙</button>
+      <button class="headerIcon" onclick="openSettings()" aria-label="設定">⚙</button>
     </header>
     <button class="seasonBanner" onclick="showComingSoon('シーズン「暁の要塞」')" aria-label="シーズン1 暁の要塞">
       <span class="seasonCopy"><span class="seasonTag">シーズン1</span><br><span class="seasonTitle">暁の要塞</span><br><span class="seasonSub">新たな戦いが始まる</span></span><span class="seasonArrow">→</span>
@@ -244,6 +257,11 @@ button{font:inherit;touch-action:manipulation}
   <div class="sectionTitle"><span id="topFieldLabel">CPU FIELD</span><span>← 5レーン →</span></div>
   <div class="boardWrap"><div class="board" id="enemyBoard"></div></div>
   <div class="log" id="battleLog">ゲーム開始</div>
+  <div class="battleTools" aria-label="対戦情報">
+    <button class="battleToolBtn" onclick="openGravePanel()">墓地 <span id="graveToolCount">0</span></button>
+    <button class="battleToolBtn" onclick="openBattleHistory()">バトルログ</button>
+    <button class="battleToolBtn" onclick="openKeywordPanel()">キーワード</button>
+  </div>
   <div class="sectionTitle"><span id="bottomFieldLabel">PLAYER 1 FIELD</span><span>手札→空きスロット→配置</span></div>
   <div class="boardWrap"><div class="board" id="playerBoard"></div></div>
   <div class="sectionTitle"><span id="handLabel">PLAYER 1 HAND</span><span>カードをタップして選択</span></div>
@@ -273,6 +291,29 @@ button{font:inherit;touch-action:manipulation}
       <button class="pickerConfirm" id="pickerConfirm" onclick="confirmPicker()">決定</button>
       <button class="pickerCancel" id="pickerCancel" onclick="cancelPicker()">使用しない</button>
     </div>
+  </div>
+</div>
+
+<div class="modal" id="infoModal" onclick="closeInfoModal(event)">
+  <div class="pickerBox infoBox" onclick="event.stopPropagation()">
+    <h2 id="infoTitle">対戦情報</h2>
+    <p class="infoSub" id="infoSub"></p>
+    <div id="infoTabs" class="infoTabs"></div>
+    <div id="infoContent" class="infoList"></div>
+    <button class="modalClose" onclick="closeInfoModal()">閉じる</button>
+  </div>
+</div>
+
+<div class="modal" id="settingsModal" onclick="closeSettings(event)">
+  <div class="pickerBox infoBox" onclick="event.stopPropagation()">
+    <h2>画面サイズ設定</h2>
+    <p class="infoSub">端末に合わせるか、スマホ・PC向けの表示幅を固定できます。</p>
+    <div class="settingChoices">
+      <button class="settingChoice" data-view-choice="auto" onclick="setViewMode('auto')">自動<br><small>画面幅に合わせて最適化</small></button>
+      <button class="settingChoice" data-view-choice="mobile" onclick="setViewMode('mobile')">スマホ版<br><small>最大430pxの縦長レイアウト</small></button>
+      <button class="settingChoice" data-view-choice="pc" onclick="setViewMode('pc')">PC版<br><small>盤面・カードを広く表示</small></button>
+    </div>
+    <button class="modalClose" onclick="closeSettings()">閉じる</button>
   </div>
 </div>
 
@@ -431,7 +472,7 @@ var CARD_RULES={
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
   'フィリポス山脈':{onTurnStart:[{type:'gainMana',amount:1},{type:'destroySelf'}]},
   'イルデニアの鍛冶師':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:1}]},
-  '投獄':{onPlay:[{type:'setPower',target:'enemyUnit',amount:2}]},
+  '投獄':{revenge:3,onPlay:[{type:'setPower',target:'enemyUnit',amount:2}]},
   'イルデニアの騎士団長':{onPlay:[{type:'heal',amount:5}]},
   '銀嶺の騎士ゼルモント':{keywords:['guard'],onPlay:[{type:'buffOthers',amount:2}],onDefended:[{type:'heal',amount:1}]},
   '帝国の突撃兵':{keywords:['haste']},
@@ -498,6 +539,25 @@ var catalogColor='緑';
 var savedDecks=loadSavedDecks(),editingDeckId='',editorColors=[],editorCounts={};
 var state=null;
 var toastTimer=null;
+var currentInfoGraveSide='player';
+var VIEW_MODE_KEY='crossfort_view_mode_v1';
+
+function loadViewMode(){
+  var saved='auto';try{saved=localStorage.getItem(VIEW_MODE_KEY)||'auto';}catch(e){}
+  if(['auto','mobile','pc'].indexOf(saved)<0)saved='auto';
+  document.documentElement.setAttribute('data-view-mode',saved);
+  return saved;
+}
+function setViewMode(mode){
+  if(['auto','mobile','pc'].indexOf(mode)<0)mode='auto';
+  document.documentElement.setAttribute('data-view-mode',mode);
+  try{localStorage.setItem(VIEW_MODE_KEY,mode);}catch(e){}
+  var choices=document.querySelectorAll('[data-view-choice]');
+  for(var i=0;i<choices.length;i++)choices[i].classList.toggle('selected',choices[i].getAttribute('data-view-choice')===mode);
+}
+function openSettings(){setViewMode(document.documentElement.getAttribute('data-view-mode')||loadViewMode());$('settingsModal').classList.add('show');}
+function closeSettings(event){if(event&&event.target!==$('settingsModal'))return;$('settingsModal').classList.remove('show');}
+loadViewMode();
 
 function $(id){ return document.getElementById(id); }
 function showHome(){
@@ -670,7 +730,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
       selectedCard:-1,selectedSlot:-1,playerTurn:firstSide==='player',firstSide:firstSide,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
-      extraTurns:{player:0,enemy:0}
+      extraTurns:{player:0,enemy:0},battleHistory:[]
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     $('startScreen').style.display='none';
@@ -802,6 +862,7 @@ function render(){
   $('enemyDeckCount').textContent=deckFor(topSide).length;
   $('playerDeckCount').textContent=deckFor(bottomSide).length;
   $('graveCount').textContent=graveFor(bottomSide).length;
+  $('graveToolCount').textContent=graveFor(bottomSide).length;
   $('mana').textContent=manaFor(side)+'/'+maxManaFor(side);
   $('enemyName').textContent=state.matchMode==='local'?'PLAYER 2':'CPU';
   $('turnLabel').textContent='TURN '+state.turn+' / '+(side==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU');
@@ -1464,7 +1525,67 @@ function finish(win,text){
   $('resultText').textContent=text;
   $('resultModal').classList.add('show');
 }
-function logMsg(t){ $('battleLog').textContent=t; }
+function logMsg(t){
+  $('battleLog').textContent=t;
+  if(state){
+    if(!state.battleHistory)state.battleHistory=[];
+    state.battleHistory.push({turn:state.turn||1,side:activeSide(),text:String(t)});
+    if(state.battleHistory.length>200)state.battleHistory.shift();
+  }
+}
+function openInfoModal(title,sub,html,tabs){
+  $('infoTitle').textContent=title;$('infoSub').textContent=sub||'';$('infoContent').innerHTML=html||'';
+  $('infoTabs').innerHTML=tabs||'';$('infoTabs').style.display=tabs?'flex':'none';
+  $('infoModal').classList.add('show');
+}
+function closeInfoModal(event){if(event&&event.target!==$('infoModal'))return;$('infoModal').classList.remove('show');}
+function gravePanelSide(side){
+  if(!state)return;
+  currentInfoGraveSide=side;
+  var grave=graveFor(side),owner=side==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU';
+  var html='';
+  if(!grave.length)html='<div class="infoEmpty">墓地にカードはありません</div>';
+  else for(var i=grave.length-1;i>=0;i--){
+    var c=grave[i],idx=i;
+    html+='<button class="graveItem" onclick="showGraveCardDetail(\''+side+'\','+idx+')"><span class="graveCost">'+c.cost+'</span><span><span class="graveName">'+escapeHtml(c.name)+'</span><span class="graveMeta">'+escapeHtml(cardTypeLine(c))+'</span></span><span class="gravePower">'+(c.type==='スペル'?'―':'⚔ '+c.power)+'</span></button>';
+  }
+  $('infoTitle').textContent=owner+'の墓地';
+  $('infoSub').textContent=grave.length+'枚・カードをタップすると詳細を表示';
+  $('infoContent').innerHTML=html;
+  var buttons=$('infoTabs').querySelectorAll('.infoTab');for(var j=0;j<buttons.length;j++)buttons[j].classList.toggle('selected',buttons[j].getAttribute('data-grave-side')===side);
+}
+function openGravePanel(){
+  if(!state)return;
+  var bottom=state.matchMode==='local'?activeSide():'player',top=otherSide(bottom);
+  var bottomName=bottom==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU';
+  var topName=top==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU';
+  var tabs='<button class="infoTab selected" data-grave-side="'+bottom+'" onclick="gravePanelSide(\''+bottom+'\')">'+bottomName+'</button><button class="infoTab" data-grave-side="'+top+'" onclick="gravePanelSide(\''+top+'\')">'+topName+'</button>';
+  openInfoModal('墓地','', '',tabs);gravePanelSide(bottom);
+}
+function showGraveCardDetail(side,index){var c=graveFor(side)[index];if(c)showCardDetail(c);}
+function openBattleHistory(){
+  if(!state)return;
+  var rows=state.battleHistory||[],html='';
+  if(!rows.length)html='<div class="infoEmpty">ログはまだありません</div>';
+  else for(var i=rows.length-1;i>=0;i--){var e=rows[i],who=e.side==='player'?'P1':state.matchMode==='local'?'P2':'CPU';html+='<div class="historyItem"><span class="historyTurn">TURN '+e.turn+' '+who+'</span><span>'+escapeHtml(e.text)+'</span></div>';}
+  openInfoModal('バトルログ','新しい履歴から表示・最大200件',html,'');
+}
+function openKeywordPanel(){
+  var items=[
+    ['守護','正面と隣接レーンへの攻撃を優先して防衛します。'],
+    ['殺傷','1以上の戦闘ダメージを与えたユニットを破壊します。'],
+    ['猛襲','配置したターンから攻撃できます。'],
+    ['貫通','防衛ユニットを上回ったダメージを相手LIFEへ与えます。'],
+    ['報復：X','1回にX以上のLIFEダメージを受けた時、手札から即時使用できます。'],
+    ['潜水：X','X資源で配置効果を使い、その後山札の下へ戻ります。'],
+    ['探査：X','山札の下からX枚を確認し、発見条件を満たすカードを選びます。'],
+    ['発見','探査で公開された時に使用できる効果です。'],
+    ['信仰：X','自分の聖遺物がX枚以上ある時に有効になります。'],
+    ['魂響','破壊された時、聖遺物を破壊して墓地から復帰します。']
+  ],html='<div class="keywordList">';
+  for(var i=0;i<items.length;i++)html+='<div class="keywordItem"><strong>'+items[i][0]+'</strong><span>'+items[i][1]+'</span></div>';
+  html+='</div>';openInfoModal('キーワード説明','カード効果で使われる共通ルール',html,'');
+}
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
 }
