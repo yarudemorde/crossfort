@@ -1200,12 +1200,12 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.target==='enemyUnit') target=await chooseTarget(side,enemySide,'効果の対象にする敵カードをタップ',function(c){return c.type==='ユニット';});
     if(a.target==='allyUnit') target=await chooseTarget(side,side,'効果の対象にする味方カードをタップ',function(c){return c.type==='ユニット';});
     if(a.target==='otherAllyUnit') target=await chooseTarget(side,side,'手札に戻す味方ユニットをタップ',function(c){return c!==sourceCard && c.type==='ユニット';});
-    if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot]) target={side:enemySide,index:sourceSlot};
+    if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot] && (a.type!=='damageUnit' || enemy[sourceSlot].type==='ユニット')) target={side:enemySide,index:sourceSlot};
     if(a.type==='draw') for(j=0;j<a.amount;j++) await drawCard(side);
     else if(a.type==='heal') await changeLife(side,a.amount);
     else if(a.type==='gainMana') changeMana(side,a.amount);
     else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount)));
-    else if(a.type==='damageUnit' && target) await damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false);
+    else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false);
     else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
     else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power+=a.amount;
     else if(a.type==='setPower' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power=a.amount;
@@ -1217,7 +1217,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     else if(a.type==='mill'){for(j=0;j<a.amount;j++) if((side==='player'?state.playerDeck:state.enemyDeck).length) graveFor(side).push((side==='player'?state.playerDeck:state.enemyDeck).shift());}
     else if(a.type==='destroySelf' && own[sourceSlot]===sourceCard) await destroy(side,sourceSlot);
     else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
-    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j]) await damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false);}
+    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j] && enemy[j].type==='ユニット') await damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false);}
     else if(a.type==='addTurn'){
       if(!state.extraTurns)state.extraTurns={player:0,enemy:0};state.extraTurns[side]+=(a.amount||1);logMsg(sideLabel(side)+'が追加ターンを獲得');
     }else if(a.type==='opponentDiscard'){
