@@ -127,6 +127,19 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
   .deckGrid{grid-template-columns:repeat(3,1fr)}
   .catalogGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* Season 1: Dawn Fortress */
+.eventScreen{display:none;min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 28px);background:radial-gradient(circle at 73% 8%,#332d2b 0,transparent 27%),linear-gradient(180deg,#10151a,#07090c 72%);color:#eee5d8}
+.eventShell{width:min(680px,100%);margin:auto}.eventBack{border:0;background:transparent;color:#d9c7ad;padding:8px 2px 12px;font-weight:800}.eventEyebrow{font-size:10px;letter-spacing:.18em;color:#c4a879;text-transform:uppercase}.eventHero{position:relative;min-height:235px;border:1px solid #75634e;border-radius:14px;overflow:hidden;padding:20px;background:linear-gradient(180deg,#171c23aa,#080b0fe8),linear-gradient(135deg,#5a4636,#17212a 55%,#090c10);box-shadow:inset 0 0 50px #0008,0 18px 45px #0007}
+.eventHero::before{content:"";position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(130deg,transparent 0 22%,#080b0e 23% 31%,transparent 32%),repeating-linear-gradient(90deg,#0b0f13 0 18px,#14191e 19px 23px);clip-path:polygon(0 100%,0 68%,8% 68%,9% 44%,17% 44%,18% 62%,28% 62%,29% 25%,37% 25%,39% 60%,50% 60%,51% 43%,61% 43%,63% 71%,72% 71%,74% 34%,84% 34%,86% 65%,100% 65%,100% 100%)}
+.eventHero::after{content:"";position:absolute;inset:0;opacity:.18;background:repeating-linear-gradient(0deg,transparent 0 3px,#fff 4px);pointer-events:none}.eventHeroCopy{position:absolute;z-index:2;left:18px;right:18px;bottom:18px;text-shadow:0 3px 10px #000}.eventHero h1{margin:5px 0 3px;font-family:Georgia,"Yu Mincho",serif;font-size:30px;letter-spacing:.06em}.eventLead{margin:0;color:#d6c6b0;font-size:12px;line-height:1.6}.eventClearBadge{display:none;position:absolute;z-index:3;right:14px;top:14px;border:1px solid #e3c18e;border-radius:3px;background:#0c1116dd;color:#efd6ad;padding:5px 8px;font-size:10px;font-weight:900;letter-spacing:.15em}.eventClearBadge.show{display:block}.seasonBannerBadge{display:none;position:absolute;z-index:4;right:14px;top:13px;border:1px solid #ead2aa;border-radius:3px;background:#0a0d11dd;color:#f2dcc0;padding:4px 7px;font-size:9px;font-weight:900;letter-spacing:.14em}.seasonBannerBadge.show{display:block}
+.eventRuleGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.eventRule{border:1px solid #3e3b36;border-radius:9px;background:#11161b;padding:10px 5px;text-align:center;font-size:9px;color:#aaa197}.eventRule strong{display:block;color:#ead7bb;font-size:12px;margin-bottom:3px}.eventProgress{border:1px solid #4b4339;border-radius:12px;background:#0d1115;padding:12px;margin:12px 0}.eventProgressTitle{font-family:Georgia,"Yu Mincho",serif;font-size:13px;color:#e8d0a8;margin-bottom:10px}.eventStep{display:grid;grid-template-columns:25px 1fr auto;gap:8px;align-items:center;min-height:39px;color:#797873;font-size:11px;position:relative}.eventStep:not(:last-child)::after{content:"";position:absolute;left:12px;top:31px;width:1px;height:16px;background:#393733}.eventStepMark{width:25px;height:25px;border:1px solid #45433e;border-radius:50%;display:grid;place-items:center;background:#11161b;font-size:9px}.eventStep.done{color:#bcb29f}.eventStep.done .eventStepMark{border-color:#807159;color:#e3c38f}.eventStep.current{color:#fff0d7;font-weight:900}.eventStep.current .eventStepMark{border-color:#f0d7ad;background:#3a2d20;box-shadow:0 0 12px #d6a96655}.eventHp{font-size:9px;color:#d3b888}.eventPrimary,.eventSecondary{width:100%;min-height:52px;border-radius:10px;font-weight:900}.eventPrimary{border:1px solid #f0d7ad;background:linear-gradient(135deg,#e8c99d,#b98c58);color:#21160d}.eventSecondary{margin-top:8px;border:1px solid #514a40;background:#151a20;color:#cfc2b0}.eventHint{min-height:16px;margin:7px 2px;color:#e9988f;font-size:10px}
+.eventDeckList{display:grid;gap:9px;margin:14px 0}.eventDeckChoice{display:grid;grid-template-columns:1fr auto;gap:5px 9px;min-height:63px;border:1px solid #514a40;border-radius:10px;background:#151a20;color:#e9dfd1;padding:11px;text-align:left}.eventDeckChoice.selected{border:2px solid #efd7ad;background:#352b20;box-shadow:0 0 13px #c99d6333}.eventDeckName{font-family:Georgia,"Yu Mincho",serif;font-size:14px;font-weight:900}.eventDeckMeta{font-size:9px;color:#a79d90}.eventDeckCheck{grid-column:2;grid-row:1 / span 2;color:#e6c692}.eventEmpty{border:1px dashed #514a40;border-radius:10px;padding:28px 12px;text-align:center;color:#9c958c;font-size:11px}
+#seasonStoryScreen{display:none;position:fixed;inset:0;z-index:95;padding:calc(env(safe-area-inset-top) + 10px) 10px calc(env(safe-area-inset-bottom) + 10px);background:#05070a;align-items:center;justify-content:center}.storyFrame{width:min(680px,100%);height:min(820px,100%);min-height:520px;position:relative;overflow:hidden;border:1px solid #5f5140;border-radius:8px;background:#0b0e12;box-shadow:0 25px 80px #000}.storyHeader{position:absolute;z-index:4;left:16px;right:16px;top:15px;text-shadow:0 2px 8px #000}.storySeason{font-size:9px;letter-spacing:.18em;color:#d2b583}.storyTitle{font-family:Georgia,"Yu Mincho",serif;font-size:22px;font-weight:900;margin-top:3px}.storyArt{position:absolute;inset:0 0 185px;background-color:#151b21;image-rendering:pixelated;overflow:hidden}.storyArt::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,#000 4px);opacity:.2}.storyArt.prologue{background:radial-gradient(circle at 72% 20%,#d8b071 0 5%,transparent 6%),linear-gradient(165deg,transparent 52%,#090c10 53%),linear-gradient(25deg,#743b2c,#25272b 42%,#0a1119 43%)}.storyArt.prologue::before{content:"";position:absolute;left:0;right:0;bottom:0;height:57%;background:repeating-linear-gradient(90deg,#080b0e 0 22px,#14191c 23px 27px);clip-path:polygon(0 100%,0 61%,10% 61%,12% 37%,22% 37%,24% 68%,35% 68%,37% 16%,48% 16%,50% 62%,61% 62%,63% 42%,74% 42%,77% 72%,88% 72%,90% 48%,100% 48%,100% 100%)}.storyArt.road{background:radial-gradient(circle at 70% 20%,#c5a16d 0 6%,transparent 7%),linear-gradient(155deg,transparent 48%,#0b0d10 49%),linear-gradient(20deg,#53392d,#252a2b 45%,#101820 46%)}.storyArt.road::before{content:"";position:absolute;left:26%;bottom:-8%;width:48%;height:72%;background:#0a0c0e;clip-path:polygon(44% 0,57% 0,100% 100%,0 100%)}.storyArt.scouts{background:linear-gradient(115deg,transparent 48%,#080b0e 49% 53%,transparent 54%),repeating-linear-gradient(87deg,#11191b 0 30px,#1c2826 31px 44px);filter:saturate(.7)}.storyArt.scouts::before{content:"";position:absolute;left:13%;bottom:5%;width:74%;height:58%;background:#090c0f;clip-path:polygon(0 100%,9% 25%,18% 58%,28% 8%,39% 61%,50% 20%,61% 66%,73% 4%,82% 56%,92% 22%,100% 100%)}.storyArt.dragon{background:radial-gradient(circle at 72% 20%,#d5ad72 0 5%,transparent 6%),linear-gradient(20deg,#6b3028,#22232a 45%,#090e15 46%)}.storyArt.dragon::before{content:"";position:absolute;right:4%;top:17%;width:78%;height:56%;background:#07090c;clip-path:polygon(0 45%,25% 35%,38% 0,49% 34%,67% 16%,64% 42%,100% 52%,70% 61%,58% 100%,43% 66%,18% 78%)}.storyArt.dawn{background:radial-gradient(circle at 50% 57%,#f0c98b 0 5%,#b67b5b 6% 14%,transparent 27%),linear-gradient(180deg,#1b2330,#48343a 58%,#b07354)}.storyArt.dawn::before{content:"";position:absolute;left:0;right:0;bottom:0;height:35%;background:#0a0d10;clip-path:polygon(0 100%,0 76%,13% 76%,16% 40%,26% 40%,28% 69%,43% 69%,46% 22%,56% 22%,59% 64%,72% 64%,75% 48%,89% 48%,92% 74%,100% 74%,100% 100%)}.storyBox{position:absolute;z-index:5;left:10px;right:10px;bottom:10px;min-height:166px;border:1px solid #74624d;background:#080b0eea;padding:13px 15px 28px;box-shadow:inset 0 0 24px #000}.storySpeaker{font-size:10px;color:#d9b983;font-weight:900;margin-bottom:7px}.storyText{white-space:pre-line;font-family:Georgia,"Yu Mincho",serif;font-size:14px;line-height:1.7;color:#eee4d5}.storyContinue{position:absolute;right:13px;bottom:9px;color:#b8a58a;font-size:8px;letter-spacing:.13em}.storyNextButton{position:absolute;inset:0;z-index:8;border:0;background:transparent;color:transparent}
+.eventOutcome{position:relative;min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;border:1px solid #655440;border-radius:12px;background:linear-gradient(180deg,#1a2027,#080b0f);padding:22px}.eventOutcome::before{content:"";position:absolute;inset:0 0 42%;background:radial-gradient(circle at 50% 75%,#bf8b5d 0 8%,transparent 24%),linear-gradient(180deg,#101923,#422e2b);opacity:.75}.eventOutcome.failed::before{background:linear-gradient(180deg,#101319,#271b1c)}.outcomeCopy{position:relative;z-index:2}.outcomeKicker{font-size:11px;letter-spacing:.2em;color:#d4b680}.outcomeTitle{font-family:Georgia,"Yu Mincho",serif;font-size:31px;margin:6px 0}.outcomeText{white-space:pre-line;font-size:12px;line-height:1.7;color:#c9beaf;margin-bottom:18px}.bossStrip{display:none;position:relative;height:82px;margin:0 0 7px;border:1px solid #714943;border-radius:9px;overflow:hidden;background:radial-gradient(circle at 72% 35%,#cf9e70 0 6%,transparent 7%),linear-gradient(20deg,#692d27,#141820 55%,#080b10)}.bossStrip.show{display:block}.bossStrip::before{content:"";position:absolute;right:2%;top:5%;width:72%;height:90%;background:#06080b;clip-path:polygon(0 47%,25% 35%,38% 0,48% 35%,66% 15%,63% 45%,100% 55%,69% 63%,57% 100%,43% 68%,18% 80%)}.bossStripCopy{position:absolute;z-index:2;left:11px;bottom:9px;text-shadow:0 2px 7px #000}.bossStripCopy b{display:block;color:#f0ba9b;font-size:10px;letter-spacing:.16em}.bossStripCopy span{font-family:Georgia,"Yu Mincho",serif;font-size:17px;font-weight:900}.eventBattleBadge{display:none;margin:0 auto 7px;width:max-content;border:1px solid #785d46;border-radius:3px;background:#130f0dcc;color:#e8c898;padding:4px 10px;font-size:9px;font-weight:900;letter-spacing:.13em}.eventBattleBadge.show{display:block}
+body.seasonBattle #gameScreen{background:radial-gradient(ellipse at 50% 32%,#382b25 0,#11161b 43%,#07090c 80%)}body.bossBattle #gameScreen{background:radial-gradient(ellipse at 50% 22%,#592b27 0,#17151a 38%,#07090d 76%)}body.bossBattle .topbar{border-color:#815047;box-shadow:0 0 22px #8d392944}
+@media(max-width:520px){.eventHero{min-height:210px}.storyFrame{height:100%;min-height:0;border-radius:0}.storyText{font-size:13px}.eventRuleGrid{gap:5px}.eventRule{padding:9px 3px}.bossStrip{height:68px}}
+
 @media (prefers-reduced-motion:reduce){.card.legendary::before,.handCard.legendary::before,.catalogCard.legendary::before,.detailCard.legendary::before,.pickerCard.legendary::before,.deckEditCard.legendary::before{animation:none;background-position:50% 0}.card.summoning{animation:none}}
 </style>
 </head>
@@ -143,8 +156,9 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
       <button class="headerIcon" onclick="showComingSoon('お知らせ')" aria-label="お知らせ">♢</button>
       <button class="headerIcon" onclick="openSettings()" aria-label="設定">⚙</button>
     </header>
-    <button class="seasonBanner" onclick="showComingSoon('シーズン「暁の要塞」')" aria-label="シーズン1 暁の要塞">
-      <span class="seasonCopy"><span class="seasonTag">シーズン1</span><br><span class="seasonTitle">暁の要塞</span><br><span class="seasonSub">新たな戦いが始まる</span></span><span class="seasonArrow">→</span>
+    <button class="seasonBanner" onclick="showSeason1Hub()" aria-label="シーズン1 暁の要塞">
+      <span class="seasonBannerBadge" id="seasonBannerBadge">CLEAR</span>
+      <span class="seasonCopy"><span class="seasonTag">シーズン1</span><br><span class="seasonTitle">暁の要塞</span><br><span class="seasonSub" id="seasonBannerStatus">王都へ報告せよ。3連戦を生き延びろ。</span></span><span class="seasonArrow">→</span>
     </button>
     <div class="homeGrid">
       <button class="homeTile primary" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPU戦・対人テスト</span></button>
@@ -165,6 +179,62 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 <nav class="homeNav" id="homeNav"><div class="homeNavInner">
   <button class="navBtn active"><span>⌂</span>ホーム</button><button class="navBtn" onclick="showDeckLibrary()"><span>▥</span>デッキ</button><button class="navBtn" onclick="showDeckSelect()"><span>⚔</span>バトル</button><button class="navBtn" onclick="showCatalog()"><span>▤</span>カード</button><button class="navBtn" onclick="showComingSoon('ショップ')"><span>▣</span>ショップ</button>
 </div></nav>
+
+
+<section class="eventScreen" id="season1Screen">
+  <div class="eventShell">
+    <button class="eventBack" onclick="showHome()">← ホーム</button>
+    <div class="eventHero">
+      <span class="eventClearBadge" id="eventClearBadge">SEASON 1 CLEAR</span>
+      <div class="eventHeroCopy"><div class="eventEyebrow">SEASON 1 EVENT</div><h1>暁の要塞</h1><p class="eventLead">王都へ報告せよ。<br>3連戦を生き延びろ。</p></div>
+    </div>
+    <div class="eventRuleGrid">
+      <div class="eventRule"><strong>3連戦</strong>敗北で終了</div>
+      <div class="eventRule"><strong>HP継承</strong>戦闘間で維持</div>
+      <div class="eventRule"><strong>デッキ固定</strong>途中変更不可</div>
+    </div>
+    <div class="eventProgress"><div class="eventProgressTitle">進行状況</div><div id="seasonProgress"></div></div>
+    <button class="eventPrimary" id="seasonMainButton" onclick="beginSeason1()">イベント開始</button>
+    <button class="eventSecondary" id="seasonResetButton" onclick="resetSeason1WithConfirm()" style="display:none">最初からやり直す</button>
+    <div class="eventHint" id="seasonHubHint"></div>
+  </div>
+</section>
+
+<section class="eventScreen" id="seasonDeckScreen">
+  <div class="eventShell">
+    <button class="eventBack" onclick="showSeason1Hub()">← イベントへ戻る</button>
+    <div class="eventEyebrow">SEASON 1 / DECK SELECT</div>
+    <h1 style="font-family:Georgia,'Yu Mincho',serif;margin:6px 0 4px">遠征デッキを選択</h1>
+    <p class="eventLead">選んだデッキは3連戦の途中で変更できません。</p>
+    <div class="eventDeckList" id="seasonDeckList"></div>
+    <button class="eventPrimary" id="seasonDeckConfirm" onclick="confirmSeason1Deck()">このデッキで出発</button>
+    <button class="eventSecondary" onclick="showDeckLibrary()">デッキを作成・編集</button>
+    <div class="eventHint" id="seasonDeckError"></div>
+  </div>
+</section>
+
+<section id="seasonStoryScreen" aria-label="シーズン1 ストーリー">
+  <div class="storyFrame">
+    <div class="storyHeader"><div class="storySeason">シーズン1イベント</div><div class="storyTitle" id="storyTitle">暁の要塞</div></div>
+    <div class="storyArt prologue" id="storyArt"></div>
+    <div class="storyBox"><div class="storySpeaker">俺</div><div class="storyText" id="storyText"></div><div class="storyContinue">▼ TAP TO CONTINUE</div></div>
+    <button class="storyNextButton" onclick="advanceSeasonStory()" aria-label="次へ">次へ</button>
+  </div>
+</section>
+
+<section class="eventScreen" id="seasonOutcomeScreen">
+  <div class="eventShell">
+    <div class="eventOutcome" id="eventOutcomePanel">
+      <div class="outcomeCopy">
+        <div class="outcomeKicker" id="eventOutcomeKicker">SEASON 1 CLEAR</div>
+        <h1 class="outcomeTitle" id="eventOutcomeTitle">暁の要塞</h1>
+        <p class="outcomeText" id="eventOutcomeText"></p>
+        <button class="eventPrimary" id="eventOutcomePrimary" onclick="beginSeason1()">再挑戦</button>
+        <button class="eventSecondary" onclick="showHome()">ホームへ戻る</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="deckLibraryScreen">
   <div class="deckManagerShell">
@@ -244,6 +314,8 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 </section>
 
 <section id="gameScreen">
+  <div class="eventBattleBadge" id="eventBattleBadge">SEASON 1</div>
+  <div class="bossStrip" id="bossStrip"><div class="bossStripCopy"><b>BOSS BATTLE</b><span>黒龍</span></div></div>
   <div class="topbar">
     <div class="scoreRow">
       <div><span class="small" id="enemyName">CPU</span> <span class="life enemy">♥ <span id="enemyLife">20</span></span></div>
@@ -274,7 +346,7 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 
 <div class="controls" id="controls" style="display:none">
   <div class="controlInner">
-    <button class="ctrl" onclick="returnToDecks()">デッキ選択</button>
+    <button class="ctrl" id="backBattleBtn" onclick="returnToDecks()">デッキ選択</button>
     <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
     <button class="ctrl" id="specialBtn" onclick="playSpecialCard()">特殊</button>
     <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
@@ -721,6 +793,45 @@ var PLAYER_TITLES=[
   {id:'veteran',name:'歴戦の指揮官',requirement:'対戦を10回完了',check:function(){return playerStats.battles>=10;}},
   {id:'dawn_champion',name:'暁の覇者',requirement:'対戦で10勝',check:function(){return playerStats.wins>=10;}}
 ];
+var SEASON1_KEY='crossfort_season1_v1';
+var eventSeason1=loadSeason1State(),eventDeckDraft='';
+var currentSeasonStory='',currentSeasonStoryPage=0;
+var SEASON1_STAGES={
+  1:{name:'山賊',label:'一戦目「山賊」',colors:['赤','緑'],enemyLife:16,deckSize:30,maxCost:3},
+  2:{name:'敵軍偵察兵',label:'二戦目「敵軍偵察兵」',colors:['青','黒'],enemyLife:20,deckSize:36,maxCost:5},
+  3:{name:'黒龍',label:'三戦目「黒龍」',colors:['黒','赤'],enemyLife:30,deckSize:40,maxCost:99,boss:true}
+};
+var SEASON1_STORIES={
+  prologue:{title:'暁の要塞',art:'prologue',pages:[
+    'クロスフォート南西、ゴート地方。\n\n突如現れた巨大な亀裂《ダルディエク》から、\n言い伝えの存在だった龍が姿を現した。',
+    '民は怯え、隣国との緊張も高まる中、\n俺は前線の《暁の要塞》を守っていた。',
+    'ある夜、黒い龍が現れた。\n\n凄まじい咆哮と炎。\n気がつけば仲間たちは倒れ、\n要塞は焼け落ちていた。',
+    'まだ夜は明けていない。\n\n「……王都に知らせないと。」',
+    '俺は剣を拾い、歩き始めた。'
+  ]},
+  battle1:{title:'一戦目「山賊」',art:'road',pages:[
+    '要塞を離れてしばらく。\n\n道を塞いでいたのは、\n焼け跡を漁っていた山賊たちだった。',
+    '「その剣と荷物、置いてけ。」\n\nこんな所で足止めされてる暇はない。',
+    '「悪いけど、どいてくれ。」\n\n当然、聞いてくれるはずもなかった。'
+  ]},
+  after1:{title:'二戦目「敵軍偵察兵」',art:'scouts',pages:[
+    '山賊を退け、王都への街道を進む。\n\n森の中で見つけたのは、\n隣国の偵察兵だった。',
+    '龍の襲撃から、\nまだほとんど時間は経っていない。\n\nなのに奴らは、\n暁の要塞が落ちたことを知っている。',
+    '「……なんで、もうここにいる？」\n\nここで逃がすわけにはいかない。'
+  ]},
+  before3:{title:'三戦目「黒龍」',art:'dragon',pages:[
+    '偵察兵を倒した直後。\n\nあの声が聞こえた。\n\n空気を震わせる咆哮。',
+    '見上げると、\n昨夜の黒い龍が空を旋回している。\n\n「……嘘だろ。」',
+    '逃げたい。\n\nでも、王都はもう近い。\nここまで来て、死ぬわけにはいかない。',
+    '俺は震える手で剣を構えた。'
+  ]},
+  ending:{title:'エンディング「暁」',art:'dawn',pages:[
+    '目を開けると、\n黒龍の姿はなかった。',
+    '倒したわけじゃない。\n\nただ、奴は俺を見つめた後、\nダルディエクの方角へ飛び去っていった。',
+    'なぜ助かったのかは分からない。\n\n東の空が明るくなる。\nその先には王都が見えていた。',
+    '「……あと少しだ。」\n\n俺は再び歩き始めた。'
+  ]}
+};
 var state=null;
 var toastTimer=null;
 var currentInfoGraveSide='player';
@@ -744,6 +855,177 @@ function closeSettings(event){if(event&&event.target!==$('settingsModal'))return
 loadViewMode();
 
 function $(id){ return document.getElementById(id); }
+
+function defaultSeason1State(){
+  return {started:false,cleared:false,currentStage:0,selectedDeckId:'',currentHp:20,maxHp:20,pendingScene:''};
+}
+function loadSeason1State(){
+  var fallback=defaultSeason1State();
+  try{
+    var raw=JSON.parse(localStorage.getItem(SEASON1_KEY)||'{}');
+    return {
+      started:!!raw.started,cleared:!!raw.cleared,
+      currentStage:Math.max(0,Math.min(3,Number(raw.currentStage)||0)),
+      selectedDeckId:typeof raw.selectedDeckId==='string'?raw.selectedDeckId:'',
+      currentHp:isFinite(Number(raw.currentHp))?Math.max(0,Math.min(20,Number(raw.currentHp))):20,
+      maxHp:20,pendingScene:typeof raw.pendingScene==='string'?raw.pendingScene:''
+    };
+  }catch(e){return fallback;}
+}
+function persistSeason1State(){try{localStorage.setItem(SEASON1_KEY,JSON.stringify(eventSeason1));return true;}catch(e){return false;}}
+function hideSeasonScreens(){
+  var ids=['season1Screen','seasonDeckScreen','seasonStoryScreen','seasonOutcomeScreen'];
+  for(var i=0;i<ids.length;i++)if($(ids[i]))$(ids[i]).style.display='none';
+}
+function hideCoreScreens(){
+  $('homeScreen').style.display='none';$('homeNav').style.display='none';
+  $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
+  $('startScreen').style.display='none';$('gameScreen').style.display='none';$('controls').style.display='none';
+}
+function clearSeasonBattleTheme(){
+  document.body.classList.remove('seasonBattle');document.body.classList.remove('bossBattle');
+  if($('eventBattleBadge'))$('eventBattleBadge').classList.remove('show');
+  if($('bossStrip'))$('bossStrip').classList.remove('show');
+}
+function renderSeason1Banner(){
+  var badge=$('seasonBannerBadge'),status=$('seasonBannerStatus');
+  if(!badge||!status)return;
+  badge.classList.toggle('show',!!eventSeason1.cleared);
+  if(eventSeason1.started){
+    status.textContent=(eventSeason1.currentStage>0?'第'+eventSeason1.currentStage+'戦':'プロローグ')+'進行中 ／ HP '+eventSeason1.currentHp;
+  }else if(eventSeason1.cleared)status.textContent='CLEAR ／ 再挑戦できます';
+  else status.textContent='王都へ報告せよ。3連戦を生き延びろ。';
+}
+function seasonProgressHtml(){
+  var steps=[['プロローグ',0],['一戦目　山賊',1],['二戦目　敵軍偵察兵',2],['三戦目　黒龍',3],['エンディング',4]],html='';
+  var point=eventSeason1.cleared?5:(eventSeason1.started?(eventSeason1.currentStage||0):0);
+  for(var i=0;i<steps.length;i++){
+    var done=eventSeason1.cleared||point>steps[i][1],current=!eventSeason1.cleared&&eventSeason1.started&&point===steps[i][1];
+    html+='<div class="eventStep'+(done?' done':'')+(current?' current':'')+'"><span class="eventStepMark">'+(done?'✓':(i+1))+'</span><span>'+steps[i][0]+'</span>'+(current&&eventSeason1.currentStage>0?'<span class="eventHp">HP '+eventSeason1.currentHp+'</span>':'<span></span>')+'</div>';
+  }
+  return html;
+}
+function showSeason1Hub(){
+  hideCoreScreens();hideSeasonScreens();clearSeasonBattleTheme();
+  $('season1Screen').style.display='block';$('seasonProgress').innerHTML=seasonProgressHtml();
+  $('eventClearBadge').classList.toggle('show',!!eventSeason1.cleared);
+  $('seasonHubHint').textContent='';
+  var main=$('seasonMainButton'),reset=$('seasonResetButton');
+  if(eventSeason1.started){main.textContent='続きから';main.onclick=resumeSeason1;reset.style.display='block';}
+  else{main.textContent=eventSeason1.cleared?'もう一度挑戦':'イベント開始';main.onclick=beginSeason1;reset.style.display='none';}
+  window.scrollTo(0,0);
+}
+function beginSeason1(){
+  eventSeason1={started:true,cleared:eventSeason1.cleared,currentStage:0,selectedDeckId:'',currentHp:20,maxHp:20,pendingScene:'prologue'};
+  eventDeckDraft='';persistSeason1State();renderSeason1Banner();openSeasonStory('prologue');
+}
+function resetSeason1WithConfirm(){
+  if(!confirm('現在のイベント進行を破棄して、最初からやり直しますか？'))return;
+  beginSeason1();
+}
+function resumeSeason1(){
+  if(!eventSeason1.started){beginSeason1();return;}
+  if(eventSeason1.pendingScene==='deck'){showSeason1DeckSelect();return;}
+  if(eventSeason1.pendingScene){openSeasonStory(eventSeason1.pendingScene);return;}
+  if(!eventSeason1.selectedDeckId||!getSavedDeck(eventSeason1.selectedDeckId)){
+    $('seasonHubHint').textContent='遠征デッキが見つかりません。最初からやり直してください。';return;
+  }
+  if(eventSeason1.currentStage<1){showSeason1DeckSelect();return;}
+  startSeason1Battle(eventSeason1.currentStage);
+}
+function openSeasonStory(key){
+  var story=SEASON1_STORIES[key];if(!story)return;
+  currentSeasonStory=key;currentSeasonStoryPage=0;
+  hideCoreScreens();hideSeasonScreens();$('seasonStoryScreen').style.display='flex';renderSeasonStory();
+}
+function renderSeasonStory(){
+  var story=SEASON1_STORIES[currentSeasonStory];if(!story)return;
+  $('storyTitle').textContent=story.title;$('storyText').textContent=story.pages[currentSeasonStoryPage]||'';
+  $('storyArt').className='storyArt '+story.art;
+}
+function advanceSeasonStory(){
+  var story=SEASON1_STORIES[currentSeasonStory];if(!story)return;
+  if(currentSeasonStoryPage<story.pages.length-1){currentSeasonStoryPage++;renderSeasonStory();return;}
+  var completed=currentSeasonStory;currentSeasonStory='';currentSeasonStoryPage=0;
+  if(completed==='prologue'){eventSeason1.pendingScene='deck';persistSeason1State();showSeason1DeckSelect();}
+  else if(completed==='battle1'){eventSeason1.pendingScene='';persistSeason1State();startSeason1Battle(1);}
+  else if(completed==='after1'){eventSeason1.pendingScene='';persistSeason1State();startSeason1Battle(2);}
+  else if(completed==='before3'){eventSeason1.pendingScene='';persistSeason1State();startSeason1Battle(3);}
+  else if(completed==='ending')completeSeason1();
+}
+function showSeason1DeckSelect(){
+  hideCoreScreens();hideSeasonScreens();$('seasonDeckScreen').style.display='block';
+  eventDeckDraft=eventSeason1.selectedDeckId&&getSavedDeck(eventSeason1.selectedDeckId)?eventSeason1.selectedDeckId:'';
+  renderSeason1DeckChoices();window.scrollTo(0,0);
+}
+function renderSeason1DeckChoices(){
+  var root=$('seasonDeckList'),html='';
+  for(var i=0;i<savedDecks.length;i++){
+    var deck=savedDecks[i],valid=totalDeckCards(deck.cards||{})===40;
+    html+='<button class="eventDeckChoice'+(eventDeckDraft===deck.id?' selected':'')+'" '+(valid?'onclick="selectSeason1Deck(\''+deck.id+'\')"':'disabled')+'><span class="eventDeckName">'+escapeHtml(deck.name)+'</span><span class="eventDeckCheck">'+(eventDeckDraft===deck.id?'✓':'')+'</span><span class="eventDeckMeta">'+escapeHtml((deck.colors||[]).join('・'))+' ／ '+totalDeckCards(deck.cards||{})+'枚'+(valid?'':'（40枚必要）')+'</span></button>';
+  }
+  if(!savedDecks.length)html='<div class="eventEmpty">登録済みデッキがありません。<br>40枚のデッキを作成してください。</div>';
+  root.innerHTML=html;$('seasonDeckConfirm').disabled=!eventDeckDraft;
+  $('seasonDeckError').textContent='';
+}
+function selectSeason1Deck(id){if(!getSavedDeck(id))return;eventDeckDraft=id;renderSeason1DeckChoices();}
+function confirmSeason1Deck(){
+  var deck=getSavedDeck(eventDeckDraft);
+  if(!deck||totalDeckCards(deck.cards||{})!==40){$('seasonDeckError').textContent='40枚の登録デッキを選択してください';return;}
+  eventSeason1.started=true;eventSeason1.currentStage=1;eventSeason1.selectedDeckId=deck.id;eventSeason1.currentHp=20;eventSeason1.pendingScene='battle1';
+  persistSeason1State();renderSeason1Banner();openSeasonStory('battle1');
+}
+function eventEnemyDeck(stageNumber){
+  var config=SEASON1_STAGES[stageNumber],pool=[];
+  for(var c=0;c<config.colors.length;c++){
+    var rows=CARD_POOLS[config.colors[c]]||[];
+    for(var i=0;i<rows.length;i++)if(rows[i][1]<=config.maxCost)pool.push({row:rows[i],color:config.colors[c]});
+  }
+  if(!pool.length)return buildDeck(config.colors[0]);
+  var deck=[];
+  for(var n=0;n<config.deckSize;n++){
+    var pick=pool[(n*7+stageNumber*3)%pool.length];
+    deck.push(cloneCard(pick.row,pick.color));
+  }
+  return shuffle(deck);
+}
+function startSeason1Battle(stageNumber){
+  var config=SEASON1_STAGES[stageNumber],deck=getSavedDeck(eventSeason1.selectedDeckId);
+  if(!config||!deck){showSeason1Hub();$('seasonHubHint').textContent='イベントデータまたは遠征デッキを確認できません';return;}
+  eventSeason1.started=true;eventSeason1.currentStage=stageNumber;eventSeason1.pendingScene='';persistSeason1State();
+  startGame(deck.colors[0],config.colors[0],'cpu',deck.id,'','random',{
+    eventMode:true,eventStage:stageNumber,enemyLabel:config.name,playerLife:eventSeason1.currentHp,
+    enemyLife:config.enemyLife,enemyCards:eventEnemyDeck(stageNumber),boss:!!config.boss
+  });
+}
+function handleSeason1BattleEnd(win,text){
+  var stage=state.eventStage||eventSeason1.currentStage;
+  if(win){
+    eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(1,state.playerLife));
+    if(stage===1){eventSeason1.currentStage=2;eventSeason1.pendingScene='after1';}
+    else if(stage===2){eventSeason1.currentStage=3;eventSeason1.pendingScene='before3';}
+    else{eventSeason1.currentStage=3;eventSeason1.pendingScene='ending';}
+    persistSeason1State();renderSeason1Banner();
+    var nextScene=eventSeason1.pendingScene;setTimeout(function(){openSeasonStory(nextScene);},420);
+  }else{
+    eventSeason1.started=false;eventSeason1.currentStage=stage;eventSeason1.currentHp=0;eventSeason1.pendingScene='';
+    persistSeason1State();renderSeason1Banner();setTimeout(function(){showSeason1Outcome('failed');},420);
+  }
+}
+function completeSeason1(){
+  eventSeason1.started=false;eventSeason1.cleared=true;eventSeason1.currentStage=3;eventSeason1.pendingScene='';
+  persistSeason1State();renderSeason1Banner();showSeason1Outcome('clear');
+}
+function showSeason1Outcome(type){
+  hideCoreScreens();hideSeasonScreens();clearSeasonBattleTheme();
+  var failed=type==='failed',panel=$('eventOutcomePanel');panel.classList.toggle('failed',failed);
+  $('seasonOutcomeScreen').style.display='block';
+  $('eventOutcomeKicker').textContent=failed?'MISSION FAILED':'SEASON 1 CLEAR';
+  $('eventOutcomeTitle').textContent=failed?'王都へ報告せよ。':'暁の要塞';
+  $('eventOutcomeText').textContent=failed?'剣が手から落ちる。\n\n身体が動かない。\n王都までは、あと少しだった。\n\n要塞のことも。敵兵のことも。龍のことも。\n伝えなければならなかった。\n\n東の空が明るくなっていく。\nでも俺は、もう立ち上がれなかった。':'黒龍はダルディエクの方角へ飛び去った。\n\n東の空が明るくなる。\nその先には王都が見えていた。';
+  $('eventOutcomePrimary').textContent='再挑戦';$('eventOutcomePrimary').onclick=beginSeason1;window.scrollTo(0,0);
+}
+
 function loadPlayerStats(){
   try{var raw=JSON.parse(localStorage.getItem(PROFILE_STATS_KEY)||'{}');return {battles:Math.max(0,Number(raw.battles)||0),wins:Math.max(0,Number(raw.wins)||0)};}catch(e){return {battles:0,wins:0};}
 }
@@ -801,16 +1083,18 @@ function saveProfile(){
   renderHomeProfile();closeProfileEditor();
 }
 function showHome(){
-  renderHomeProfile();
+  hideSeasonScreens();clearSeasonBattleTheme();renderHomeProfile();renderSeason1Banner();
   $('homeScreen').style.display='block'; $('homeNav').style.display='block';
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none'; $('startScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none';
 }
 function showDeckSelect(){
+  hideSeasonScreens();clearSeasonBattleTheme();
   $('homeScreen').style.display='none'; $('homeNav').style.display='none';
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none'; $('startScreen').style.display='flex';
   renderSavedDeckSelectors();
 }
 function showCatalog(){
+  hideSeasonScreens();clearSeasonBattleTheme();
   $('homeScreen').style.display='none'; $('homeNav').style.display='none'; $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';
   $('gameScreen').style.display='none'; $('controls').style.display='none'; $('catalogScreen').style.display='block';
   renderCatalog();window.scrollTo(0,0);
@@ -827,6 +1111,7 @@ function cardTemplateByName(name){
   return null;
 }
 function showDeckLibrary(){
+  hideSeasonScreens();clearSeasonBattleTheme();
   $('homeScreen').style.display='none';$('homeNav').style.display='none';$('catalogScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';$('gameScreen').style.display='none';$('controls').style.display='none';
   $('deckLibraryScreen').style.display='block';renderDeckLibrary();window.scrollTo(0,0);
 }
@@ -959,41 +1244,51 @@ function buildSavedDeck(deck){
   for(var name in deck.cards){var template=cardTemplateByName(name),count=Math.min(4,Math.max(0,Number(deck.cards[name])||0));if(!template)continue;for(var i=0;i<count;i++)cards.push(cloneCard(template.row,template.color));}
   return shuffle(cards);
 }
-function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice){
+function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice,gameOptions){
   try{
+    gameOptions=gameOptions||{};
     var playerDefinition=getSavedDeck(playerDeckId),enemyDefinition=getSavedDeck(enemyDeckId);
     if(playerDeckId&&!playerDefinition)throw new Error('プレイヤー1の登録デッキが見つかりません');if(enemyDeckId&&!enemyDefinition)throw new Error('相手の登録デッキが見つかりません');
     color=playerDefinition?playerDefinition.colors[0]:color;opponentColor=enemyDefinition?enemyDefinition.colors[0]:(opponentColor||setupEnemyColor);selectedColor=color;mode=mode||setupMode;firstChoice=firstChoice||setupFirstChoice;
     var firstSide=firstChoice==='player'?'player':firstChoice==='enemy'?'enemy':(Math.random()<.5?'player':'enemy');
-    var playerCards=playerDefinition?buildSavedDeck(playerDefinition):buildDeck(color),enemyCards=enemyDefinition?buildSavedDeck(enemyDefinition):buildDeck(opponentColor);
+    var playerCards=playerDefinition?buildSavedDeck(playerDefinition):buildDeck(color);
+    var enemyCards=gameOptions.enemyCards?shuffle(gameOptions.enemyCards.slice()):(enemyDefinition?buildSavedDeck(enemyDefinition):buildDeck(opponentColor));
     if(playerDefinition&&playerCards.length!==40)throw new Error('プレイヤー1の登録デッキが40枚ではありません');if(enemyDefinition&&enemyCards.length!==40)throw new Error('相手の登録デッキが40枚ではありません');
     state={
-      turn:1,maxMana:1,mana:1,enemyMaxMana:1,enemyMana:1,playerLife:20,enemyLife:20,
+      turn:1,maxMana:1,mana:1,enemyMaxMana:1,enemyMana:1,
+      playerLife:gameOptions.playerLife==null?20:Math.max(1,gameOptions.playerLife),
+      enemyLife:gameOptions.enemyLife==null?20:Math.max(1,gameOptions.enemyLife),
       playerDeck:playerCards,enemyDeck:enemyCards,matchMode:mode,playerColor:color,enemyColor:opponentColor,
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
       enemyBoard:[null,null,null,null,null],grave:[],enemyGrave:[],
       selectedCard:-1,selectedSlot:-1,playerTurn:firstSide==='player',firstSide:firstSide,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
-      extraTurns:{player:0,enemy:0},battleHistory:[]
+      extraTurns:{player:0,enemy:0},battleHistory:[],
+      eventMode:!!gameOptions.eventMode,eventStage:Number(gameOptions.eventStage)||0,
+      enemyLabel:gameOptions.enemyLabel||'CPU',eventBoss:!!gameOptions.boss,eventBossPulseRound:0
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
-    $('startScreen').style.display='none';
-    $('gameScreen').style.display='block';
-    $('controls').style.display='block';
+    hideSeasonScreens();
+    $('startScreen').style.display='none';$('homeScreen').style.display='none';$('homeNav').style.display='none';
+    $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
+    $('gameScreen').style.display='block';$('controls').style.display='block';
     $('resultModal').classList.remove('show');
-    logMsg((playerDefinition?playerDefinition.name:color+'デッキ')+' VS '+(enemyDefinition?enemyDefinition.name:opponentColor+'デッキ')+' ／ '+sideLabel(firstSide)+'が先攻');
+    document.body.classList.toggle('seasonBattle',state.eventMode);document.body.classList.toggle('bossBattle',state.eventBoss);
+    $('eventBattleBadge').classList.toggle('show',state.eventMode);$('eventBattleBadge').textContent=state.eventMode?'SEASON 1 ／ '+SEASON1_STAGES[state.eventStage].label:'';
+    $('bossStrip').classList.toggle('show',state.eventBoss);
+    logMsg((playerDefinition?playerDefinition.name:color+'デッキ')+' VS '+state.enemyLabel+' ／ '+sideLabel(firstSide)+'が先攻');
     render();
     if(firstSide==='enemy'&&mode==='cpu')setTimeout(function(){cpuTurn();},550);
   }catch(e){
     var box=$('startError');
-    box.style.display='block';
-    box.textContent='開始エラー: '+(e && e.message ? e.message : String(e));
+    if(gameOptions&&gameOptions.eventMode){showSeason1Hub();$('seasonHubHint').textContent='開始エラー: '+(e&&e.message?e.message:String(e));}
+    else{box.style.display='block';box.textContent='開始エラー: '+(e && e.message ? e.message : String(e));}
   }
 }
 function returnToDecks(){
   $('resultModal').classList.remove('show');
-  $('gameScreen').style.display='none';
-  $('controls').style.display='none';
-  $('startScreen').style.display='flex';renderSavedDeckSelectors();
+  $('gameScreen').style.display='none';$('controls').style.display='none';
+  if(state&&state.eventMode){showSeason1Hub();return;}
+  clearSeasonBattleTheme();$('startScreen').style.display='flex';renderSavedDeckSelectors();
 }
 async function drawCard(side){
   var deck=side==='player'?state.playerDeck:state.enemyDeck;
@@ -1012,7 +1307,7 @@ function manaFor(side){return side==='player'?state.mana:state.enemyMana;}
 function maxManaFor(side){return side==='player'?state.maxMana:state.enemyMaxMana;}
 function spendMana(side,amount){if(side==='player')state.mana-=amount;else state.enemyMana-=amount;}
 function isHumanSide(side){return side==='player' || state.matchMode==='local';}
-function sideLabel(side){return side==='player'?'プレイヤー1':state.matchMode==='local'?'プレイヤー2':'CPU';}
+function sideLabel(side){return side==='player'?'プレイヤー1':state.matchMode==='local'?'プレイヤー2':(state.enemyLabel||'CPU');}
 function boardFor(side){ return side==='player'?state.playerBoard:state.enemyBoard; }
 function graveFor(side){ return side==='player'?state.grave:state.enemyGrave; }
 function otherSide(side){ return side==='player'?'enemy':'player'; }
@@ -1127,11 +1422,13 @@ function render(){
   $('graveCount').textContent=graveFor(bottomSide).length;
   $('graveToolCount').textContent=graveFor(bottomSide).length;
   $('mana').textContent=manaFor(side)+'/'+maxManaFor(side);
-  $('enemyName').textContent=state.matchMode==='local'?'PLAYER 2':'CPU';
-  $('turnLabel').textContent='TURN '+state.turn+' / '+(side==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU');
-  $('topFieldLabel').textContent=(topSide==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU')+' FIELD';
-  $('bottomFieldLabel').textContent=(bottomSide==='player'?'PLAYER 1':state.matchMode==='local'?'PLAYER 2':'CPU')+' FIELD';
-  $('handLabel').textContent=(state.matchMode==='local'?(side==='player'?'PLAYER 1':'PLAYER 2'):'PLAYER 1')+' HAND';
+  $('enemyName').textContent=state.matchMode==='local'?'PLAYER 2':(state.enemyLabel||'CPU');
+  $('playerName').textContent=playerProfile.name||'PLAYER 1';
+  $('turnLabel').textContent='TURN '+state.turn+' / '+sideLabel(side);
+  $('topFieldLabel').textContent=sideLabel(topSide)+' FIELD';
+  $('bottomFieldLabel').textContent=sideLabel(bottomSide)+' FIELD';
+  $('handLabel').textContent=(state.matchMode==='local'?sideLabel(side):(playerProfile.name||'PLAYER 1'))+' HAND';
+  $('backBattleBtn').textContent=state.eventMode?'イベント':'デッキ選択';
   var selected=state.selectedCard>=0?handFor(side)[state.selectedCard]:null;
   var special=selectedSpecial(), controls=$('controls').querySelector('.controlInner');
   controls.classList.toggle('hasSpecial',!!special);
@@ -1590,6 +1887,7 @@ function showDestroy(side,index){
 }
 async function changeLife(side,amount){
   var key=side==='player'?'playerLife':'enemyLife'; state[key]+=amount;
+  if(state.eventMode&&side==='player'){eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(0,state.playerLife));persistSeason1State();}
   var el=document.querySelector('.life.'+(side==='player'?'player':'enemy'));
   var number=$(side==='player'?'playerLife':'enemyLife'); if(number) number.textContent=state[key];
   floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');
@@ -1702,7 +2000,7 @@ async function endTurn(){
   if(await beginExtraTurn(side))return;
   if(state.matchMode==='local'){await advanceLocalTurn(side);return;}
   await prepareNextTurn('enemy');
-  state.animating=false; render(); logMsg('CPUのターン');
+  state.animating=false; render(); logMsg(sideLabel('enemy')+'のターン');
   setTimeout(function(){cpuTurn(true);},350);
 }
 async function prepareNextTurn(nextSide){
@@ -1733,6 +2031,10 @@ async function cpuTurn(prepared){
   if(state.gameOver) return;
   state.animating=true;
   if(!prepared){state.enemyMana=state.enemyMaxMana;await processTurnEvent('enemy','onTurnStart');}
+  if(state.eventMode&&state.eventStage===3&&state.turn>1&&state.eventBossPulseRound!==state.turn){
+    state.eventBossPulseRound=state.turn;logMsg('黒龍の黒炎が迫る');await changeLife('player',-1);render();
+    if(checkGame()){render();return;}await wait(420);
+  }
   var progress=true;
   while(progress){
     progress=false;
@@ -1746,8 +2048,8 @@ async function cpuTurn(prepared){
         state.enemyMana-=cost;
         state.enemyHand.splice(i,1);
         var s=-1;
-        if(c.type==='スペル'){logMsg('CPUが'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
-        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg('CPUが'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='normal')await triggerCard(c,'onHandPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
+        if(c.type==='スペル'){logMsg(sideLabel('enemy')+'が'+c.name+'を使用');await triggerCard(c,'onPlay','enemy',-1,{});state.enemyGrave.push(c);}
+        else{s=firstEmpty(state.enemyBoard);c.canAttack=hasKeyword(c,'haste','enemy');state.enemyBoard[s]=c;logMsg(sideLabel('enemy')+'が'+c.name+(cpuMode==='dive'?'を潜水配置':'を配置'));render();animateSummon('enemy',s);await wait(220);await triggerCard(c,'onPlay','enemy',s,{});if(cpuMode==='normal')await triggerCard(c,'onHandPlay','enemy',s,{});if(cpuMode==='dive'){await emitBoardEvent('enemy','onFriendlyDive',{dived:c});await returnDivedCard('enemy',s,c);}}
         render(); if(s>=0) animateSummon('enemy',s); await wait(520);
         if(checkGame()){render();return;}
         progress=true; break;
@@ -1758,7 +2060,7 @@ async function cpuTurn(prepared){
     var u=state.enemyBoard[lane];
     if(!u || !u.canAttack || u.type==='ランドマーク' || hasKeyword(u,'cannotAttack','enemy')) continue;
     var attackLane=await prepareAttackLane('enemy',lane,u);
-    animateCard('enemy',attackLane); logMsg('CPUの'+u.name+'が攻撃'); await wait(320);
+    animateCard('enemy',attackLane); logMsg(sideLabel('enemy')+'の'+u.name+'が攻撃'); await wait(320);
     await triggerCard(u,'onAttack','enemy',attackLane,{});
     var ti=hasKeyword(u,'unblockable','enemy')?-1:defenderIndex('player',attackLane);
     if(ti>=0){
@@ -1792,6 +2094,7 @@ function finish(win,text){
   state.gameOver=true; state.animating=false;
   playerStats.battles+=1;if(win)playerStats.wins+=1;
   persistPlayerStats();refreshProfileUnlocks();
+  if(state.eventMode){handleSeason1BattleEnd(win,text);return;}
   $('resultTitle').textContent=state.matchMode==='local'?(win?'PLAYER 1 WIN':'PLAYER 2 WIN'):(win?'VICTORY':'DEFEAT');
   $('resultText').textContent=text;
   $('resultModal').classList.add('show');
@@ -1849,7 +2152,7 @@ window.onerror=function(message,source,line,col,error){
   if($('startScreen').style.display!=='none'){box.style.display='block';box.textContent='エラー: '+message+'\nline '+line;}
   return false;
 };
-renderHomeProfile();
+renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
 </html>
