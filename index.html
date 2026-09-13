@@ -340,10 +340,10 @@ var CARD_POOLS = {
     ["反乱する蜥蜴軍",4,2,"ユニット","■ 配置：自分の他のユニットのパワーを+1する。"],
     ["集結するリスカリ軍",5,3,"ユニット","■ 配置：自分の他のスロットにパワー2のトークンユニット2体を配置する。"],
     ["反乱の先導者ボザヤ",5,3,"ユニット","■ 自分のユニットが与えるダメージを×2する。"],
-    ["ハストボーンの北王",2,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、カードを1枚引く。"],
-    ["ハストボーンの東王",3,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、正面スロットのユニット1体に3ダメージを与える。"],
-    ["ハストボーンの西王",4,3,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、このユニットのパワーを+2する。"],
     ["四都市の統合王 クルオケシュ",7,5,"ユニット","■ 配置：自分の他のユニットを好きな数選び、手札に戻す。戻したユニット1体につき、そのスロットにパワー4のトークンユニットを配置する。"],
+    ["ハストボーンの西王",4,3,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、このユニットのパワーを+2する。"],
+    ["ハストボーンの東王",3,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、正面スロットのユニット1体に3ダメージを与える。"],
+    ["ハストボーンの北王",2,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、カードを1枚引く。"],
     ["翠冠の継承",2,0,"スペル","■ 報復：2\n■ 自分のユニット1体を選び、手札に戻す。そうしたなら、手札からコスト3以下のユニットを配置する。"]
   ],
   "白": [
@@ -354,12 +354,13 @@ var CARD_POOLS = {
     ["永遠樹の恩寵",3,0,"スペル","■ 自分の資源最大値を+1する。"],
     ["決闘場のチャンピオン",4,3,"ユニット","■ 配置：相手のユニット1体を選び、このユニットの正面スロットに移動させる。"],
     ["王室近衛兵",4,3,"ユニット","■ このユニットが受けるダメージを1減らす。"],
-    ["クロスフォート城",4,0,"ランドマーク","■ 自分のパワー3以上のユニットは守護を持つ。"],
+    ["クロスフォート城",2,0,"ランドマーク","■ 自分のパワー3以上のユニットは守護を持つ。"],
     ["白獅子の将軍",5,4,"ユニット","■ 配置：自分の資源を+3する。"],
     ["王国の反逆者グレン",10,6,"ユニット","■ 手札配置：自分のターンを追加する。"],
     ["大正門の見張り手",2,2,"ユニット","■ 配置：自分のライフを1回復する。"],
-    ["フィリポス山脈",2,0,"ランドマーク","■ 自分のターン開始時：自分の資源を+1する。その後、このランドマークを破壊する。"],
+    ["フィリポス山脈",2,0,"ランドマーク","■ 自分のターン開始時：自分の資源最大値を+1する。その後、このランドマークを破壊する。"],
     ["イルデニアの鍛冶師",3,2,"ユニット","■ 配置：自分のユニット1体を選び、パワーを+1する。"],
+    ["銀嶺の軍旗手",4,1,"ユニット","■ 配置：自分のユニット1体を選び、パワーを+3する。"],
     ["投獄",4,0,"スペル","■ 報復：3\n■ 相手のユニット1体を選び、パワーを2にする。"],
     ["イルデニアの騎士団長",6,5,"ユニット","■ 配置：自分のライフを5回復する。"],
     ["銀嶺の騎士ゼルモント",7,6,"ユニット","■ 守護\n■ 配置：自分の他のユニットすべてのパワーを+2する。\n■ 自分のユニットが防衛した時、自分のライフを1回復する。"]
@@ -376,8 +377,10 @@ var CARD_POOLS = {
     ["処刑",6,0,"スペル","■ 報復：4\n■ 相手のユニット1体を選び、破壊する。"],
     ["帝国の黒騎士団",6,0,"スペル","■ 自分のスロットすべてにパワー2のトークンユニット1体ずつを配置する。"],
     ["真紅の囁きアリオサ",2,2,"ユニット","■ 攻撃：このユニットを隣接スロットに移動してもよい。\n■ 自分のユニットが破壊された時、相手のライフに1ダメージを与える。"],
+    ["バックスタブ",3,0,"スペル","■ コスト3以下の相手のユニット1体を選び、3ダメージを与える。"],
     ["ニルスタッドの諜報員",2,2,"ユニット","■ 報復：2"],
-    ["沈黙は破られた",5,0,"スペル","■ カードを2枚引く。\n■ 自分のライフに3ダメージを与える。"],
+    ["緋帳の曲芸兵",3,2,"ユニット","■ 攻撃：このユニットを隣接スロットに移動してもよい。その後、正面スロットのユニット1体に1ダメージを与える。"],
+    ["「沈黙は破られた」",5,0,"スペル","■ カードを2枚引く。\n■ 自分のライフに3ダメージを与える。"],
     ["緋帳の貴婦人",4,1,"ユニット","■ 報復：3\n■ 殺傷"],
     ["ニルスタッドの影",5,3,"ユニット","■ 報復：3\n■ 猛襲"]
   ],
@@ -431,18 +434,167 @@ var CARD_POOLS = {
     ["黄金文明の再興",6,0,"スペル","■ 自分の『聖遺物』を持つカードをすべて破壊する。破壊したカード1枚につき、そのスロットにパワー5のトークンユニット1体を配置する。"]
   ]
 };
+var CARD_IDS={
+  "原始的な投槍":"C001-001",
+  "群れ呼び蜥蜴":"C001-002",
+  "沼潜みの射手":"C001-003",
+  "毒牙の蜥蜴":"C001-004",
+  "開戦の笛吹":"C001-005",
+  "復讐者アーシュ":"C001-006",
+  "鱗の頭領シャトゥルツカ":"C001-007",
+  "反乱する蜥蜴軍":"C001-008",
+  "集結するリスカリ軍":"C001-009",
+  "反乱の先導者ボザヤ":"C001-010",
+  "クロスフォートの城壁":"C001-011",
+  "農民":"C001-012",
+  "クロスフォート兵":"C001-013",
+  "王国の重装歩兵":"C001-014",
+  "永遠樹の恩寵":"C001-015",
+  "決闘場のチャンピオン":"C001-016",
+  "王室近衛兵":"C001-017",
+  "クロスフォート城":"C001-018",
+  "白獅子の将軍":"C001-019",
+  "王国の反逆者グレン":"C001-020",
+  "帝国の突撃兵":"C001-021",
+  "帝国の投擲兵":"C001-022",
+  "帝国の騎馬隊":"C001-023",
+  "皇帝軍":"C001-024",
+  "捨て身の突撃兵":"C001-025",
+  "強襲の指揮官":"C001-026",
+  "黒の将軍":"C001-027",
+  "龍皇帝ヴァンビエッタⅢ":"C001-028",
+  "処刑":"C001-029",
+  "帝国の黒騎士団":"C001-030",
+  "危険な釣り人":"C001-031",
+  "海底の徘徊者":"C001-032",
+  "危険海域":"C001-033",
+  "人食いクラゲ":"C001-034",
+  "深海ピラニア":"C001-035",
+  "深海の大渦バルメデ":"C001-036",
+  "アークルハーバーの夜笛守":"C001-037",
+  "船喰らい":"C001-038",
+  "激浪のアクルティス":"C001-039",
+  "白龍エルレハイヌ":"C001-040",
+  "終末の亀裂 ダルディエク":"C001-041",
+  "亜龍イザルクリューネ":"C001-042",
+  "起源の龍モルディヤルデ":"C001-043",
+  "サルベージ":"C001-044",
+  "砂漠の贈賄者":"C001-045",
+  "流砂乗り":"C001-046",
+  "水脈への地図":"C001-047",
+  "砂漠の商隊狩り":"C001-048",
+  "砂読みの案内人":"C001-049",
+  "オアシスの不法管理者":"C001-050",
+  "武装商人ラズリウス":"C001-051",
+  "砂漠の先遣隊":"C001-052",
+  "黄金文明の遺物":"C001-053",
+  "奇襲する砂蜘蛛":"C001-054",
+  "アウロニアン・デスワーム":"C001-055",
+  "四都市の統合王 クルオケシュ":"C002-001",
+  "ハストボーンの西王":"C002-002",
+  "ハストボーンの東王":"C002-003",
+  "ハストボーンの北王":"C002-004",
+  "翠冠の継承":"C002-005",
+  "大正門の見張り手":"C002-006",
+  "フィリポス山脈":"C002-007",
+  "イルデニアの鍛冶師":"C002-008",
+  "銀嶺の軍旗手":"C002-009",
+  "投獄":"C002-010",
+  "イルデニアの騎士団長":"C002-011",
+  "銀嶺の騎士ゼルモント":"C002-012",
+  "真紅の囁きアリオサ":"C002-013",
+  "バックスタブ":"C002-014",
+  "ニルスタッドの諜報員":"C002-015",
+  "緋帳の曲芸兵":"C002-016",
+  "「沈黙は破られた」":"C002-017",
+  "緋帳の貴婦人":"C002-018",
+  "ニルスタッドの影":"C002-019",
+  "廃船酒場の踊り子":"C002-020",
+  "沈没街の孤児":"C002-021",
+  "コールティガの港湾労働者":"C002-022",
+  "座礁船の縫合士":"C002-023",
+  "港印卿の拒絶":"C002-024",
+  "コールティガの船骸書記":"C002-025",
+  "港印卿コルドロッホ":"C002-026",
+  "死礁の貪り手":"C002-027",
+  "黄金色の金属片":"C002-028",
+  "砂漠に沈む黄金門":"C002-029",
+  "黄金の天秤":"C002-030",
+  "アウロニア信者":"C002-031",
+  "異端審問":"C002-032",
+  "遺跡荒らしの商隊":"C002-033",
+  "アウロニアの重装神官":"C002-034",
+  "アウロニアの巫女":"C002-035",
+  "女教皇アウローン":"C002-036",
+  "黄金文明の再興":"C002-037"
+};
 var CARD_SPECIES={
-  '群れ呼び蜥蜴':'リスカリ','沼潜みの射手':'リスカリ','毒牙の蜥蜴':'リスカリ','開戦の笛吹':'リスカリ','復讐者アーシュ':'リスカリ','鱗の頭領シャトゥルツカ':'リスカリ','反乱する蜥蜴軍':'リスカリ','集結するリスカリ軍':'リスカリ','反乱の先導者ボザヤ':'リスカリ',
-  '四都市の統合王 クルオケシュ':'ハストボーン','ハストボーンの西王':'ハストボーン','ハストボーンの東王':'ハストボーン','ハストボーンの北王':'ハストボーン',
-  'クロスフォートの城壁':'クロスフォート','農民':'クロスフォート','クロスフォート兵':'クロスフォート','王国の重装歩兵':'クロスフォート','永遠樹の恩寵':'クロスフォート','決闘場のチャンピオン':'クロスフォート','王室近衛兵':'クロスフォート','クロスフォート城':'クロスフォート','白獅子の将軍':'クロスフォート','王国の反逆者グレン':'クロスフォート',
-  '大正門の見張り手':'イルデニア','イルデニアの鍛冶師':'イルデニア','イルデニアの騎士団長':'イルデニア','銀嶺の騎士ゼルモント':'イルデニア',
-  '帝国の突撃兵':'アヴィス','帝国の投擲兵':'アヴィス','帝国の騎馬隊':'アヴィス','皇帝軍':'アヴィス','捨て身の突撃兵':'アヴィス','強襲の指揮官':'アヴィス','黒の将軍':'アヴィス','龍皇帝ヴァンビエッタⅢ':'アヴィス',
-  '人食いクラゲ':'海獣','深海ピラニア':'海獣','深海の大渦バルメデ':'海獣','船喰らい':'海獣','激浪のアクルティス':'海獣',
-  '白龍エルレハイヌ':'ドラゴン','亜龍イザルクリューネ':'ドラゴン','起源の龍モルディヤルデ':'ドラゴン',
-  '黄金色の金属片':'聖遺物','砂漠に沈む黄金門':'聖遺物','黄金の天秤':'聖遺物','アウロニアの重装神官':'アウロニア聖教','女教皇アウローン':'アウロニア聖教'
+  "群れ呼び蜥蜴":"リスカリ",
+  "沼潜みの射手":"リスカリ",
+  "毒牙の蜥蜴":"リスカリ",
+  "開戦の笛吹":"リスカリ",
+  "復讐者アーシュ":"リスカリ",
+  "鱗の頭領シャトゥルツカ":"リスカリ",
+  "反乱する蜥蜴軍":"リスカリ",
+  "集結するリスカリ軍":"リスカリ",
+  "反乱の先導者ボザヤ":"リスカリ",
+  "クロスフォートの城壁":"クロスフォート",
+  "農民":"クロスフォート",
+  "クロスフォート兵":"クロスフォート",
+  "王国の重装歩兵":"クロスフォート",
+  "永遠樹の恩寵":"クロスフォート",
+  "決闘場のチャンピオン":"クロスフォート",
+  "王室近衛兵":"クロスフォート",
+  "クロスフォート城":"クロスフォート",
+  "白獅子の将軍":"クロスフォート",
+  "王国の反逆者グレン":"クロスフォート",
+  "帝国の突撃兵":"アヴィス",
+  "帝国の投擲兵":"アヴィス",
+  "帝国の騎馬隊":"アヴィス",
+  "皇帝軍":"アヴィス",
+  "捨て身の突撃兵":"アヴィス",
+  "強襲の指揮官":"アヴィス",
+  "黒の将軍":"アヴィス",
+  "龍皇帝ヴァンビエッタⅢ":"アヴィス",
+  "帝国の黒騎士団":"アヴィス",
+  "人食いクラゲ":"海獣",
+  "深海ピラニア":"海獣",
+  "深海の大渦バルメデ":"海獣",
+  "船喰らい":"海獣",
+  "激浪のアクルティス":"海獣",
+  "白龍エルレハイヌ":"ドラゴン",
+  "亜龍イザルクリューネ":"ドラゴン",
+  "起源の龍モルディヤルデ":"ドラゴン",
+  "四都市の統合王 クルオケシュ":"ハストボーン",
+  "ハストボーンの西王":"ハストボーン",
+  "ハストボーンの東王":"ハストボーン",
+  "ハストボーンの北王":"ハストボーン",
+  "大正門の見張り手":"イルデニア",
+  "イルデニアの鍛冶師":"イルデニア",
+  "銀嶺の軍旗手":"イルデニア",
+  "イルデニアの騎士団長":"イルデニア",
+  "銀嶺の騎士ゼルモント":"イルデニア",
+  "黄金色の金属片":"聖遺物",
+  "砂漠に沈む黄金門":"聖遺物",
+  "黄金の天秤":"聖遺物",
+  "アウロニアの重装神官":"アウロニア聖教",
+  "女教皇アウローン":"アウロニア聖教"
 };
 var CARD_LEGENDARY={
-  '鱗の頭領シャトゥルツカ':true,'王国の反逆者グレン':true,'龍皇帝ヴァンビエッタⅢ':true,'深海の大渦バルメデ':true,'起源の龍モルディヤルデ':true,'武装商人ラズリウス':true,'四都市の統合王 クルオケシュ':true,'銀嶺の騎士ゼルモント':true,'真紅の囁きアリオサ':true,'港印卿コルドロッホ':true,'女教皇アウローン':true
+  "鱗の頭領シャトゥルツカ":true,
+  "王国の反逆者グレン":true,
+  "龍皇帝ヴァンビエッタⅢ":true,
+  "深海の大渦バルメデ":true,
+  "起源の龍モルディヤルデ":true,
+  "武装商人ラズリウス":true,
+  "四都市の統合王 クルオケシュ":true,
+  "銀嶺の騎士ゼルモント":true,
+  "真紅の囁きアリオサ":true,
+  "港印卿コルドロッホ":true,
+  "女教皇アウローン":true
+};
+var CARD_NAME_ALIASES={
+  "沈黙は破られた":"「沈黙は破られた」"
 };
 var CARD_RULES={
   '原始的な投槍':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
@@ -471,8 +623,9 @@ var CARD_RULES={
   '白獅子の将軍':{onPlay:[{type:'gainMana',amount:3}]},
   '王国の反逆者グレン':{onHandPlay:[{type:'addTurn',amount:1}]},
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
-  'フィリポス山脈':{onTurnStart:[{type:'gainMana',amount:1},{type:'destroySelf'}]},
+  'フィリポス山脈':{onTurnStart:[{type:'gainMaxMana',amount:1},{type:'destroySelf'}]},
   'イルデニアの鍛冶師':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:1}]},
+  '銀嶺の軍旗手':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:3}]},
   '投獄':{revenge:3,onPlay:[{type:'setPower',target:'enemyUnit',amount:2}]},
   'イルデニアの騎士団長':{onPlay:[{type:'heal',amount:5}]},
   '銀嶺の騎士ゼルモント':{keywords:['guard'],onPlay:[{type:'buffOthers',amount:2}],onDefended:[{type:'heal',amount:1}]},
@@ -486,7 +639,9 @@ var CARD_RULES={
   '処刑':{revenge:4,onPlay:[{type:'destroyUnit',target:'enemyUnit'}]},
   '帝国の黒騎士団':{onPlay:[{type:'createTokens',fillAll:true,power:2}]},
   '真紅の囁きアリオサ':{moveOnAttack:true,onFriendlyDestroyed:[{type:'damageLife',target:'enemy',amount:1}]},
-  '沈黙は破られた':{onPlay:[{type:'draw',amount:2},{type:'damageLife',target:'self',amount:3}]},
+  'バックスタブ':{onPlay:[{type:'damageUnit',target:'enemyUnitMaxCost',maxCost:3,amount:3}]},
+  '緋帳の曲芸兵':{moveOnAttack:true,onAttack:[{type:'damageUnit',target:'opposing',amount:1}]},
+  '「沈黙は破られた」':{onPlay:[{type:'draw',amount:2},{type:'damageLife',target:'self',amount:3}]},
   'ニルスタッドの諜報員':{revenge:2},
   '緋帳の貴婦人':{revenge:3,keywords:['lethal']},
   'ニルスタッドの影':{revenge:3,keywords:['haste']},
@@ -582,6 +737,7 @@ function persistSavedDecks(){try{localStorage.setItem('crossfort_decks_v1',JSON.
 function getSavedDeck(id){for(var i=0;i<savedDecks.length;i++)if(savedDecks[i].id===id)return savedDecks[i];return null;}
 function totalDeckCards(counts){var total=0;for(var name in counts)if(Object.prototype.hasOwnProperty.call(counts,name))total+=Number(counts[name])||0;return total;}
 function cardTemplateByName(name){
+  name=CARD_NAME_ALIASES[name]||name;
   for(var color in CARD_POOLS){var pool=CARD_POOLS[color];for(var i=0;i<pool.length;i++)if(pool[i][0]===name)return {row:pool[i],color:color};}
   return null;
 }
@@ -600,7 +756,7 @@ function renderDeckLibrary(){
 }
 function showDeckEditor(id){
   var deck=id?getSavedDeck(id):null;editingDeckId=deck?deck.id:'';editorColors=deck?(deck.colors||[]).slice(0,2):[];editorCounts={};
-  if(deck)for(var name in deck.cards)if(deck.cards[name]>0)editorCounts[name]=Math.min(4,deck.cards[name]);
+  if(deck)for(var name in deck.cards)if(deck.cards[name]>0){var resolvedName=CARD_NAME_ALIASES[name]||name;editorCounts[resolvedName]=Math.min(4,(editorCounts[resolvedName]||0)+deck.cards[name]);}
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='block';$('deckEditorTitle').textContent=deck?'デッキ編集':'デッキ作成';$('deckNameInput').value=deck?deck.name:'デッキ'+(savedDecks.length+1);$('deckEditorError').textContent='';renderDeckEditor();window.scrollTo(0,0);
 }
 function toggleEditorColor(color){
@@ -694,7 +850,7 @@ function beginConfiguredGame(){startGame(setupPlayerColor,setupEnemyColor,setupM
 function rulesFor(card){ return CARD_RULES[card.name]||{}; }
 function cloneCard(a,color){
   var printedPower=Math.max(0,a[2]||0);
-  return {name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,legendary:!!CARD_LEGENDARY[a[0]],canAttack:false};
+  return {id:CARD_IDS[a[0]]||'',name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,legendary:!!CARD_LEGENDARY[a[0]],canAttack:false};
 }
 function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
 function resetCardAfterGrave(card){
@@ -1025,17 +1181,17 @@ function cpuAttackDestination(side,candidates){
   for(var j=1;j<candidates.length;j++){var defender=defenderIndex(enemySide,candidates[j]);if(enemy[defender].power<enemy[bestDefender].power){best=candidates[j];bestDefender=defender;}}
   return best;
 }
-function chooseAttackDestination(side,index){
+function chooseAttackDestination(side,index,card){
   var candidates=attackMoveCandidates(side,index);
   if(candidates.length===1)return Promise.resolve(index);
   if(!isHumanSide(side))return Promise.resolve(cpuAttackDestination(side,candidates));
   return new Promise(function(resolve){
-    state.targetRequest={targetSide:side,candidates:candidates,prompt:'アリオサの攻撃位置を選択（現在位置または隣接スロット）',resolve:function(target){resolve(target.index);}};render();
+    state.targetRequest={targetSide:side,candidates:candidates,prompt:(card?card.name:'ユニット')+'の攻撃位置を選択（現在位置または隣接スロット）',resolve:function(target){resolve(target.index);}};render();
   });
 }
 async function prepareAttackLane(side,index,card){
   if(!rulesFor(card).moveOnAttack)return index;
-  var destination=await chooseAttackDestination(side,index),board=boardFor(side);
+  var destination=await chooseAttackDestination(side,index,card),board=boardFor(side);
   if(destination!==index&&board[index]===card&&!board[destination]){
     board[index]=null;board[destination]=card;render();pulseClass(boardCard(side,destination),'repositioning',380);logMsg(card.name+'がスロット'+(destination+1)+'へ移動');await wait(300);
   }
@@ -1198,6 +1354,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     var a=actions[i], own=boardFor(side), enemySide=otherSide(side), enemy=boardFor(enemySide), target=null, j;
     if(a.requiresReturned && !context.returned) continue;
     if(a.target==='enemyUnit') target=await chooseTarget(side,enemySide,'効果の対象にする敵カードをタップ',function(c){return c.type==='ユニット';});
+    if(a.target==='enemyUnitMaxCost') target=await chooseTarget(side,enemySide,'コスト'+a.maxCost+'以下の敵ユニットをタップ',function(c){return c.type==='ユニット' && c.cost<=a.maxCost;});
     if(a.target==='allyUnit') target=await chooseTarget(side,side,'効果の対象にする味方カードをタップ',function(c){return c.type==='ユニット';});
     if(a.target==='otherAllyUnit') target=await chooseTarget(side,side,'手札に戻す味方ユニットをタップ',function(c){return c!==sourceCard && c.type==='ユニット';});
     if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot] && (a.type!=='damageUnit' || enemy[sourceSlot].type==='ユニット')) target={side:enemySide,index:sourceSlot};
