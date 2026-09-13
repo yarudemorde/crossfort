@@ -348,14 +348,14 @@ var CARD_POOLS = {
   ],
   "白": [
     ["クロスフォートの城壁",1,4,"ユニット","■ このユニットは攻撃できない。"],
-    ["農民",2,1,"ユニット","■ 配置：自分の資源を+1する。"],
+    ["農民",2,2,"ユニット","■ 配置：自分の資源を+1する。"],
     ["クロスフォート兵",2,2,"ユニット","■ 守護"],
     ["王国の重装歩兵",3,3,"ユニット","■ 守護"],
-    ["永遠樹の恩寵",3,0,"スペル","■ 自分の資源を+1する。"],
+    ["永遠樹の恩寵",3,0,"スペル","■ 自分の資源最大値を+1する。"],
     ["決闘場のチャンピオン",4,3,"ユニット","■ 配置：相手のユニット1体を選び、このユニットの正面スロットに移動させる。"],
     ["王室近衛兵",4,3,"ユニット","■ このユニットが受けるダメージを1減らす。"],
     ["クロスフォート城",4,0,"ランドマーク","■ 自分のパワー3以上のユニットは守護を持つ。"],
-    ["白獅子の将軍",5,4,"ユニット","■ 配置：自分の資源を+2する。"],
+    ["白獅子の将軍",5,4,"ユニット","■ 配置：自分の資源を+3する。"],
     ["王国の反逆者グレン",10,6,"ユニット","■ 手札配置：自分のターンを追加する。"],
     ["大正門の見張り手",2,2,"ユニット","■ 配置：自分のライフを1回復する。"],
     ["フィリポス山脈",2,0,"ランドマーク","■ 自分のターン開始時：自分の資源を+1する。その後、このランドマークを破壊する。"],
@@ -464,11 +464,11 @@ var CARD_RULES={
   '農民':{onPlay:[{type:'gainMana',amount:1}]},
   'クロスフォート兵':{keywords:['guard']},
   '王国の重装歩兵':{keywords:['guard']},
-  '永遠樹の恩寵':{onPlay:[{type:'gainMana',amount:1}]},
+  '永遠樹の恩寵':{onPlay:[{type:'gainMaxMana',amount:1}]},
   '決闘場のチャンピオン':{onPlay:[{type:'moveEnemyToOpposing',target:'enemyUnit'}]},
   '王室近衛兵':{damageReduction:1},
   'クロスフォート城':{auras:[{keyword:'guard',minPower:3}]},
-  '白獅子の将軍':{onPlay:[{type:'gainMana',amount:2}]},
+  '白獅子の将軍':{onPlay:[{type:'gainMana',amount:3}]},
   '王国の反逆者グレン':{onHandPlay:[{type:'addTurn',amount:1}]},
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
   'フィリポス山脈':{onTurnStart:[{type:'gainMana',amount:1},{type:'destroySelf'}]},
@@ -1204,6 +1204,10 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.type==='draw') for(j=0;j<a.amount;j++) await drawCard(side);
     else if(a.type==='heal') await changeLife(side,a.amount);
     else if(a.type==='gainMana') changeMana(side,a.amount);
+    else if(a.type==='gainMaxMana'){
+      if(side==='player') state.maxMana=Math.min(12,state.maxMana+a.amount);
+      else state.enemyMaxMana=Math.min(12,state.enemyMaxMana+a.amount);
+    }
     else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount)));
     else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false);
     else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
