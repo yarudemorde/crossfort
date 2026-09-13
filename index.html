@@ -429,7 +429,7 @@ var CARD_POOLS = {
     ["異端審問",2,0,"スペル","■ 信仰：2 このカードは報復：1を持つ。\n■ 相手のユニット1体を選び、2ダメージを与える。"],
     ["遺跡荒らしの商隊",3,1,"ユニット","■ 配置：自分の『聖遺物』を持つカードを1枚選び、破壊する。そうしたなら、そのスロットにパワー3のトークンユニットを1体配置する。"],
     ["アウロニアの重装神官",3,3,"ユニット","■ 信仰：2 このユニットは守護を持つ。\n■ 信仰：3 配置：このユニットのパワーを+2する。"],
-    ["アウロニアの巫女",4,2,"ユニット","■ 配置：自分の山札からコスト2以下の『聖遺物』を持つカード1枚を選び、配置する。その後、自分の山札をシャッフルする。"],
+    ["アウロニアの巫女",4,2,"ユニット","■ 配置：自分の墓地からコスト2以下の『聖遺物』を持つランドマーク1枚を選び、配置する。"],
     ["女教皇アウローン",5,4,"ユニット","■ 信仰：3 このユニットは防衛されない。\n■ 魂響：自分の『聖遺物』を持つカード1枚を選び、破壊する。そうしたなら、このユニットを墓地から配置する。"],
     ["黄金文明の再興",6,0,"スペル","■ 自分の『聖遺物』を持つカードをすべて破壊する。破壊したカード1枚につき、そのスロットにパワー5のトークンユニット1体を配置する。"]
   ]
@@ -684,7 +684,7 @@ var CARD_RULES={
   '異端審問':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
   '遺跡荒らしの商隊':{onPlay:[{type:'destroyRelicForToken',power:3}]},
   'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
-  'アウロニアの巫女':{onPlay:[{type:'deployFromDeck',maxCost:2,tag:'relic'}]},
+  'アウロニアの巫女':{onPlay:[{type:'deployFromGrave',landmarkOnly:true,maxCost:2,tag:'relic'}]},
   '女教皇アウローン':{conditionalKeywords:[{keyword:'unblockable',relics:3}],onDestroyed:[{type:'soulEcho'}]},
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
@@ -1334,7 +1334,7 @@ function makeToken(power,color){
 }
 function zoneCandidates(cards,action){
   return cards.filter(function(c){
-    return (!action.unitOnly || c.type==='ユニット') && c.type!=='スペル' && c.cost<=(action.maxCost==null?99:action.maxCost) && (!action.tag || (rulesFor(c).tags||[]).indexOf(action.tag)>=0);
+    return (!action.unitOnly || c.type==='ユニット') && (!action.landmarkOnly || c.type==='ランドマーク') && c.type!=='スペル' && c.cost<=(action.maxCost==null?99:action.maxCost) && (!action.tag || (rulesFor(c).tags||[]).indexOf(action.tag)>=0);
   });
 }
 async function deployFromZone(side,zone,action){
