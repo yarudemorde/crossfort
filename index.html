@@ -297,6 +297,15 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .savedDeckMeta,.eventDeckMeta{display:flex;align-items:center;gap:7px}
 @media(max-width:380px){.editorColorGrid{gap:5px}.editorColorBtn{min-height:44px}.editorColorSwatch{width:22px;height:22px}.costCurve{gap:3px}}
 
+
+/* Color-stacked deck cost curve and deck color ratios. */
+.deckColorRatio{display:grid;grid-template-columns:25px auto;align-items:center;gap:4px}
+.deckColorRatio b{color:#d9c7aa;font-family:Georgia,serif;font-size:10px}
+.costBarFill{display:flex;flex-direction:column-reverse;overflow:hidden;background:none;border-color:#ffffff38;box-shadow:0 0 9px #0005}
+.costBarSegment{display:block;width:100%;flex:0 0 auto;min-height:1px}
+.costBarSegment.green{background:linear-gradient(90deg,#3f7f52,#6fbd83)}.costBarSegment.white{background:linear-gradient(90deg,#bdb4a2,#f0e8d9)}.costBarSegment.red{background:linear-gradient(90deg,#963b38,#dc6a63)}.costBarSegment.blue{background:linear-gradient(90deg,#326c96,#69a8d2)}.costBarSegment.black{background:linear-gradient(90deg,#4e3f59,#8a72a0)}.costBarSegment.yellow{background:linear-gradient(90deg,#9f8324,#e4c84f)}
+.costBarSegment+.costBarSegment{border-bottom:1px solid #090c1099}
+
 </style>
 </head>
 <body>
@@ -1352,21 +1361,38 @@ function deckColorIconsHtml(colors){
 }
 function renderDeckEditorStats(total){
   var colorRoot=$('deckColorIcons'),colors=editorColors.slice();
-  colorRoot.innerHTML=colors.length?deckColorIconsHtml(colors):'<span class="deckColorEmpty">未選択</span>';
-  colorRoot.setAttribute('aria-label',colors.length?'選択中：'+colors.join('、'):'カラー未選択');
-  var bins=[0,0,0,0,0,0,0,0],weighted=0;
+  var bins=[0,0,0,0,0,0,0,0],binColors=[],colorTotals={},weighted=0;
+  for(var b=0;b<8;b++)binColors.push({});
   for(var name in editorCounts)if(Object.prototype.hasOwnProperty.call(editorCounts,name)){
     var count=Number(editorCounts[name])||0,template=cardTemplateByName(name);
     if(!count||!template)continue;
-    var card=cloneCard(template.row,template.color),cost=Math.max(0,Number(card.cost)||0);
-    bins[Math.min(7,Math.floor(cost))]+=count;weighted+=cost*count;
+    var card=cloneCard(template.row,template.color),cost=Math.max(0,Number(card.cost)||0),bucket=Math.min(7,Math.floor(cost));
+    bins[bucket]+=count;binColors[bucket][card.color]=(binColors[bucket][card.color]||0)+count;colorTotals[card.color]=(colorTotals[card.color]||0)+count;weighted+=cost*count;
+  }
+  if(colors.length){
+    var colorHtml=[],colorLabels=[];
+    for(var c=0;c<colors.length;c++){
+      var color=colors[c],colorCount=colorTotals[color]||0,ratio=total?Math.round(colorCount/total*100):0,cls=COLOR_CLASS[color]||'';
+      colorHtml.push('<span class="deckColorRatio"><span class="deckColorIcon '+cls+'" title="'+escapeHtml(color)+'" aria-hidden="true"></span><b>'+ratio+'%</b></span>');
+      colorLabels.push(color+' '+ratio+'パーセント');
+    }
+    colorRoot.innerHTML=colorHtml.join('');colorRoot.setAttribute('aria-label','選択中：'+colorLabels.join('、'));
+  }else{
+    colorRoot.innerHTML='<span class="deckColorEmpty">未選択</span>';colorRoot.setAttribute('aria-label','カラー未選択');
   }
   $('deckAverageCost').textContent=total?(weighted/total).toFixed(1):'0.0';
   var maxCount=Math.max.apply(null,bins.concat([1])),html=[],labels=[];
   for(var i=0;i<bins.length;i++){
-    var label=i===7?'7+':String(i),height=bins[i]?Math.max(8,Math.round(bins[i]/maxCount*100)):0;
-    labels.push(label+'コスト '+bins[i]+'枚');
-    html.push('<div class="costBarItem"><span class="costBarCount">'+(bins[i]||'')+'</span><span class="costBarTrack"><span class="costBarFill" style="height:'+height+'%"></span></span><span class="costBarLabel">'+label+'</span></div>');
+    var label=i===7?'7+':String(i),height=bins[i]?Math.max(8,Math.round(bins[i]/maxCount*100)):0,segments=[],parts=[];
+    for(var j=0;j<colors.length;j++){
+      var segmentColor=colors[j],segmentCount=binColors[i][segmentColor]||0;
+      if(!segmentCount)continue;
+      var percentage=Math.round(segmentCount/bins[i]*100),segmentClass=COLOR_CLASS[segmentColor]||'';
+      segments.push('<span class="costBarSegment '+segmentClass+'" style="height:'+(segmentCount/bins[i]*100)+'%" title="'+escapeHtml(segmentColor)+' '+segmentCount+'枚（'+percentage+'%）"></span>');
+      parts.push(segmentColor+segmentCount+'枚');
+    }
+    labels.push(label+'コスト '+bins[i]+'枚'+(parts.length?'（'+parts.join('、')+'）':''));
+    html.push('<div class="costBarItem"><span class="costBarCount">'+(bins[i]||'')+'</span><span class="costBarTrack"><span class="costBarFill" style="height:'+height+'%">'+segments.join('')+'</span></span><span class="costBarLabel">'+label+'</span></div>');
   }
   var curve=$('deckCostCurve');curve.innerHTML=html.join('');curve.setAttribute('aria-label',total?labels.join('、'):'カードはまだ選択されていません');
 }
