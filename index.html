@@ -2108,7 +2108,11 @@ var AI_WEIGHTS={
   tieNoise:.35,
   stallPressure:2.5,
   disadvantagePressure:.12,
-  postAttackDeploy:.42
+  postAttackDeploy:.42,
+  lifeDefense:2.8,
+  preventLethal:8000,
+  fullBlock:1.4,
+  cheapWall:.16
 };
 
 function aiLifeFor(side){return side==='player'?state.playerLife:state.enemyLife;}
@@ -2260,10 +2264,52 @@ function aiCanUseCard(card,side,lane,mode){
   for(var i=0;i<actions.length;i++)if(aiHasValidTarget(actions[i],side,card,lane)){hasUsable=true;break;}
   return hasUsable;
 }
+function aiExpectedIncomingLifeDamage(side){
+  var enemySide=otherSide(side),enemy=boardFor(enemySide),own=boardFor(side),total=0;
+  for(var lane=0;lane<enemy.length;lane++){
+    var attacker=enemy[lane];
+    if(!attacker||attacker.type==='ランドマーク'||hasKeyword(attacker,'cannotAttack',enemySide))continue;
+    var attackPower=aiCardPower(attacker)*damageMultiplierFor(enemySide);
+    var destinations=rulesFor(attacker).moveOnAttack?attackMoveCandidates(enemySide,lane):[lane];
+    var bestDamage=0;
+    for(var i=0;i<destinations.length;i++){
+      var destination=destinations[i];
+      var defender=hasKeyword(attacker,'unblockable',enemySide)?-1:defenderIndex(side,destination);
+      var damage=attackPower;
+      if(defender>=0&&own[defender]){
+        damage=hasKeyword(attacker,'pierce',enemySide)?Math.max(0,attackPower-aiCardPower(own[defender])):0;
+      }
+      bestDamage=Math.max(bestDamage,damage);
+    }
+    total+=bestDamage;
+  }
+  return total;
+}
+function aiDefensivePlacementScore(card,lane,side){
+  if(!card||card.type==='スペル')return {score:0,before:0,after:0,prevented:0,preventsLethal:false};
+  var own=boardFor(side);
+  if(lane<0||lane>=own.length||own[lane])return {score:0,before:0,after:0,prevented:0,preventsLethal:false};
+  var before=aiExpectedIncomingLifeDamage(side),after=before;
+  own[lane]=card;
+  try{after=aiExpectedIncomingLifeDamage(side);}
+  finally{own[lane]=null;}
+  var prevented=Math.max(0,before-after),life=aiLifeFor(side);
+  var preventsLethal=before>=life&&after<life;
+  var score=prevented*AI_WEIGHTS.lifeDefense;
+  if(preventsLethal)score+=AI_WEIGHTS.preventLethal;
+  if(prevented>0&&after===0)score+=AI_WEIGHTS.fullBlock;
+  if(prevented>0){
+    var cheapness=Math.max(0,4-effectiveCost(card,side))+Math.max(0,3-aiCardPower(card));
+    score+=Math.min(prevented,4)*cheapness*AI_WEIGHTS.cheapWall;
+    score+=prevented*Math.max(0,(10-life)/10)*1.5;
+  }
+  return {score:score,before:before,after:after,prevented:prevented,preventsLethal:preventsLethal};
+}
 function evaluateLaneForCard(card,lane,side){
   var own=boardFor(side),enemySide=otherSide(side),enemy=boardFor(enemySide);
   if(lane<0||lane>=own.length||own[lane])return -Infinity;
-  var score=(2-Math.abs(2-lane))*.18;
+  var defense=aiDefensivePlacementScore(card,lane,side);
+  var score=(2-Math.abs(2-lane))*.18+defense.score;
   var defender=defenderIndex(enemySide,lane);
   if(defender<0)score+=2;
   else if(card){
