@@ -169,6 +169,13 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 /* Season 1 mission-failed artwork. */
 .eventOutcome.failed{background-image:linear-gradient(180deg,#04070a18 0%,#070a0da8 57%,#07090cf8 82%),url("assets/season1/mission-failed.webp");background-size:cover;background-repeat:no-repeat;background-position:center 31%;image-rendering:pixelated}
 .eventOutcome.failed::before{inset:0;background:linear-gradient(180deg,#0204070a 0%,#05080b24 45%,#07090ce8 77%,#07090c 100%);opacity:1;pointer-events:none}
+
+/* Keep the mobile battle viewport stable while turns redraw the board. */
+#gameScreen,#gameScreen .topbar,#gameScreen .boardWrap,#gameScreen .battleInfoRow,#gameScreen .hand,#controls{overflow-anchor:none}
+#gameScreen .topbar .scoreRow:first-child{min-height:25px;flex-wrap:nowrap}
+#gameScreen .topbar .scoreRow:first-child>div{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gameScreen .topbar .scoreRow:first-child>div:first-child,#gameScreen .topbar .scoreRow:first-child>div:last-child{flex:1 1 0}
+#gameScreen .topbar .turn{flex:0 1 auto;max-width:42%;min-height:19px;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -1290,7 +1297,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
       selectedCard:-1,selectedSlot:-1,playerTurn:firstSide==='player',firstSide:firstSide,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
       extraTurns:{player:0,enemy:0},battleHistory:[],
       eventMode:!!gameOptions.eventMode,eventStage:Number(gameOptions.eventStage)||0,
-      enemyLabel:gameOptions.enemyLabel||'CPU',eventBoss:!!gameOptions.boss,eventBossPulseRound:0
+      enemyLabel:gameOptions.enemyLabel||'CPU',eventBoss:!!gameOptions.boss,eventBossPulseRound:0,aiStallTurns:0
     };
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     hideSeasonScreens();
@@ -1433,6 +1440,20 @@ function selectedSpecial(){
   var side=activeSide(),c=handFor(side)[state.selectedCard],rules=rulesFor(c);
   if(rules.dive!=null){var cost=diveCost(c,side);return {mode:'dive',label:'潜水 '+cost,cost:cost};}
   return null;
+}
+function battleScrollTop(){
+  var root=document.scrollingElement||document.documentElement;
+  return root?root.scrollTop:(window.pageYOffset||0);
+}
+function renderStableBattle(){
+  var top=battleScrollTop();
+  render();
+  var root=document.scrollingElement||document.documentElement;
+  if(root)root.scrollTop=top;
+  requestAnimationFrame(function(){
+    var current=battleScrollTop();
+    if(Math.abs(current-top)>1)window.scrollTo(0,top);
+  });
 }
 function render(){
   var prompt=$('targetPrompt');
@@ -2023,7 +2044,7 @@ async function beginExtraTurn(side){
   await drawCard(side);
   var board=boardFor(side);for(var i=0;i<board.length;i++)if(board[i])board[i].canAttack=true;
   await processTurnEvent(side,'onTurnStart');
-  state.animating=false;logMsg(sideLabel(side)+'の追加ターン');render();return true;
+  state.animating=false;logMsg(sideLabel(side)+'の追加ターン');renderStableBattle();return true;
 }
 async function endTurn(){
   var side=activeSide();
@@ -2034,7 +2055,7 @@ async function endTurn(){
   if(await beginExtraTurn(side))return;
   if(state.matchMode==='local'){await advanceLocalTurn(side);return;}
   await prepareNextTurn('enemy');
-  state.animating=false; render(); logMsg(sideLabel('enemy')+'のターン');
+  state.animating=false; renderStableBattle(); logMsg(sideLabel('enemy')+'のターン');
   setTimeout(function(){cpuTurn(true);},350);
 }
 async function prepareNextTurn(nextSide){
@@ -2059,13 +2080,15 @@ async function prepareNextTurn(nextSide){
 async function advanceLocalTurn(side){
   var nextSide=otherSide(side);
   await prepareNextTurn(nextSide);
-  state.animating=false;logMsg(sideLabel(nextSide)+'のターン');render();
+  state.animating=false;logMsg(sideLabel(nextSide)+'のターン');renderStableBattle();
 }
 var AI_DEBUG=false;
 var AI_MIN_PLAY_SCORE=.75;
 var AI_MIN_ATTACK_SCORE=0;
 var AI_MAX_PLAYS_PER_TURN=12;
 var AI_MAX_ATTACKS_PER_TURN=16;
+var AI_FORCE_ATTACK_AFTER=1;
+var AI_FORCE_ATTACK_BOARD_SCORE=-8;
 var AI_WEIGHTS={
   life:1.5,
   boardPower:2,
@@ -2082,7 +2105,10 @@ var AI_WEIGHTS={
   manaSpend:.3,
   followUp:.35,
   lethal:10000,
-  tieNoise:.35
+  tieNoise:.35,
+  stallPressure:2.5,
+  disadvantagePressure:.12,
+  postAttackDeploy:.42
 };
 
 function aiLifeFor(side){return side==='player'?state.playerLife:state.enemyLife;}
@@ -2329,13 +2355,27 @@ function aiChooseScored(actions,label){
   return ranked[0].action;
 }
 function chooseBestPlayAction(side){return aiChooseScored(getPlayableActions(side),'PLAY');}
+function aiBestReplacementValue(side){
+  var hand=handFor(side),best=0,mana=manaFor(side);
+  for(var i=0;i<hand.length;i++){
+    var card=hand[i];
+    if(card.type!=='スペル'&&lowestPlayableCost(card,side)<=mana)best=Math.max(best,evaluateCard(card,side));
+  }
+  return best;
+}
+function aiAttackPressure(side){
+  var stalled=Math.min(3,state.aiStallTurns||0)*AI_WEIGHTS.stallPressure;
+  var disadvantage=Math.max(0,-evaluateBoard(side)-4)*AI_WEIGHTS.disadvantagePressure;
+  return stalled+disadvantage;
+}
 function evaluateAttackAction(attacker,lane,side,destination){
   var own=boardFor(side),enemySide=otherSide(side),enemy=boardFor(enemySide);
   if(!attacker||own[lane]!==attacker||!attacker.canAttack||attacker.type==='ランドマーク'||hasKeyword(attacker,'cannotAttack',side))return {kind:'attack',score:-Infinity};
   destination=destination==null?lane:destination;
   var attackPower=aiCardPower(attacker)*damageMultiplierFor(side),targetIndex=hasKeyword(attacker,'unblockable',side)?-1:defenderIndex(enemySide,destination);
   var score=aiActionsScore(rulesFor(attacker).onAttack||[],side,attacker,destination),lethal=false,target=null;
-  if(targetIndex<0){
+  var killsTarget=false,attackerDies=false,direct=targetIndex<0;
+  if(direct){
     score+=attackPower*AI_WEIGHTS.directDamage;
     var totalDirect=cpuDirectDamagePotential(side);
     lethal=attackPower>=aiLifeFor(enemySide)||totalDirect>=aiLifeFor(enemySide);
@@ -2344,16 +2384,18 @@ function evaluateAttackAction(attacker,lane,side,destination){
     target=enemy[targetIndex];
     var dealt=Math.max(0,attackPower-(rulesFor(target).damageReduction||0));
     var counter=Math.max(0,aiCardPower(target)*damageMultiplierFor(enemySide)-(rulesFor(attacker).damageReduction||0));
-    var kills=(hasKeyword(attacker,'lethal',side)&&dealt>0)||dealt>=aiCardPower(target);
-    var dies=(hasKeyword(target,'lethal',enemySide)&&counter>0)||counter>=aiCardPower(attacker);
-    if(kills)score+=AI_WEIGHTS.killEnemy+evaluateCard(target,enemySide)*1.15;
+    killsTarget=(hasKeyword(attacker,'lethal',side)&&dealt>0)||dealt>=aiCardPower(target);
+    attackerDies=(hasKeyword(target,'lethal',enemySide)&&counter>0)||counter>=aiCardPower(attacker);
+    if(killsTarget)score+=AI_WEIGHTS.killEnemy+evaluateCard(target,enemySide)*1.15;
     else score+=dealt*.8;
-    if(!dies)score+=AI_WEIGHTS.surviveTrade;
-    else if(kills)score+=(evaluateCard(target,enemySide)-evaluateCard(attacker,side))*.45;
+    if(!attackerDies)score+=AI_WEIGHTS.surviveTrade;
+    else if(killsTarget)score+=(evaluateCard(target,enemySide)-evaluateCard(attacker,side))*.45;
     else score-=evaluateCard(attacker,side)*1.15+3;
     if(hasKeyword(attacker,'pierce',side)&&attackPower>aiCardPower(target))score+=(attackPower-aiCardPower(target))*AI_WEIGHTS.pierceDamage;
+    if(attackerDies)score+=aiBestReplacementValue(side)*AI_WEIGHTS.postAttackDeploy;
   }
-  return {kind:'attack',card:attacker,lane:lane,destination:destination,targetIndex:targetIndex,target:target,side:side,score:score,lethal:lethal};
+  if(!lethal)score+=aiAttackPressure(side);
+  return {kind:'attack',card:attacker,lane:lane,destination:destination,targetIndex:targetIndex,target:target,side:side,score:score,lethal:lethal,direct:direct,killsTarget:killsTarget,attackerDies:attackerDies};
 }
 function getAttackActions(side){
   var own=boardFor(side),actions=[];
@@ -2366,6 +2408,10 @@ function getAttackActions(side){
   return actions;
 }
 function chooseBestAttack(side){return aiChooseScored(getAttackActions(side),'ATTACK');}
+function shouldForceCpuAttack(action,side){
+  if(!action||!isFinite(action.score))return false;
+  return (state.aiStallTurns||0)>=AI_FORCE_ATTACK_AFTER||evaluateBoard(side)<=AI_FORCE_ATTACK_BOARD_SCORE||state.turn>=10;
+}
 function chooseCpuTarget(actingSide,targetSide,candidates,prompt,hint){
   var enemyTarget=targetSide===otherSide(actingSide),best=candidates[0],bestScore=-Infinity;
   var preferLow=!enemyTarget&&/戻す|破壊する|山札の下/.test(prompt);
@@ -2442,6 +2488,16 @@ async function executeAttackAction(action){
   if(own[lane]===attacker)attacker.canAttack=false;
   render();await wait(420);return true;
 }
+async function executeBestCpuPlays(side,limit){
+  var used=0;
+  while(!state.gameOver&&used<limit){
+    var bestPlay=chooseBestPlayAction(side);
+    if(!bestPlay||bestPlay.score<AI_MIN_PLAY_SCORE)break;
+    if(!await executePlayAction(bestPlay))break;
+    used++;if(checkGame())break;
+  }
+  return used;
+}
 async function cpuTurn(prepared){
   if(state.gameOver)return;
   state.animating=true;
@@ -2450,25 +2506,30 @@ async function cpuTurn(prepared){
     state.eventBossPulseRound=state.turn;logMsg('黒龍の黒炎が迫る');await changeLife('player',-1);render();
     if(checkGame()){render();return;}await wait(420);
   }
-  var plays=0;
-  while(!state.gameOver&&plays<AI_MAX_PLAYS_PER_TURN){
-    var bestPlay=chooseBestPlayAction('enemy');
-    if(!bestPlay||bestPlay.score<AI_MIN_PLAY_SCORE)break;
-    if(!await executePlayAction(bestPlay))break;
-    plays++;if(checkGame()){render();return;}
-  }
-  var attacks=0;
+  var plays=await executeBestCpuPlays('enemy',AI_MAX_PLAYS_PER_TURN);
+  if(state.gameOver)return;
+  var attacks=0,hadAttackOption=false,forcedAttack=false;
   while(!state.gameOver&&attacks<AI_MAX_ATTACKS_PER_TURN){
     var bestAttack=chooseBestAttack('enemy');
-    if(!bestAttack||bestAttack.score<=AI_MIN_ATTACK_SCORE)break;
+    if(!bestAttack)break;
+    hadAttackOption=true;
+    forcedAttack=bestAttack.score<=AI_MIN_ATTACK_SCORE;
+    if(forcedAttack&&!shouldForceCpuAttack(bestAttack,'enemy'))break;
+    if(AI_DEBUG&&forcedAttack)console.log('CPU膠着解除攻撃',bestAttack);
     if(!await executeAttackAction(bestAttack))break;
-    attacks++;if(checkGame()){render();return;}
+    attacks++;state.aiStallTurns=0;
+    if(checkGame()){render();return;}
+    if(plays<AI_MAX_PLAYS_PER_TURN)plays+=await executeBestCpuPlays('enemy',AI_MAX_PLAYS_PER_TURN-plays);
+    if(checkGame()){render();return;}
   }
+  if(attacks>0)state.aiStallTurns=0;
+  else if(hadAttackOption)state.aiStallTurns=Math.min(3,(state.aiStallTurns||0)+1);
+  else state.aiStallTurns=0;
   await processTurnEvent('enemy','onTurnEnd');
   if(checkGame()){render();return;}
   if(await beginExtraTurn('enemy')){setTimeout(function(){cpuTurn(true);},350);return;}
   await prepareNextTurn('player');
-  state.animating=false;logMsg('あなたのターン');render();
+  state.animating=false;logMsg('あなたのターン');renderStableBattle();
 }
 function checkGame(){
   if(state.enemyLife<=0){finish(true,state.matchMode==='local'?'プレイヤー1の勝利です':'敵のLIFEを0にしました');return true;}
