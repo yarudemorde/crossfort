@@ -260,6 +260,17 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
   .setupPanel{padding:12px 10px}.setupChoiceGrid .modeBtn{min-height:75px}
 }
 
+
+/* Ivory event title, centered battle action, and spell sigils. */
+.seasonBanner .seasonTitle{color:#f2e5cd;text-shadow:0 2px 12px #000,0 0 18px #f0dfbd1f}
+.setupFooter .startBattleBtn{justify-content:center;gap:0;text-align:center;font-weight:900}
+.spellMark{display:inline-grid;place-items:center;color:#ead8b8!important;font-family:Georgia,"Times New Roman",serif!important;font-weight:400!important;text-align:center;text-shadow:0 0 10px #d9b77f66;line-height:1}
+.catalogCardPower.spellMark{justify-self:end;width:29px;height:29px;border:1px solid #a98d65;border-radius:50%;background:radial-gradient(circle,#4a4034,#171b20 70%);font-size:18px;box-shadow:inset 0 0 0 2px #0d1014,0 0 9px #c7a77425}
+.handPower.spellMark{justify-self:end;width:27px;height:27px;border:1px solid #a98d65;border-radius:50%;background:radial-gradient(circle,#4a4034,#171b20 70%);font-size:17px;box-shadow:inset 0 0 0 2px #0d1014,0 0 8px #c7a77425}
+.handPower.spellMark::before{content:none}
+.detailPower.spellMark{margin-left:auto;width:40px;height:40px;border:1px solid #b99a6d;border-radius:50%;background:radial-gradient(circle,#524536,#171b20 72%);font-size:25px;box-shadow:inset 0 0 0 3px #0d1014,0 0 14px #c7a77430}
+.gravePower.spellMark{width:25px;height:25px;border:1px solid #8d7657;border-radius:50%;background:#20242a;font-size:15px}
+
 </style>
 </head>
 <body>
@@ -455,7 +466,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
     </div>
 
     <div class="setupFooter">
-      <button class="startBattleBtn" onclick="beginConfiguredGame()"><span>対戦開始</span><b>→</b></button>
+      <button class="startBattleBtn" onclick="beginConfiguredGame()">対戦開始</button>
       <div id="startError"></div>
     </div>
   </div>
@@ -1305,7 +1316,7 @@ function renderDeckEditor(){
   cards.sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');});
   for(var j=0;j<cards.length;j++)(function(card){
     var count=editorCounts[card.name]||0,row=document.createElement('div');row.className='deckEditCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
-    row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ ⚔ '+card.power+' ／ '+escapeHtml(cardTypeLine(card))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
+    row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ '+(card.type==='スペル'?'✦ スペル':'⚔ '+card.power+' ／ '+escapeHtml(cardTypeLine(card)))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
     var info=row.querySelector('.deckEditInfo'),buttons=row.querySelectorAll('button');attachCardHold(info,card,null,true);info.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();showCardDetail(card);}};buttons[0].onclick=function(){adjustDeckCard(card.name,-1);};buttons[1].onclick=function(){adjustDeckCard(card.name,1);};root.appendChild(row);
   })(cards[j]);
 }
@@ -1350,7 +1361,7 @@ function renderCatalog(){
       if(rules.dive!=null) keywords.push('潜水：'+rules.dive);
       button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
-      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower">⚔ '+card.power+'</span>';
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
     })(cloneCard(pool[j],catalogColor));
   }
@@ -1544,7 +1555,7 @@ function showCardDetail(card){
   if(rules.revenge) badges.push('報復：'+rules.revenge);
   if(rules.dive!=null) badges.push('潜水：'+rules.dive);
   $('detailCard').classList.toggle('legendary',!!card.legendary);
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower">⚔ '+card.power+'</div>';
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -1655,10 +1666,10 @@ function renderHand(){
       d.style.zIndex=String(index+1);
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
-      d.setAttribute('aria-label',c.name+' コスト'+shownCost+' パワー'+c.power);
+      d.setAttribute('aria-label',c.name+' コスト'+shownCost+(c.type==='スペル'?' スペル':' パワー'+c.power));
       d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardTypeLine(c))+'</div>'
         +'<div class="handText">'+formatCardText(c.text)+'</div>'
-        +'<div class="handPower">'+c.power+'</div>';
+        +'<div class="handPower'+(c.type==='スペル'?' spellMark':'')+'" aria-label="'+(c.type==='スペル'?'スペル':'パワー '+c.power)+'">'+(c.type==='スペル'?'✦':c.power)+'</div>';
       d.onclick=function(){ selectCard(index); };
       d.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){e.preventDefault();selectCard(index);} };
       root.appendChild(d);
@@ -2780,7 +2791,7 @@ function gravePanelSide(side){
   if(!grave.length)html='<div class="infoEmpty">墓地にカードはありません</div>';
   else for(var i=grave.length-1;i>=0;i--){
     var c=grave[i],idx=i;
-    html+='<button class="graveItem" onclick="showGraveCardDetail(\''+side+'\','+idx+')"><span class="graveCost">'+c.cost+'</span><span><span class="graveName">'+escapeHtml(c.name)+'</span><span class="graveMeta">'+escapeHtml(cardTypeLine(c))+'</span></span><span class="gravePower">'+(c.type==='スペル'?'―':'⚔ '+c.power)+'</span></button>';
+    html+='<button class="graveItem" onclick="showGraveCardDetail(\''+side+'\','+idx+')"><span class="graveCost">'+c.cost+'</span><span><span class="graveName">'+escapeHtml(c.name)+'</span><span class="graveMeta">'+escapeHtml(cardTypeLine(c))+'</span></span><span class="gravePower'+(c.type==='スペル'?' spellMark':'')+'" aria-label="'+(c.type==='スペル'?'スペル':'パワー '+c.power)+'">'+(c.type==='スペル'?'✦':'⚔ '+c.power)+'</span></button>';
   }
   $('infoTitle').textContent=owner+'の墓地';
   $('infoSub').textContent=grave.length+'枚・カードをタップすると詳細を表示';
