@@ -271,6 +271,32 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .detailPower.spellMark{align-self:flex-end;width:auto;height:auto;margin:14px 0 0 auto;border:0;border-radius:0;background:none;box-shadow:none;text-align:right;font-size:24px;color:#f2dcc0!important}
 .gravePower.spellMark{width:auto;height:auto;border:0;border-radius:0;background:none;box-shadow:none;text-align:right;font-size:inherit;color:#e7c994!important}
 
+
+/* Deck color icons and live cost curve. */
+.visuallyHidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.editorColorGrid{grid-template-columns:repeat(6,1fr);gap:7px}
+.editorColorBtn{position:relative;display:grid;place-items:center;min-width:0;min-height:48px;padding:0}
+.editorColorSwatch,.deckColorIcon{display:inline-block;width:25px;height:25px;border:2px solid #d8c9ae66;border-radius:50%;background:#777;box-shadow:inset 0 0 0 3px #0b0e12,0 2px 8px #0009}
+.editorColorBtn.green .editorColorSwatch,.deckColorIcon.green{background:#57a66d}.editorColorBtn.white .editorColorSwatch,.deckColorIcon.white{background:#e8dfcd}.editorColorBtn.red .editorColorSwatch,.deckColorIcon.red{background:#c5524d}.editorColorBtn.blue .editorColorSwatch,.deckColorIcon.blue{background:#4e8fbe}.editorColorBtn.black .editorColorSwatch,.deckColorIcon.black{background:#735d80}.editorColorBtn.yellow .editorColorSwatch,.deckColorIcon.yellow{background:#d8b842}
+.editorColorBtn.selected::after{content:"✓";position:absolute;right:4px;bottom:2px;color:#f7e6c9;font-size:11px;font-weight:900;text-shadow:0 1px 3px #000}
+.editorColorBtn.selected .editorColorSwatch{border-color:#fff1d3;box-shadow:inset 0 0 0 3px #0b0e12,0 0 0 2px #d9b981,0 0 13px #dfbd8d55}
+.deckStatsPanel{margin:0 0 13px;padding:12px 13px 10px;border:1px solid #45433e;border-radius:11px;background:linear-gradient(145deg,#171c21,#0d1115);box-shadow:inset 0 1px #ffffff08}
+.deckStatsHeader{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.deckStatsLabel{display:block;margin-bottom:6px;color:#968d81;font-size:9px;font-weight:800;letter-spacing:.06em}
+.deckColorIcons,.inlineDeckColors{display:flex;align-items:center;gap:6px;min-height:25px}
+.deckColorIcons .deckColorIcon{width:25px;height:25px}.inlineDeckColors .deckColorIcon{width:14px;height:14px;border-width:1px;box-shadow:inset 0 0 0 2px #0b0e12}
+.deckColorEmpty{color:#746f68;font-size:10px}
+.deckAverage{text-align:right}.deckAverage strong{display:block;color:#efd5aa;font-family:Georgia,"Yu Mincho",serif;font-size:21px;line-height:1}
+.costCurveTitle{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid #34373a;color:#d9c7aa;font-size:10px;font-weight:900}.costCurveTitle small{color:#77736d;font-size:8px;font-weight:500}
+.costCurve{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:end;gap:5px;height:116px;margin-top:6px}
+.costBarItem{display:grid;grid-template-rows:14px 76px 16px;align-items:end;min-width:0;text-align:center}
+.costBarCount{color:#d9c39e;font-family:Georgia,serif;font-size:9px}
+.costBarTrack{position:relative;display:block;width:100%;height:76px;border-bottom:1px solid #686054;background:linear-gradient(180deg,#ffffff04,#ffffff01)}
+.costBarFill{position:absolute;left:18%;right:18%;bottom:0;min-height:0;border:1px solid #e0c59770;border-bottom:0;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#e6ca9b,#917047);box-shadow:0 0 9px #d5ad6a25;transition:height .18s ease}
+.costBarLabel{color:#aaa095;font-family:Georgia,serif;font-size:10px}
+.savedDeckMeta,.eventDeckMeta{display:flex;align-items:center;gap:7px}
+@media(max-width:380px){.editorColorGrid{gap:5px}.editorColorBtn{min-height:44px}.editorColorSwatch{width:22px;height:22px}.costCurve{gap:3px}}
+
 </style>
 </head>
 <body>
@@ -383,10 +409,18 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
     <div class="editorSection">
       <div class="editorLabel"><span>カラーを選択</span><small>最大2色</small></div>
       <div class="editorColorGrid" id="editorColorGrid">
-        <button class="editorColorBtn green" data-editor-color="緑" onclick="toggleEditorColor('緑')">緑</button><button class="editorColorBtn white" data-editor-color="白" onclick="toggleEditorColor('白')">白</button><button class="editorColorBtn red" data-editor-color="赤" onclick="toggleEditorColor('赤')">赤</button><button class="editorColorBtn blue" data-editor-color="青" onclick="toggleEditorColor('青')">青</button><button class="editorColorBtn black" data-editor-color="黒" onclick="toggleEditorColor('黒')">黒</button><button class="editorColorBtn yellow" data-editor-color="黄" onclick="toggleEditorColor('黄')">黄</button>
+        <button class="editorColorBtn green" data-editor-color="緑" onclick="toggleEditorColor('緑')" aria-label="緑" title="緑"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">緑</span></button><button class="editorColorBtn white" data-editor-color="白" onclick="toggleEditorColor('白')" aria-label="白" title="白"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">白</span></button><button class="editorColorBtn red" data-editor-color="赤" onclick="toggleEditorColor('赤')" aria-label="赤" title="赤"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">赤</span></button><button class="editorColorBtn blue" data-editor-color="青" onclick="toggleEditorColor('青')" aria-label="青" title="青"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">青</span></button><button class="editorColorBtn black" data-editor-color="黒" onclick="toggleEditorColor('黒')" aria-label="黒" title="黒"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">黒</span></button><button class="editorColorBtn yellow" data-editor-color="黄" onclick="toggleEditorColor('黄')" aria-label="黄" title="黄"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">黄</span></button>
       </div>
     </div>
     <div class="deckProgress" id="deckProgress"><span>選択中のカード</span><strong id="deckTotalCount">0 / 40</strong></div>
+    <section class="deckStatsPanel" aria-label="デッキ統計">
+      <div class="deckStatsHeader">
+        <div><span class="deckStatsLabel">デッキカラー</span><div class="deckColorIcons" id="deckColorIcons" aria-label="未選択"><span class="deckColorEmpty">未選択</span></div></div>
+        <div class="deckAverage"><span class="deckStatsLabel">平均コスト</span><strong id="deckAverageCost">0.0</strong></div>
+      </div>
+      <div class="costCurveTitle"><span>コスト分布</span><small>採用枚数</small></div>
+      <div class="costCurve" id="deckCostCurve" role="img" aria-label="カードはまだ選択されていません"></div>
+    </section>
     <div class="editorLabel"><span>カードを選択</span><small>カード名を長押しで詳細</small></div>
     <div class="deckEditList" id="deckEditList"></div>
     <div class="deckEditorFooter"><button class="deckSaveBtn" id="deckSaveBtn" onclick="saveEditedDeck()" disabled>この内容で登録</button><div class="deckEditorError" id="deckEditorError"></div></div>
@@ -1128,7 +1162,7 @@ function renderSeason1DeckChoices(){
   var root=$('seasonDeckList'),html='';
   for(var i=0;i<savedDecks.length;i++){
     var deck=savedDecks[i],valid=totalDeckCards(deck.cards||{})===40;
-    html+='<button class="eventDeckChoice'+(eventDeckDraft===deck.id?' selected':'')+'" '+(valid?'onclick="selectSeason1Deck(\''+deck.id+'\')"':'disabled')+'><span class="eventDeckName">'+escapeHtml(deck.name)+'</span><span class="eventDeckCheck">'+(eventDeckDraft===deck.id?'✓':'')+'</span><span class="eventDeckMeta">'+escapeHtml((deck.colors||[]).join('・'))+' ／ '+totalDeckCards(deck.cards||{})+'枚'+(valid?'':'（40枚必要）')+'</span></button>';
+    html+='<button class="eventDeckChoice'+(eventDeckDraft===deck.id?' selected':'')+'" '+(valid?'onclick="selectSeason1Deck(\''+deck.id+'\')"':'disabled')+'><span class="eventDeckName">'+escapeHtml(deck.name)+'</span><span class="eventDeckCheck">'+(eventDeckDraft===deck.id?'✓':'')+'</span><span class="eventDeckMeta"><span class="inlineDeckColors" aria-label="'+escapeHtml((deck.colors||[]).join('、'))+'">'+deckColorIconsHtml(deck.colors||[])+'</span><span>'+totalDeckCards(deck.cards||{})+'枚'+(valid?'':'（40枚必要）')+'</span></span></button>';
   }
   if(!savedDecks.length)html='<div class="eventEmpty">登録済みデッキがありません。<br>40枚のデッキを作成してください。</div>';
   root.innerHTML=html;$('seasonDeckConfirm').disabled=!eventDeckDraft;
@@ -1286,7 +1320,7 @@ function renderDeckLibrary(){
   if(!savedDecks.length){root.innerHTML='<div class="noDecks">登録済みのデッキはありません<br>最初のデッキを作成しましょう</div>';return;}
   for(var i=0;i<savedDecks.length;i++)(function(deck){
     var card=document.createElement('div');card.className='savedDeckCard';
-    card.innerHTML='<div class="savedDeckTop"><div><div class="savedDeckName">'+escapeHtml(deck.name)+'</div><div class="savedDeckMeta">'+escapeHtml((deck.colors||[]).join('・'))+' ／ '+totalDeckCards(deck.cards||{})+'枚</div></div><span>▥</span></div><div class="savedDeckActions"><button type="button">編集</button><button type="button" class="deleteDeckBtn">削除</button></div>';
+    card.innerHTML='<div class="savedDeckTop"><div><div class="savedDeckName">'+escapeHtml(deck.name)+'</div><div class="savedDeckMeta"><span class="inlineDeckColors" aria-label="'+escapeHtml((deck.colors||[]).join('、'))+'">'+deckColorIconsHtml(deck.colors||[])+'</span><span>'+totalDeckCards(deck.cards||{})+'枚</span></div></div><span>▥</span></div><div class="savedDeckActions"><button type="button">編集</button><button type="button" class="deleteDeckBtn">削除</button></div>';
     var buttons=card.querySelectorAll('button');buttons[0].onclick=function(){showDeckEditor(deck.id);};buttons[1].onclick=function(){deleteSavedDeck(deck.id);};root.appendChild(card);
   })(savedDecks[i]);
 }
@@ -1308,9 +1342,37 @@ function adjustDeckCard(name,delta){
   if(next===0)delete editorCounts[name];else editorCounts[name]=next;
   renderDeckEditor();
 }
+function deckColorIconsHtml(colors){
+  var html='';
+  for(var i=0;i<(colors||[]).length;i++){
+    var cls=COLOR_CLASS[colors[i]]||'';
+    html+='<span class="deckColorIcon '+cls+'" title="'+escapeHtml(colors[i])+'" aria-hidden="true"></span>';
+  }
+  return html;
+}
+function renderDeckEditorStats(total){
+  var colorRoot=$('deckColorIcons'),colors=editorColors.slice();
+  colorRoot.innerHTML=colors.length?deckColorIconsHtml(colors):'<span class="deckColorEmpty">未選択</span>';
+  colorRoot.setAttribute('aria-label',colors.length?'選択中：'+colors.join('、'):'カラー未選択');
+  var bins=[0,0,0,0,0,0,0,0],weighted=0;
+  for(var name in editorCounts)if(Object.prototype.hasOwnProperty.call(editorCounts,name)){
+    var count=Number(editorCounts[name])||0,template=cardTemplateByName(name);
+    if(!count||!template)continue;
+    var card=cloneCard(template.row,template.color),cost=Math.max(0,Number(card.cost)||0);
+    bins[Math.min(7,Math.floor(cost))]+=count;weighted+=cost*count;
+  }
+  $('deckAverageCost').textContent=total?(weighted/total).toFixed(1):'0.0';
+  var maxCount=Math.max.apply(null,bins.concat([1])),html=[],labels=[];
+  for(var i=0;i<bins.length;i++){
+    var label=i===7?'7+':String(i),height=bins[i]?Math.max(8,Math.round(bins[i]/maxCount*100)):0;
+    labels.push(label+'コスト '+bins[i]+'枚');
+    html.push('<div class="costBarItem"><span class="costBarCount">'+(bins[i]||'')+'</span><span class="costBarTrack"><span class="costBarFill" style="height:'+height+'%"></span></span><span class="costBarLabel">'+label+'</span></div>');
+  }
+  var curve=$('deckCostCurve');curve.innerHTML=html.join('');curve.setAttribute('aria-label',total?labels.join('、'):'カードはまだ選択されていません');
+}
 function renderDeckEditor(){
   var tabs=document.querySelectorAll('[data-editor-color]');for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('selected',editorColors.indexOf(tabs[i].getAttribute('data-editor-color'))>=0);
-  var total=totalDeckCards(editorCounts),root=$('deckEditList');$('deckTotalCount').textContent=total+' / 40';$('deckProgress').classList.toggle('complete',total===40);$('deckSaveBtn').disabled=!(editorColors.length>=1&&editorColors.length<=2&&total===40);
+  var total=totalDeckCards(editorCounts),root=$('deckEditList');$('deckTotalCount').textContent=total+' / 40';$('deckProgress').classList.toggle('complete',total===40);$('deckSaveBtn').disabled=!(editorColors.length>=1&&editorColors.length<=2&&total===40);renderDeckEditorStats(total);
   root.innerHTML='';if(!editorColors.length){root.innerHTML='<div class="deckEditorEmpty">先にデッキのカラーを選択してください</div>';return;}
   var cards=[];for(var c=0;c<editorColors.length;c++){var pool=CARD_POOLS[editorColors[c]]||[];for(var p=0;p<pool.length;p++)cards.push(cloneCard(pool[p],editorColors[c]));}
   cards.sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');});
