@@ -468,7 +468,9 @@ var CARD_POOLS = {
     ["ハストボーンの西王",4,3,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、このユニットのパワーを+2する。"],
     ["ハストボーンの東王",3,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、正面スロットのユニット1体に3ダメージを与える。"],
     ["ハストボーンの北王",2,2,"ユニット","■ 配置：自分の他のユニット1体を選び、手札に戻す。そうしたなら、カードを1枚引く。"],
-    ["翠冠の継承",2,0,"スペル","■ 報復：2\n■ 自分のユニット1体を選び、手札に戻す。そうしたなら、手札からコスト3以下のユニットを配置する。"]
+    ["戦術的撤退",1,0,"スペル","■ 自分の他のユニット1体を選び、手札に戻す。"],
+    ["翠冠の継承",2,0,"スペル","■ 報復：2\n■ 自分のユニット1体を選び、手札に戻す。そうしたなら、手札からコスト3以下のユニットを配置する。"],
+    ["統合王の動員令",3,0,"スペル","■ 自分の手札にパワー1のトークンユニット2枚を生成する。"]
   ],
   "白": [
     ["クロスフォートの城壁",1,4,"ユニット","■ このユニットは攻撃できない。"],
@@ -483,6 +485,7 @@ var CARD_POOLS = {
     ["王国の反逆者グレン",10,6,"ユニット","■ 手札配置：自分のターンを追加する。"],
     ["大正門の見張り手",2,2,"ユニット","■ 配置：自分のライフを1回復する。"],
     ["フィリポス山脈",2,0,"ランドマーク","■ 自分のターン開始時：自分の資源最大値を+1する。その後、このランドマークを破壊する。"],
+    ["銀騎士の誓い",2,0,"スペル","■ 自分のユニット1体を選び、パワーを+2する。"],
     ["イルデニアの鍛冶師",3,2,"ユニット","■ 配置：自分のユニット1体を選び、パワーを+1する。"],
     ["銀嶺の軍旗手",4,1,"ユニット","■ 配置：自分のユニット1体を選び、パワーを+3する。"],
     ["投獄",4,0,"スペル","■ 報復：3\n■ 相手のユニット1体を選び、パワーを2にする。"],
@@ -514,7 +517,7 @@ var CARD_POOLS = {
     ["危険海域",2,0,"ランドマーク","■ 自分の潜水：コストを1減らす。"],
     ["人食いクラゲ",3,1,"ユニット","■ 潜水：2\n■ 報復：3\n■ 配置：自分のライフを1回復する。"],
     ["深海ピラニア",4,2,"ユニット","■ 潜水：3\n■ 配置：相手は手札1枚を選び、山札の下に置く。"],
-    ["深海の大渦バルメデ",4,3,"ユニット","■ 潜水：1\n■ 攻撃：自分の山札の下から3枚を墓地に置く。その中から潜水：を持つユニットをすべて配置する。"],
+    ["深海の大渦バルメデ",4,3,"ユニット","■ 潜水：1\n■ 攻撃：自分の山札の下から3枚を墓地に置く。その中から潜水：を持つユニットを1枚選び、配置する。"],
     ["アークルハーバーの夜笛守",4,3,"ユニット","■ 配置：自分の手札1枚を山札の下に置く。その後、カードを2枚引く。"],
     ["船喰らい",6,4,"ユニット","■ 潜水：4\n■ 配置：相手のユニット1体を選び、破壊する。"],
     ["激浪のアクルティス",9,6,"ユニット","■ 潜水：6\n■ 配置：相手のユニット2体を選び、山札の下に置く。"],
@@ -650,7 +653,10 @@ var CARD_IDS={
   "アウロニアの重装神官":"C002-034",
   "アウロニアの巫女":"C002-035",
   "女教皇アウローン":"C002-036",
-  "黄金文明の再興":"C002-037"
+  "黄金文明の再興":"C002-037",
+  "戦術的撤退":"C002-038",
+  "統合王の動員令":"C002-039",
+  "銀騎士の誓い":"C002-040"
 };
 var CARD_SPECIES={
   "群れ呼び蜥蜴":"リスカリ",
@@ -732,6 +738,8 @@ var CARD_RULES={
   '開戦の笛吹':{onPlay:[{type:'createTokens',amount:2,power:1}]},
   '集結するリスカリ軍':{onPlay:[{type:'createTokens',amount:2,power:2}]},
   'ハストボーンの北王':{onPlay:[{type:'returnUnitToHand',target:'otherAllyUnit'},{type:'draw',amount:1,requiresReturned:true}]},
+  '戦術的撤退':{onPlay:[{type:'returnUnitToHand',target:'allyUnit'}]},
+  '統合王の動員令':{onPlay:[{type:'createTokenCardsInHand',amount:2,power:1}]},
   'ハストボーンの東王':{onPlay:[{type:'returnUnitToHand',target:'otherAllyUnit'},{type:'damageUnit',target:'opposing',amount:3,requiresReturned:true}]},
   'ハストボーンの西王':{onPlay:[{type:'returnUnitToHand',target:'otherAllyUnit'},{type:'buffSelf',amount:2,requiresReturned:true}]},
   '四都市の統合王 クルオケシュ':{onPlay:[{type:'returnAnyAllies'},{type:'createTokensAtReturnedSlots',power:4,requiresReturned:true}]},
@@ -748,6 +756,7 @@ var CARD_RULES={
   '王国の反逆者グレン':{onHandPlay:[{type:'addTurn',amount:1}]},
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
   'フィリポス山脈':{onTurnStart:[{type:'gainMaxMana',amount:1},{type:'destroySelf'}]},
+  '銀騎士の誓い':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:2}]},
   'イルデニアの鍛冶師':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:1}]},
   '銀嶺の軍旗手':{onPlay:[{type:'buffUnit',target:'allyUnit',amount:3}]},
   '投獄':{revenge:3,onPlay:[{type:'setPower',target:'enemyUnit',amount:2}]},
@@ -1831,6 +1840,10 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
         if(tokenSlot==null) break;
         own[tokenSlot]=makeToken(a.power,tokenColor);render();animateSummon(side,tokenSlot);await wait(180);
       }
+    }else if(a.type==='createTokenCardsInHand'){
+      var generatedHand=handFor(side),generatedColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor),generatedCount=0;
+      for(j=0;j<(a.amount||1)&&generatedHand.length<8;j++){generatedHand.push(makeToken(a.power||1,generatedColor));generatedCount++;}
+      if(generatedCount)logMsg('パワー'+(a.power||1)+'のトークンユニットを手札に'+generatedCount+'枚生成した');
     }else if(a.type==='returnUnitToHand' && target){
       var returnHand=handFor(side),returnedCard=own[target.index];
       if(returnedCard && returnHand.length<8){pulseClass(boardCard(side,target.index),'divingOut',240);await wait(210);own[target.index]=null;returnHand.push(returnedCard);context.returned=true;context.returnedSlots=[target.index];context.returnedCards=[returnedCard];logMsg(returnedCard.name+'を手札へ戻した');}
@@ -1887,15 +1900,19 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
         if(paidDiscoverySlot!=null){spendMana(side,a.cost);own[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=hasKeyword(sourceCard,'haste',side);context.claimed=true;render();animateSummon(side,paidDiscoverySlot);await wait(220);await triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{});}
       }
     }else if(a.type==='deployDiveFromBottom'){
-      var ownDeck=side==='player'?state.playerDeck:state.enemyDeck, start=Math.max(0,ownDeck.length-a.amount), bottomCards=ownDeck.splice(start), diveCards=bottomCards.filter(function(c){return rulesFor(c).dive!=null && c.type!=='スペル';});
-      while(diveCards.length&&firstEmpty(own)>=0){
-        var diveCard=await chooseZoneCard(side,diveCards,'山札下から配置する潜水カードを選択');
-        if(!diveCard)break;
-        var diveSlot=await chooseOpenSlot(side,side,diveCard.name+'の配置先を選択');
-        if(diveSlot==null||own[diveSlot])break;
-        diveCards.splice(diveCards.indexOf(diveCard),1);bottomCards.splice(bottomCards.indexOf(diveCard),1);own[diveSlot]=diveCard;diveCard.canAttack=false;render();animateSummon(side,diveSlot);await wait(220);await triggerCard(diveCard,'onPlay',side,diveSlot,{});
+      var ownDeck=side==='player'?state.playerDeck:state.enemyDeck,start=Math.max(0,ownDeck.length-a.amount),bottomCards=ownDeck.splice(start),diveGrave=graveFor(side);
+      diveGrave.push.apply(diveGrave,bottomCards);
+      var diveCards=bottomCards.filter(function(c){return rulesFor(c).dive!=null&&c.type!=='スペル';});
+      if(diveCards.length&&firstEmpty(own)>=0){
+        var diveCard=await chooseZoneCard(side,diveCards,'墓地へ置いたカードから配置する潜水ユニットを1枚選択');
+        if(diveCard){
+          var diveSlot=await chooseOpenSlot(side,side,diveCard.name+'の配置先を選択');
+          var diveGraveIndex=diveGrave.lastIndexOf(diveCard);
+          if(diveSlot!=null&&!own[diveSlot]&&diveGraveIndex>=0){
+            diveGrave.splice(diveGraveIndex,1);own[diveSlot]=diveCard;diveCard.canAttack=false;render();animateSummon(side,diveSlot);await wait(220);await triggerCard(diveCard,'onPlay',side,diveSlot,{});
+          }
+        }
       }
-      graveFor(side).push.apply(graveFor(side),bottomCards);
     }else if(a.type==='destroyAllUnits'){
       for(j=0;j<5;j++) if(state.playerBoard[j] && state.playerBoard[j].type==='ユニット') await destroy('player',j);
       for(j=0;j<5;j++) if(state.enemyBoard[j] && state.enemyBoard[j].type==='ユニット') await destroy('enemy',j);
@@ -2221,6 +2238,10 @@ function aiEffectScore(action,side,sourceCard,sourceLane){
   if(action.type==='damageSelf')return -amount*1.4;
   if(action.type==='destroySelf')return -Math.max(1,aiCardPower(sourceCard));
   if(action.type==='createTokens')return Math.min(slots,action.fillAll?slots:(amount||1))*(Number(action.power)||1)*1.65;
+  if(action.type==='createTokenCardsInHand'){
+    var generatedSpace=Math.max(0,8-handFor(side).length+(handFor(side).indexOf(sourceCard)>=0?1:0));
+    return Math.min(generatedSpace,amount||1)*(Number(action.power)||1)*1.25;
+  }
   if(action.type==='createTokensAtReturnedSlots')return aiUnitCount(side)*(Number(action.power)||1)*1.25;
   if(action.type==='returnAnyAllies')return aiUnitCount(side)*.45;
   if(action.type==='returnUnitToHand'){
