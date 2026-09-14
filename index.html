@@ -200,6 +200,81 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 @keyframes spellCastAura{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spellCastOverlay{transition:none}.spellCastCard{animation:none;transform:none}.spellCastCard::before{animation:none}}
 
+
+/* Vintage fantasy tabletop theme */
+:root{
+  --bg:#15120e;--panel:#d2c29f;--panel2:#b9a985;--text:#eee3ca;--muted:#aa9a79;
+  --gold:#c3a66e;--gold2:#eadbbb;--line:#242019;--danger:#873c35;
+  --paper:#d8c8a4;--paper-light:#eadcbd;--ink:#171510;--faction:#8f7650;
+}
+html,body,button,input,select,textarea{font-family:"DotGothic16","MS Gothic",monospace}
+html,body{background-color:#15120e;background-image:repeating-linear-gradient(7deg,#fff0 0 7px,#e6d2a407 8px,#fff0 9px 15px);letter-spacing:.015em}
+body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.22;background:repeating-linear-gradient(93deg,#0000 0 3px,#0002 4px,#0000 5px 9px);mix-blend-mode:multiply}
+h1,h2,h3,.logo,.seasonTitle,.catalogHeading h1,.eventHero h1,.outcomeTitle,.spellCastName{font-family:"DotGothic16","MS Gothic",monospace;letter-spacing:.08em;text-transform:uppercase}
+#homeScreen,#startScreen,#catalogScreen,#deckManagerScreen,#gameScreen,.eventScreen{background-color:#15120e;background-image:radial-gradient(circle at 50% 0,#5d4b302e,transparent 38%),repeating-linear-gradient(172deg,#0000 0 12px,#e8d4a008 13px,#0000 14px 21px)}
+.homeShell,.startCard,.catalogShell,.deckManagerShell,.eventShell{border:2px solid #b5a47f;border-radius:3px;background:#17140f;box-shadow:0 0 0 4px #17140f,0 0 0 5px #6d624d,0 18px 50px #000b}
+.homeHeader,.catalogTop,.deckManagerHeader{border-bottom:2px solid #948364;background:#1d1912}
+.logo{color:var(--paper-light);text-shadow:2px 2px 0 #000;font-size:29px}
+.subtitle,.profileTitle,.tileSub,.seasonSub,.newsDate,.catalogCount,.deckLibraryIntro,.eventLead,.eventHint{color:#b9aa8c}
+.avatar,.headerIcon,.catalogBack,.deckManagerBack,.eventBack,.backHome{border-radius:2px;border:2px solid #b8a782;background:#d6c6a2;color:#171510;box-shadow:3px 3px 0 #000}
+.profileName,.tileTitle,.newsHeader h2,.sectionTitle,.eventProgressTitle{font-weight:900;letter-spacing:.06em}
+.seasonBanner,.homeTile,.newsList,.rules,.setupSection,.eventHero,.eventRule,.eventProgress,.eventDeckChoice,.eventOutcome{border-radius:2px;border:2px solid #968667;background-color:#cdbc99;color:#171510;box-shadow:4px 4px 0 #080705;background-image:repeating-linear-gradient(10deg,#0000 0 8px,#4639220a 9px,#0000 10px 15px)}
+.seasonBanner{border-left:8px solid #5f4d38}
+.seasonBanner::before,.eventHero::after{filter:grayscale(1) contrast(1.12) sepia(.2);mix-blend-mode:multiply;opacity:.52}
+.seasonTag,.eventEyebrow,.outcomeKicker{color:#5d4c34;font-weight:900}
+.seasonTitle,.eventHero h1,.outcomeTitle{color:#171510;text-shadow:none}
+.homeTile.primary{background-color:#e0d0ad;border-color:#171510}
+.tileIcon,.catalogMark,.seasonArrow{filter:grayscale(1);color:#171510}
+.newsItem{border-color:#5f5544;color:#211d16}
+.homeNav,.controls{background:#17140ff2;border-top:2px solid #ab9975;box-shadow:0 -5px 0 #0005}
+.navBtn,.ctrl{border-radius:2px;color:#cbbd9f}
+.navBtn.active{color:#f1e4c9;background:#2a241a}
+.startBattleBtn,.deckCreateBtn,.deckSaveBtn,.eventPrimary,.pickerConfirm,.ctrl.primary{border:2px solid #171510;border-radius:2px;background:#d9c69e;color:#171510;font-weight:900;box-shadow:4px 4px 0 #000}
+.eventSecondary,.pickerCancel,.profileCancel,.modeBtn,.deckBtn,.settingChoice,.titleChoice,.infoTab{border:2px solid #85775e;border-radius:2px;background:#211c15;color:#e6d9bd;box-shadow:3px 3px 0 #080705}
+.modeBtn.selected,.deckBtn.selected,.settingChoice.selected,.titleChoice.selected,.infoTab.selected{border-color:#eadbbb;background:#d7c6a1;color:#171510}
+button:active{transform:translate(2px,2px)!important;box-shadow:1px 1px 0 #000!important}
+.colorTabs{gap:5px}
+.colorTab{border:2px solid #201c15;border-radius:2px;background:#cdbd99;color:#171510;box-shadow:2px 2px 0 #000}
+.colorTab.selected{outline:3px double var(--faction);outline-offset:-5px}
+.green{--faction:#526b43}.white{--faction:#b8aa8b}.red{--faction:#8d332c}.blue{--faction:#36596a}.black{--faction:#544253}.yellow{--faction:#a47d29}
+.colorTab.green,.deckBtn.green{--deck-accent:#526b43}.colorTab.white,.deckBtn.white{--deck-accent:#b8aa8b}.colorTab.red,.deckBtn.red{--deck-accent:#8d332c}.colorTab.blue,.deckBtn.blue{--deck-accent:#36596a}.colorTab.black,.deckBtn.black{--deck-accent:#544253}.colorTab.yellow,.deckBtn.yellow{--deck-accent:#a47d29}
+.catalogCard,.deckEditCard,.savedDeckCard,.graveItem,.pickerCard{border:2px solid #171510;border-radius:2px;background-color:var(--paper);color:var(--ink);box-shadow:4px 4px 0 #050403;background-image:linear-gradient(var(--faction),var(--faction)),repeating-linear-gradient(12deg,#0000 0 9px,#493c240d 10px,#0000 11px 16px);background-size:100% 6px,auto;background-repeat:no-repeat,repeat}
+.catalogCardName,.deckEditName,.savedDeckName,.graveName,.pickerCard strong{color:var(--ink);font-weight:900}
+.catalogCardType,.catalogCardText,.deckEditMeta,.savedDeckMeta,.graveMeta,.pickerCard span{color:#40382a}
+.card,.handCard,.detailCard{border:2px solid #171510;border-radius:2px;background-color:var(--paper);color:var(--ink);box-shadow:3px 3px 0 #050403;background-image:linear-gradient(var(--faction),var(--faction)),repeating-linear-gradient(11deg,#0000 0 7px,#33291812 8px,#0000 9px 14px);background-size:100% 6px,auto;background-repeat:no-repeat,repeat}
+.cardName,.handName,.detailName{color:#171510;font-weight:900;text-shadow:none}
+.cardType,.handMeta,.detailType,.effect,.handText,.detailText{color:#3e3629}
+.cost,.catalogCardCost,.detailCost,.spellCastCost{border:2px solid #171510;background:var(--faction);color:#f3ead6;text-shadow:1px 1px #000;border-radius:50%}
+.power,.handPower,.detailPower,.catalogCardPower,.gravePower{background:#171510;color:#f2e6cb;border:1px solid #d8c8a4;border-radius:1px}
+.keywordIcon{border-radius:1px;border:1px solid #171510;background:#e4d4b2!important;color:#171510!important;box-shadow:1px 1px 0 #000}
+.card.legendary,.handCard.legendary,.catalogCard.legendary,.detailCard.legendary,.pickerCard.legendary{border:3px double var(--faction);filter:none}
+.card.legendary::before,.handCard.legendary::before,.catalogCard.legendary::before,.detailCard.legendary::before,.pickerCard.legendary::before{mix-blend-mode:multiply;opacity:.18;filter:grayscale(1)}
+.boardWrap{border:2px solid #796b52;border-radius:2px;background-color:#211b13;background-image:repeating-linear-gradient(102deg,#0000 0 10px,#e8d5a408 11px,#0000 12px 19px);box-shadow:inset 0 0 38px #000}
+.slot{border:2px dashed #756950;border-radius:2px;background:#0f0d0a99}
+.slot.enemy{background:#1a121099}
+.slot.empty::after{color:#776b56}
+.slot.selectable,.slot.targetable{border-style:solid;border-color:#e5d6b7;box-shadow:inset 0 0 0 2px #171510,0 0 0 2px #e5d6b7}
+.card.attackable{outline:3px double #efe2c5;filter:contrast(1.08);animation:vintageAttackPulse 1s steps(2,end) infinite}
+@keyframes vintageAttackPulse{50%{outline-color:#171510;box-shadow:0 0 0 3px #efe2c5,4px 4px 0 #000}}
+.handCard.disabled{filter:grayscale(1) contrast(.78);opacity:.62}
+.scoreRow,.battleInfoRow,.infoBox,.modalBox,.pickerBox,.detailOverlay{border-color:#9d8c6c}
+.life,.turn,.log,.battleToolBtn,.infoBox,.modalBox,.pickerBox{border-radius:2px;background:#201b14;color:#e7dac0;border:2px solid #776a52}
+.battleToolBtn{box-shadow:2px 2px 0 #000}
+.modal{background:#070604dc}
+.detailOverlay{background:#080705d9}
+.deckNameInput,.profileNameInput,.savedDeckSelect{border:2px solid #746750;border-radius:2px;background:#ded0b0;color:#171510}
+.targetPrompt{border-radius:2px;border:2px solid #e5d6b7;background:#17140f;color:#f0e3c8;box-shadow:4px 4px 0 #000}
+.spellCastShade{background:repeating-radial-gradient(circle at center,#0004 0 3px,#050403e8 4px 9px)}
+.spellCastCard{border-radius:2px;background-color:#d7c7a4;color:#171510;background-image:linear-gradient(var(--spell),var(--spell)),repeating-linear-gradient(12deg,#0000 0 8px,#362c1b12 9px,#0000 10px 15px);background-size:100% 7px,auto;background-repeat:no-repeat,repeat;box-shadow:7px 7px 0 #000;animation:spellCastInVintage .35s steps(5,end) forwards}
+.spellCastCard::before{opacity:.1;mix-blend-mode:multiply}
+.spellCastName,.spellCastEffect{color:#171510;text-shadow:none}.spellCastType{color:#332d23;border-color:#332d23}.spellCastEyebrow{font-weight:900}
+@keyframes spellCastInVintage{from{transform:translateY(18px) scale(.92);filter:contrast(1.8)}to{transform:translateY(0) scale(1);filter:contrast(1)}}
+.eventStepMark,.eventClearBadge,.seasonBannerBadge{border-radius:1px}
+@media(max-width:480px){
+  .homeShell,.startCard,.catalogShell,.deckManagerShell,.eventShell{border-left-width:1px;border-right-width:1px;box-shadow:none}
+  .logo{font-size:25px}.spellCastCard{width:min(300px,90vw)}
+}
+
 </style>
 </head>
 <body>
