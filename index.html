@@ -159,6 +159,12 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 /* Season 1 story typography: keep the pixel font above legacy story rules. */
 #seasonStoryScreen .storyHeader,#seasonStoryScreen .storyTitle,#seasonStoryScreen .storySeason,#seasonStoryScreen .storyBox,#seasonStoryScreen .storySpeaker,#seasonStoryScreen .storyText,#seasonStoryScreen .storyContinue{font-family:"DotGothic16","MS Gothic","Hiragino Kaku Gothic ProN",monospace}
 #seasonStoryScreen .storyText{letter-spacing:.035em;line-height:1.78;text-shadow:1px 1px 0 #000}
+
+/* Season 1 event start/result shared fortress artwork. */
+.eventHero{background-image:linear-gradient(180deg,#07101b42 0%,#080b0fba 72%,#080b0ff2 100%),url("assets/season1/event-fortress.webp");background-size:cover;background-repeat:no-repeat;background-position:center 31%;image-rendering:pixelated}
+.eventHero::before{display:none}
+.eventOutcome{background-image:linear-gradient(180deg,#07101b30 0%,#080b0f9c 50%,#080b0ff7 78%),url("assets/season1/event-fortress.webp");background-size:cover;background-repeat:no-repeat;background-position:center 24%;image-rendering:pixelated}
+.eventOutcome::before,.eventOutcome.failed::before{inset:0;background:linear-gradient(180deg,#04070a18 0%,#080b0f28 45%,#080b0ff0 78%,#080b0f 100%);opacity:1;pointer-events:none}
 </style>
 </head>
 <body>
