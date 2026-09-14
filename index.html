@@ -155,6 +155,10 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 @media(max-width:520px){.eventHero{min-height:210px}.storyFrame{height:100%;min-height:0;border-radius:0}.storyText{font-size:13px}.eventRuleGrid{gap:5px}.eventRule{padding:9px 3px}.bossStrip{height:68px}}
 
 @media (prefers-reduced-motion:reduce){.card.legendary::before,.handCard.legendary::before,.catalogCard.legendary::before,.detailCard.legendary::before,.pickerCard.legendary::before,.deckEditCard.legendary::before{animation:none;background-position:50% 0}.card.summoning{animation:none}}
+
+/* Season 1 story typography: keep the pixel font above legacy story rules. */
+#seasonStoryScreen .storyHeader,#seasonStoryScreen .storyTitle,#seasonStoryScreen .storySeason,#seasonStoryScreen .storyBox,#seasonStoryScreen .storySpeaker,#seasonStoryScreen .storyText,#seasonStoryScreen .storyContinue{font-family:"DotGothic16","MS Gothic","Hiragino Kaku Gothic ProN",monospace}
+#seasonStoryScreen .storyText{letter-spacing:.035em;line-height:1.78;text-shadow:1px 1px 0 #000}
 </style>
 </head>
 <body>
