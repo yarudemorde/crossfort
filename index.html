@@ -200,6 +200,66 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 @keyframes spellCastAura{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spellCastOverlay{transition:none}.spellCastCard{animation:none;transform:none}.spellCastCard::before{animation:none}}
 
+
+/* Home event banner and battle setup refresh */
+.seasonBanner{display:block;width:100%;max-width:none;margin:0;height:172px;text-align:left;background-image:linear-gradient(90deg,#071018e8 0%,#0a1018a8 43%,#080c1180 70%,#080c11b8 100%),linear-gradient(180deg,#0000 35%,#05080dc7 100%),url("assets/season1/event-fortress.webp");background-size:cover;background-repeat:no-repeat;background-position:center 31%}
+.seasonBanner::before{display:none}
+.seasonCopy{left:18px;right:54px;bottom:18px}
+.seasonTag{display:inline-block;margin-bottom:4px;padding:3px 7px;border:1px solid #d8bc9068;border-radius:3px;background:#080c11a8;letter-spacing:.1em}
+.seasonTitle{line-height:1.15}
+.seasonSub{white-space:normal;line-height:1.45}
+.seasonArrow{display:grid;place-items:center;width:34px;height:34px;right:15px;bottom:16px;border:1px solid #d8bc9070;border-radius:50%;background:#080c11b5}
+.seasonBannerBadge{z-index:3}
+
+#startScreen{padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 34px);align-items:flex-start;background:radial-gradient(circle at 78% 3%,#343a42 0,transparent 30%),linear-gradient(180deg,#10151b,#080b0f 72%)}
+.battleSetupCard{width:min(680px,100%);margin:0 auto;padding:0 0 18px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.battleSetupCard::before{display:none}
+.setupHeader{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:10px;padding:5px 2px 16px;border-bottom:1px solid #302f2d}
+.setupHeader .backHome{position:static;width:40px;height:40px;padding:0;border:1px solid #514b43;border-radius:50%;background:#11161b;color:#eee2d0;font-size:0;box-shadow:inset 0 1px #ffffff0b}
+.setupHeader .backHome::before{content:"←";font-size:21px}
+.setupHeaderCopy{min-width:0;text-align:center}
+.setupEyebrow{color:#b89b76;font-size:9px;font-weight:800;letter-spacing:.2em}
+.setupHeader h1{margin:3px 0 1px;font-family:Georgia,"Yu Mincho",serif;font-size:23px;letter-spacing:.06em}
+.setupHeader p{margin:0;color:#9e978e;font-size:10px}
+.setupHeaderMark{display:grid;place-items:center;width:40px;height:40px;color:#dabb8c;font-size:24px}
+.setupRuleStrip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:13px 0 10px;overflow:hidden;border:1px solid #3c3b38;border-radius:9px;background:#3c3b38}
+.setupRuleStrip span{padding:9px 3px;background:#11161b;color:#aaa198;text-align:center;font-size:9px;letter-spacing:.04em}
+.setupRuleStrip b{color:#ead7b8;font-family:Georgia,serif;font-size:15px;margin-right:2px}
+.setupPanel{margin:0 0 10px;padding:13px;border:1px solid #353a40;border-radius:11px;background:linear-gradient(145deg,#171c21,#0e1216);box-shadow:inset 0 1px #ffffff08,0 8px 22px #0003}
+.setupLabelRow{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.setupStep{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid #7b674f;border-radius:50%;color:#dfbd8d;font-family:Georgia,serif;font-size:11px;font-weight:800}
+.setupLabel{margin:0;color:#f0e7da;font-family:Georgia,"Yu Mincho",serif;font-size:14px;font-weight:800}
+.setupHelp{margin-top:2px;color:#8f8981;font-size:9px}
+.setupChoiceGrid{gap:8px}
+.setupChoiceGrid .modeBtn,.setupFirstGrid .modeBtn{display:grid;grid-template-rows:auto auto auto;place-items:center;gap:2px;height:auto;min-height:79px;padding:9px 6px;border-color:#3e4348;background:linear-gradient(145deg,#1a2026,#101419)}
+.setupChoiceGrid .modeBtn.selected,.setupFirstGrid .modeBtn.selected{border-color:#cfad7e;background:linear-gradient(145deg,#302920,#15181b);box-shadow:inset 0 0 0 1px #d4b58024,0 0 18px #b58c5120}
+.modeIcon{color:#d7b786;font-family:Georgia,serif;font-size:22px;line-height:1}
+.modeName{color:#f0e6d8;font-family:Georgia,"Yu Mincho",serif;font-size:12px;font-weight:900;letter-spacing:.04em}
+.modeHint{color:#8f8980;font-size:8px;font-weight:500}
+.setupFirstGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.setupFirstGrid .modeBtn{min-width:0;min-height:72px}
+.deckSetupPanel{padding-bottom:14px}
+.setupDeckGrid{grid-template-columns:repeat(3,1fr);gap:7px}
+.setupDeckGrid .deckBtn.compact{min-height:50px;border-color:#47494a;border-radius:8px;font-size:13px;background:linear-gradient(145deg,#20242a,#101419)}
+.setupDeckGrid .deckBtn.compact::before{display:inline-block;font-size:10px;margin:0 6px 0 0}
+.setupDeckGrid .deckBtn.compact.selected{border:2px solid var(--gold2);box-shadow:0 0 0 2px #d7b8861c,inset 0 0 18px #d7b88615}
+.savedDeckField{display:block;margin-top:10px}
+.savedDeckField>span{display:block;margin:0 0 5px 2px;color:#918a80;font-size:9px}
+.savedDeckField .savedDeckSelect{width:100%;min-height:44px;margin:0;border:1px solid #464a4e;border-radius:8px;background:#0b0f13;color:#e8ded0;padding:0 37px 0 12px}
+.setupVersus{display:flex;align-items:center;gap:10px;margin:0 5px 10px;color:#b99b74}
+.setupVersus span{height:1px;flex:1;background:linear-gradient(90deg,transparent,#5d5142)}
+.setupVersus span:last-child{background:linear-gradient(90deg,#5d5142,transparent)}
+.setupVersus b{font-family:Georgia,serif;font-size:12px;letter-spacing:.14em}
+.setupFooter{position:sticky;bottom:0;z-index:4;margin:3px -2px -4px;padding:11px 2px calc(env(safe-area-inset-bottom) + 2px);background:linear-gradient(180deg,transparent,#080b0f 27%)}
+.setupFooter .startBattleBtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:54px;margin:0;border-radius:999px;background:linear-gradient(100deg,#c8a777,#efd4ae 55%,#c9a16e);color:#17130f;box-shadow:0 10px 28px #0008, inset 0 1px #fff7;font-family:Georgia,"Yu Mincho",serif;font-size:15px;letter-spacing:.08em}
+.setupFooter .startBattleBtn b{font-size:21px;font-weight:400}
+.setupFooter #startError{min-height:15px;margin-top:5px;text-align:center}
+@media(max-width:430px){
+  .seasonBanner{height:156px;background-position:center 28%}
+  .seasonCopy{left:15px;bottom:15px}.seasonTitle{font-size:23px}.seasonSub{font-size:10px}
+  .setupPanel{padding:12px 10px}.setupChoiceGrid .modeBtn{min-height:75px}
+}
+
 </style>
 </head>
 <body>
@@ -344,31 +404,60 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 </section>
 
 <section id="startScreen">
-  <div class="startCard">
-    <button class="backHome" onclick="showHome()">← ホーム</button>
-    <div class="logo">CROSSFORT</div>
-    <div class="subtitle">対戦設定</div>
-    <div class="rules">
-      <b>5レーン制 / LIFE 20 / 初期手札5枚</b><br>
-      対戦形式と両者のデッキを選択してください。対人戦は1台の端末を交互に操作する開発用テストモードです。
+  <div class="startCard battleSetupCard">
+    <header class="setupHeader">
+      <button class="backHome" onclick="showHome()" aria-label="ホームへ戻る">←</button>
+      <div class="setupHeaderCopy">
+        <div class="setupEyebrow">BATTLE SETUP</div>
+        <h1>対戦準備</h1>
+        <p>ルールとデッキを選んで戦場へ</p>
+      </div>
+      <span class="setupHeaderMark" aria-hidden="true">⚔</span>
+    </header>
+
+    <div class="setupRuleStrip" aria-label="基本ルール">
+      <span><b>5</b> レーン</span><span><b>20</b> LIFE</span><span><b>5</b> 初期手札</span>
     </div>
-    <div class="setupSection"><div class="setupLabel">対戦形式</div><div class="modeGrid">
-      <button class="modeBtn selected" data-mode="cpu" onclick="setMatchMode('cpu')">プレイヤー1 VS CPU</button>
-      <button class="modeBtn" data-mode="local" onclick="setMatchMode('local')">プレイヤー1 VS プレイヤー2</button>
-    </div></div>
-    <div class="setupSection"><div class="setupLabel">先攻を選択</div><div class="firstGrid">
-      <button class="modeBtn" data-first="player" onclick="setFirstPlayerChoice('player')">自分が先攻</button>
-      <button class="modeBtn" data-first="enemy" onclick="setFirstPlayerChoice('enemy')">相手が先攻</button>
-      <button class="modeBtn selected" data-first="random" onclick="setFirstPlayerChoice('random')">ランダム</button>
-    </div></div>
-    <div class="setupSection"><div class="setupLabel">プレイヤー1 デッキ</div><div class="deckGrid" id="playerDeckChoices">
-      <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('player','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('player','白')">白</button><button class="deckBtn compact red" data-color="赤" onclick="selectSetupDeck('player','赤')">赤</button><button class="deckBtn compact blue selected" data-color="青" onclick="selectSetupDeck('player','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('player','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('player','黄')">黄</button>
-    </div><select class="savedDeckSelect" id="playerSavedDeck" onchange="selectSavedDeck('player',this.value)"><option value="">登録デッキを選択</option></select></div>
-    <div class="setupSection"><div class="setupLabel" id="opponentDeckLabel">CPU デッキ</div><div class="deckGrid" id="opponentDeckChoices">
-      <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('enemy','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('enemy','白')">白</button><button class="deckBtn compact red selected" data-color="赤" onclick="selectSetupDeck('enemy','赤')">赤</button><button class="deckBtn compact blue" data-color="青" onclick="selectSetupDeck('enemy','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('enemy','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('enemy','黄')">黄</button>
-    </div><select class="savedDeckSelect" id="enemySavedDeck" onchange="selectSavedDeck('enemy',this.value)"><option value="">登録デッキを選択</option></select></div>
-    <button class="startBattleBtn" onclick="beginConfiguredGame()">対戦開始</button>
-    <div id="startError"></div>
+
+    <div class="setupSection setupPanel">
+      <div class="setupLabelRow"><span class="setupStep">01</span><div><div class="setupLabel">対戦形式</div><div class="setupHelp">遊び方を選択</div></div></div>
+      <div class="modeGrid setupChoiceGrid">
+        <button class="modeBtn selected" data-mode="cpu" onclick="setMatchMode('cpu')"><span class="modeIcon">♟</span><span class="modeName">VS CPU</span><span class="modeHint">CPUと対戦</span></button>
+        <button class="modeBtn" data-mode="local" onclick="setMatchMode('local')"><span class="modeIcon">♙♟</span><span class="modeName">VS PLAYER</span><span class="modeHint">1台でテスト対戦</span></button>
+      </div>
+    </div>
+
+    <div class="setupSection setupPanel">
+      <div class="setupLabelRow"><span class="setupStep">02</span><div><div class="setupLabel">先攻を選択</div><div class="setupHelp">ゲーム開始時の手番</div></div></div>
+      <div class="firstGrid setupFirstGrid">
+        <button class="modeBtn" data-first="player" onclick="setFirstPlayerChoice('player')"><span class="modeIcon">Ⅰ</span><span class="modeName">自分</span><span class="modeHint">先攻</span></button>
+        <button class="modeBtn" data-first="enemy" onclick="setFirstPlayerChoice('enemy')"><span class="modeIcon">Ⅱ</span><span class="modeName">相手</span><span class="modeHint">先攻</span></button>
+        <button class="modeBtn selected" data-first="random" onclick="setFirstPlayerChoice('random')"><span class="modeIcon">◇</span><span class="modeName">ランダム</span><span class="modeHint">自動決定</span></button>
+      </div>
+    </div>
+
+    <div class="setupSection setupPanel deckSetupPanel">
+      <div class="setupLabelRow"><span class="setupStep">03</span><div><div class="setupLabel">プレイヤー1 デッキ</div><div class="setupHelp">使用するカラーまたは登録デッキ</div></div></div>
+      <div class="deckGrid setupDeckGrid" id="playerDeckChoices">
+        <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('player','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('player','白')">白</button><button class="deckBtn compact red" data-color="赤" onclick="selectSetupDeck('player','赤')">赤</button><button class="deckBtn compact blue selected" data-color="青" onclick="selectSetupDeck('player','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('player','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('player','黄')">黄</button>
+      </div>
+      <label class="savedDeckField"><span>登録デッキ</span><select class="savedDeckSelect" id="playerSavedDeck" onchange="selectSavedDeck('player',this.value)"><option value="">登録デッキを選択</option></select></label>
+    </div>
+
+    <div class="setupVersus" aria-hidden="true"><span></span><b>VS</b><span></span></div>
+
+    <div class="setupSection setupPanel deckSetupPanel">
+      <div class="setupLabelRow"><span class="setupStep">04</span><div><div class="setupLabel" id="opponentDeckLabel">CPU デッキ</div><div class="setupHelp">対戦相手が使用するデッキ</div></div></div>
+      <div class="deckGrid setupDeckGrid" id="opponentDeckChoices">
+        <button class="deckBtn compact green" data-color="緑" onclick="selectSetupDeck('enemy','緑')">緑</button><button class="deckBtn compact white" data-color="白" onclick="selectSetupDeck('enemy','白')">白</button><button class="deckBtn compact red selected" data-color="赤" onclick="selectSetupDeck('enemy','赤')">赤</button><button class="deckBtn compact blue" data-color="青" onclick="selectSetupDeck('enemy','青')">青</button><button class="deckBtn compact black" data-color="黒" onclick="selectSetupDeck('enemy','黒')">黒</button><button class="deckBtn compact yellow" data-color="黄" onclick="selectSetupDeck('enemy','黄')">黄</button>
+      </div>
+      <label class="savedDeckField"><span>登録デッキ</span><select class="savedDeckSelect" id="enemySavedDeck" onchange="selectSavedDeck('enemy',this.value)"><option value="">登録デッキを選択</option></select></label>
+    </div>
+
+    <div class="setupFooter">
+      <button class="startBattleBtn" onclick="beginConfiguredGame()"><span>対戦開始</span><b>→</b></button>
+      <div id="startError"></div>
+    </div>
   </div>
 </section>
 
