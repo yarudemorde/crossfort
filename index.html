@@ -1700,12 +1700,12 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     else if(a.type==='damageLife') await changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount)));
     else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false);
     else if(a.type==='destroyUnit' && target) await destroy(target.side,target.index);
-    else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power+=a.amount;
-    else if(a.type==='setPower' && target && boardFor(target.side)[target.index]) boardFor(target.side)[target.index].power=a.amount;
-    else if(a.type==='buffSelf' && own[sourceSlot]===sourceCard) sourceCard.power+=a.amount;
-    else if(a.type==='buffSelfByGraveCount' && own[sourceSlot]===sourceCard) sourceCard.power+=graveFor(side).length;
-    else if(a.type==='buffOthers'){for(j=0;j<own.length;j++) if(own[j] && own[j]!==sourceCard) own[j].power+=a.amount;}
-    else if(a.type==='buffAll'){for(j=0;j<own.length;j++) if(own[j]) own[j].power+=a.amount;}
+    else if(a.type==='buffUnit' && target && boardFor(target.side)[target.index]){boardFor(target.side)[target.index].power+=a.amount;showPowerGain(target.side,target.index,a.amount);}
+    else if(a.type==='setPower' && target && boardFor(target.side)[target.index]){var oldPower=boardFor(target.side)[target.index].power;boardFor(target.side)[target.index].power=a.amount;showPowerGain(target.side,target.index,a.amount-oldPower);}
+    else if(a.type==='buffSelf' && own[sourceSlot]===sourceCard){sourceCard.power+=a.amount;showPowerGain(side,sourceSlot,a.amount);}
+    else if(a.type==='buffSelfByGraveCount' && own[sourceSlot]===sourceCard){var graveBuff=graveFor(side).length;sourceCard.power+=graveBuff;showPowerGain(side,sourceSlot,graveBuff);}
+    else if(a.type==='buffOthers'){for(j=0;j<own.length;j++) if(own[j] && own[j]!==sourceCard){own[j].power+=a.amount;showPowerGain(side,j,a.amount);}}
+    else if(a.type==='buffAll'){for(j=0;j<own.length;j++) if(own[j]){own[j].power+=a.amount;showPowerGain(side,j,a.amount);}}
     else if(a.type==='damageSelf' && own[sourceSlot]===sourceCard) await damage(own,sourceSlot,a.amount,side,false);
     else if(a.type==='mill'){for(j=0;j<a.amount;j++) if((side==='player'?state.playerDeck:state.enemyDeck).length) graveFor(side).push((side==='player'?state.playerDeck:state.enemyDeck).shift());}
     else if(a.type==='destroySelf' && own[sourceSlot]===sourceCard) await destroy(side,sourceSlot);
@@ -1856,6 +1856,11 @@ function floatAt(el,text,type){
   f.className='fxFloat '+type; f.textContent=text;
   f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/2)+'px';
   document.body.appendChild(f); setTimeout(function(){f.remove();},760);
+}
+function showPowerGain(side,index,amount){
+  amount=Number(amount)||0;
+  if(amount<=0) return;
+  floatAt(boardCard(side,index),'+'+amount,'heal');
 }
 function boardCard(side,index){
   var rootId=state && state.matchMode==='local'?(side===activeSide()?'playerBoard':'enemyBoard'):side+'Board';
