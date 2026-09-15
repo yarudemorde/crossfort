@@ -1,0 +1,46 @@
+/* Shared parchment skin. Existing card widths/heights stay in index.html. */
+:is(.card,.handCard,.catalogCard,.detailCard,.pickerCard,.spellCastCard){background:#e4dcc7 url("assets/cards/parchment.webp") center/100% 100% no-repeat!important;color:#302b25!important;border-color:#706552;text-shadow:none}
+:is(.card,.handCard,.catalogCard,.detailCard,.pickerCard).legendary::before{display:none}
+:is(.card,.handCard).legendary::after{display:none}
+:is(.cost,.boardCost,.catalogCardCost,.detailCost){flex-shrink:0;background:transparent;border:2px solid #494035;border-radius:47% 53% 49% 51%;color:#302b25;box-shadow:none;font-family:Georgia,"Yu Mincho",serif;font-weight:900}
+:is(.handName,.cardName,.catalogCardName,.detailName){text-align:center;font-family:Georgia,"Yu Mincho",serif;font-weight:900;padding:0;min-height:0;flex-shrink:0}
+:is(.handMeta,.cardType,.catalogCardType,.detailType){color:#494035;opacity:1;white-space:normal;overflow-wrap:anywhere;line-height:1.25;text-overflow:clip}
+:is(.handText,.effect,.catalogCardText,.detailText){color:#302b25!important;opacity:1;border-top:1px solid #514738;border-bottom:0}
+:is(.handPower,.power,.catalogCardPower,.detailPower),.handPower.spellMark,.detailPower.spellMark{color:#302b25!important;background:none;border:0;box-shadow:none;text-shadow:none}
+.handCard{justify-content:flex-start;gap:3px}
+.handMeta{order:0;margin-left:28px;min-height:25px;font-size:7px}
+.handName{order:1;margin-top:auto;font-size:10px;line-height:1.15}
+.handText{order:2;flex:0 1 auto;max-height:44px;padding-top:3px;font-size:8px;line-height:1.25}
+.handPower{order:3;flex-shrink:0;line-height:1.1}
+.catalogCard{gap:0}
+.catalogCardCost{position:absolute;left:11px;top:13px}
+.catalogCardType{order:0;min-height:36px;margin-left:38px;font-size:9px}
+.catalogCardName{order:1;margin: auto 0 5px;padding-top:35px;font-size:14px}
+.catalogCardText{order:2;margin-top:0;padding:6px 0;font-size:10px}
+.catalogCardPower{order:3;margin-top:2px}
+.catalogCard::after{border-color:#51473833}
+.detailCost{position:absolute;top:18px;left:18px}
+.detailType{order:0;min-height:48px;margin-left:52px;font-size:11px}
+.detailName{order:1;margin: auto 0 8px;padding-top:55px;font-size:23px}
+.detailText{order:2;margin-top:0;padding:10px 0;font-size:15px}
+.detailKeywordGuide{order:3}
+.detailPower{order:4;flex-shrink:0}
+.detailKeywordTitle,.detailKeywordItem strong,.detailKeywordItem span{color:#40372d}
+.detailKeywordItem{background:#5147380d;border-color:#786a53}
+.card{gap:2px;padding-bottom:22px}
+.card:has(.keywordRow){padding-bottom:22px}
+.boardCost{position:absolute;top:4px;left:4px;width:19px;height:19px;display:grid;place-items:center;font-size:10px;z-index:5}
+.cardType{margin-left:23px;min-height:20px;font-size:6px;flex-shrink:0}
+.cardName{margin-top:auto;font-size:9px;line-height:1.1}
+.card .effect{flex:0 1 auto;max-height:29px;padding-top:2px;font-size:7px;line-height:1.15}
+.card .keywordRow{position:static;flex-shrink:0;margin-left:23px;max-height:12px;gap:1px;order:-1}
+.card .keywordIcon{flex-basis:12px;width:12px;height:12px;font-size:7px;border-color:#655948;background:transparent;color:#40372d;box-shadow:none}
+.card .cardType{order:-2}
+.power{bottom:3px;right:3px;padding:0 2px;font-size:12px}
+.pickerCard span{color:#494035}.pickerCard strong{border-bottom:1px solid #514738;text-align:center;color:#302b25}
+.spellCastCard::before{display:none}.spellCastCard::after{color:#302b25;opacity:1;text-shadow:none}
+.spellCastCost{left:14px;right:auto;background:none;color:#302b25;border:2px solid #494035;box-shadow:none}
+.spellCastEyebrow{margin-left:48px;color:#494035;font-size:9px}
+.spellCastType{position:absolute;top:40px;left:62px;color:#494035;border:0;padding:0}
+.spellCastName{margin-top:60px;padding:0;text-align:center;text-shadow:none;color:#302b25}
+.spellCastEffect{color:#302b25;border-color:#514738;margin-top:5px;padding-bottom:18px}

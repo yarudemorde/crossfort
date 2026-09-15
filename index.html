@@ -329,6 +329,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 #gameScreen .slotIndex{color:#c1c9d2;text-shadow:0 1px 3px #000}
 #gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 </style>
+<link rel="stylesheet" href="parchment.css?v=1">
 </head>
 <body>
 
@@ -1054,7 +1055,7 @@ function renderDeckEditor(){
   cards.sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');});
   for(var j=0;j<cards.length;j++)(function(card){
     var count=editorCounts[card.name]||0,row=document.createElement('div');row.className='deckEditCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
-    row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ '+(card.type==='スペル'?'✦ スペル':'⚔ '+card.power+' ／ '+escapeHtml(cardTypeLine(card)))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
+    row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ '+(card.type==='スペル'?'✦ スペル':'⚔ '+card.power+' ／ '+escapeHtml(cardFaceMeta(card)))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
     var info=row.querySelector('.deckEditInfo'),buttons=row.querySelectorAll('button');attachCardHold(info,card,null,true);info.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();showCardDetail(card);}};buttons[0].onclick=function(){adjustDeckCard(card.name,-1);};buttons[1].onclick=function(){adjustDeckCard(card.name,1);};root.appendChild(row);
   })(cards[j]);
 }
@@ -1099,7 +1100,7 @@ function renderCatalog(){
       if(rules.dive!=null) keywords.push('潜水：'+rules.dive);
       button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
-      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardTypeLine(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</span>';
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardFaceMeta(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
     })(cloneCard(pool[j],catalogColor));
   }
@@ -1127,6 +1128,7 @@ function cloneCard(a,color){
   var printedPower=Math.max(0,a[2]||0);
   return {id:CARD_IDS[a[0]]||'',name:a[0],cost:a[1],power:printedPower,basePower:printedPower,type:a[3],species:CARD_SPECIES[a[0]]||'',text:a[4]||'',color:color,legendary:!!CARD_LEGENDARY[a[0]],canAttack:false};
 }
+function cardFaceMeta(card){return (card.color?card.color+' ／ ':'')+(card.legendary?'伝説 ／ ':'')+cardTypeLine(card);}
 function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
 function resetCardAfterGrave(card){
   if(!card) return card;
@@ -1293,7 +1295,7 @@ function showCardDetail(card){
   if(rules.revenge) badges.push('報復：'+rules.revenge);
   if(rules.dive!=null) badges.push('潜水：'+rules.dive);
   $('detailCard').classList.toggle('legendary',!!card.legendary);
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+(card.legendary?'LEGENDARY ／ ':'')+escapeHtml(cardTypeLine(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</div>';
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardFaceMeta(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -1375,7 +1377,7 @@ function renderBoard(side,rootId,asOpponent){
         var card=document.createElement('div');
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
-        card.innerHTML='<div><div class="cardName">'+escapeHtml(u.name)+'</div><div class="cardType">'+escapeHtml(cardTypeLine(u))+'</div></div>'
+        card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml(cardFaceMeta(u))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
           +'<div class="effect">'+formatCardText(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
@@ -1402,7 +1404,7 @@ function renderHand(){
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
       d.setAttribute('aria-label',c.name+' コスト'+shownCost+(c.type==='スペル'?' スペル':' パワー'+c.power));
-      d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardTypeLine(c))+'</div>'
+      d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardFaceMeta(c))+'</div>'
         +'<div class="handText">'+formatCardText(c.text)+'</div>'
         +'<div class="handPower'+(c.type==='スペル'?' spellMark':'')+'" aria-label="'+(c.type==='スペル'?'スペル':'パワー '+c.power)+'">'+(c.type==='スペル'?'✦':c.power)+'</div>';
       d.onclick=function(){ selectCard(index); };
@@ -2526,7 +2528,7 @@ function gravePanelSide(side){
   if(!grave.length)html='<div class="infoEmpty">墓地にカードはありません</div>';
   else for(var i=grave.length-1;i>=0;i--){
     var c=grave[i],idx=i;
-    html+='<button class="graveItem" onclick="showGraveCardDetail(\''+side+'\','+idx+')"><span class="graveCost">'+c.cost+'</span><span><span class="graveName">'+escapeHtml(c.name)+'</span><span class="graveMeta">'+escapeHtml(cardTypeLine(c))+'</span></span><span class="gravePower'+(c.type==='スペル'?' spellMark':'')+'" aria-label="'+(c.type==='スペル'?'スペル':'パワー '+c.power)+'">'+(c.type==='スペル'?'✦':'⚔ '+c.power)+'</span></button>';
+    html+='<button class="graveItem" onclick="showGraveCardDetail(\''+side+'\','+idx+')"><span class="graveCost">'+c.cost+'</span><span><span class="graveName">'+escapeHtml(c.name)+'</span><span class="graveMeta">'+escapeHtml(cardFaceMeta(c))+'</span></span><span class="gravePower'+(c.type==='スペル'?' spellMark':'')+'" aria-label="'+(c.type==='スペル'?'スペル':'パワー '+c.power)+'">'+(c.type==='スペル'?'✦':'⚔ '+c.power)+'</span></button>';
   }
   $('infoTitle').textContent=owner+'の墓地';
   $('infoSub').textContent=grave.length+'枚・カードをタップすると詳細を表示';
@@ -2561,3 +2563,4 @@ renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
 </html>
+
