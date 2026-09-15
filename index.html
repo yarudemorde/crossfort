@@ -318,6 +318,16 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .homeTile > *{text-shadow:0 2px 4px #060c16,0 0 10px #060c16}
 .homeTile .tileIcon{color:#eeeee8}
 .homeTile .tileSub{color:#b9c4d0}
+
+/* Dungeon terrain follows each live five-column board; no baked-in slot grid. */
+#gameScreen .boardWrap{position:relative;isolation:isolate}
+#gameScreen .boardWrap::before{content:"";position:absolute;inset:-12px -6px;z-index:-1;pointer-events:none;background:url("assets/battle/dungeon-floor.webp") center/cover no-repeat;image-rendering:pixelated;opacity:.88;-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent)}
+#gameScreen .slot{background:linear-gradient(180deg,#10182222,#070c143d);border-color:#71809166;box-shadow:inset 0 0 14px #05081080}
+#gameScreen .slot.selectable{border-color:#b99a6e;box-shadow:inset 0 0 16px #05081060,0 0 12px #d1aa7140}
+#gameScreen .slot.selectedSlot{border-color:var(--gold2);background:linear-gradient(180deg,#39312899,#131619bb);box-shadow:0 0 0 2px #dfbd8d30,0 0 18px #dfbd8d55}
+#gameScreen .slot.targetable{border-color:#f2dcc0;box-shadow:0 0 0 3px #dfbd8d44,0 0 22px #efc989}
+#gameScreen .slotIndex{color:#c1c9d2;text-shadow:0 1px 3px #000}
+#gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 </style>
 </head>
 <body>
