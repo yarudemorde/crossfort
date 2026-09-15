@@ -329,7 +329,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 #gameScreen .slotIndex{color:#c1c9d2;text-shadow:0 1px 3px #000}
 #gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 </style>
-<link rel="stylesheet" href="parchment.css?v=3">
+<link rel="stylesheet" href="parchment.css?v=4">
 </head>
 <body>
 
@@ -1841,17 +1841,8 @@ async function showSpellCast(card,side,options){
   document.body.appendChild(overlay);
   requestAnimationFrame(function(){overlay.classList.add('show');});
   await wait(options.revenge?1150:1050);
-  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(reduced){overlay.classList.add('leave');await wait(180);}
-  else{
-    var rect=overlay.querySelector('.spellCastCard').getBoundingClientRect();
-    var fire=document.createElement('div');fire.className='spellBurnFire';fire.setAttribute('aria-hidden','true');
-    fire.style.cssText='left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;height:'+rect.height+'px';
-    fire.innerHTML='<div class="spellBurnEdge"></div>';
-    for(var i=0;i<16;i++){var ember=document.createElement('i');ember.style.cssText='--x:'+(5+(i*37)%90)+'%;--delay:'+(i%5)*.08+'s;--drift:'+((i%2?1:-1)*(10+i*2))+'px';fire.appendChild(ember);}
-    overlay.appendChild(fire);overlay.classList.add('burning');
-    await wait(900);
-  }
+  overlay.classList.add('leave');
+  await wait(150);
   overlay.remove();
 }
 
