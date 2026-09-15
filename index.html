@@ -38,6 +38,33 @@ html[data-view-mode="pc"] .catalogShell,html[data-view-mode="pc"] .deckManagerSh
 html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:600px){html[data-view-mode="auto"] .slot{height:108px}}
 
+/* Full-size desktop mode: expand every screen and scale the battlefield to the viewport. */
+@media (min-width:760px){
+  html[data-view-mode="full"] body{width:100%;max-width:none;margin:0}
+  html[data-view-mode="full"] #gameScreen{width:100%;max-width:none;margin:0;padding:clamp(10px,1.4vw,24px) clamp(18px,3vw,58px) calc(env(safe-area-inset-bottom) + 104px)}
+  html[data-view-mode="full"] .topbar{padding:clamp(11px,1vw,18px) clamp(16px,1.5vw,28px);font-size:clamp(14px,1vw,18px)}
+  html[data-view-mode="full"] .scoreRow{font-size:clamp(14px,1vw,18px)}
+  html[data-view-mode="full"] .life{font-size:clamp(22px,1.8vw,32px)}
+  html[data-view-mode="full"] .board{gap:clamp(7px,.75vw,14px)}
+  html[data-view-mode="full"] .boardWrap{padding:clamp(5px,.7vw,12px) 0}
+  html[data-view-mode="full"] .slot{height:clamp(160px,15vw,285px);padding:clamp(5px,.55vw,10px)}
+  html[data-view-mode="full"] .slotIndex{font-size:clamp(11px,.8vw,15px)}
+  html[data-view-mode="full"] .battleInfoRow{grid-template-columns:clamp(42px,3vw,54px) minmax(0,1fr) clamp(42px,3vw,54px);gap:clamp(7px,.7vw,13px);margin:clamp(7px,.7vw,13px) 0}
+  html[data-view-mode="full"] .battleToolBtn{width:clamp(42px,3vw,54px);height:clamp(42px,3vw,54px);font-size:clamp(18px,1.5vw,25px)}
+  html[data-view-mode="full"] .battleInfoRow .log{min-height:clamp(42px,3vw,54px);display:grid;place-items:center;font-size:clamp(13px,1vw,18px)}
+  html[data-view-mode="full"] .hand{height:clamp(205px,17vw,300px);margin:0 clamp(8px,1vw,18px)}
+  html[data-view-mode="full"] .handCard{width:clamp(150px,10vw,190px);height:clamp(195px,13vw,250px);padding:clamp(8px,.7vw,13px)}
+  html[data-view-mode="full"] .controlInner{width:min(1120px,92vw);max-width:none;gap:clamp(10px,1vw,18px)}
+  html[data-view-mode="full"] .actionBtn{min-height:clamp(54px,4vw,68px);font-size:clamp(14px,1vw,18px)}
+  html[data-view-mode="full"] .homeShell{width:min(1280px,94vw)}
+  html[data-view-mode="full"] .homeGrid{grid-template-columns:repeat(4,1fr)}
+  html[data-view-mode="full"] .homeTile{min-height:clamp(145px,12vw,210px)}
+  html[data-view-mode="full"] .seasonBanner{height:clamp(220px,18vw,320px)}
+  html[data-view-mode="full"] .startCard{width:min(1100px,94vw)}
+  html[data-view-mode="full"] .catalogShell,html[data-view-mode="full"] .deckManagerShell{width:min(1440px,94vw)}
+  html[data-view-mode="full"] .catalogGrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+
 #homeScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 86px);background:radial-gradient(circle at 82% 9%,#28313a 0,transparent 27%),linear-gradient(180deg,#10151b,#080b0f 68%);}
 .homeShell{width:min(680px,100%);margin:auto}.homeHeader{display:flex;align-items:center;gap:11px;padding:7px 3px 14px}.profileButton{display:flex;align-items:center;gap:11px;flex:1;min-width:0;border:0;background:transparent;color:inherit;text-align:left;padding:3px;border-radius:11px}.profileButton:active{background:#ffffff0c}.avatar{width:44px;height:44px;flex:0 0 44px;border-radius:50%;border:1px solid #d8b986;background:radial-gradient(circle at 45% 35%,#d9c3a1 0 7%,#695b4c 8% 20%,#242a30 21% 48%,#0c1014 49%);box-shadow:0 0 0 3px #d8b98618}.profile{flex:1;min-width:0}.profileName{display:block;font-family:Georgia,"Yu Mincho",serif;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.profileTitle{display:block;font-size:10px;color:#b8aa97;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.profileEditMark{color:#9f8c73;font-size:18px;padding-right:2px}.headerIcon{border:0;background:transparent;color:#e8dcc9;font-size:22px;width:39px;height:39px;border-radius:50%}.headerIcon:active{background:#ffffff10}
 .seasonBanner{height:172px;border:1px solid #806f5d;border-radius:12px;overflow:hidden;position:relative;background:radial-gradient(circle at 76% 29%,#e0c89d 0 8%,#d2aa7766 9% 17%,transparent 18%),linear-gradient(160deg,transparent 48%,#111820 49%),linear-gradient(18deg,#bd8e6e,#4d4b52 42%,#141c24 43%);box-shadow:inset 0 0 55px #05080caa,0 13px 35px #0006}.seasonBanner::before{content:"";position:absolute;right:8%;bottom:0;width:58%;height:62%;background:linear-gradient(145deg,transparent 0 27%,#090e13 28% 36%,transparent 37%),repeating-linear-gradient(90deg,#0a0f14 0 16px,#171d22 17px 22px);clip-path:polygon(4% 100%,5% 45%,17% 45%,18% 28%,28% 28%,31% 52%,42% 52%,44% 14%,53% 14%,55% 48%,68% 48%,71% 31%,80% 31%,82% 56%,96% 56%,100% 100%)}.seasonCopy{position:absolute;left:18px;bottom:19px;z-index:2;text-shadow:0 2px 10px #000}.seasonTag{font-size:11px;color:#e5cfac}.seasonTitle{font-family:Georgia,"Yu Mincho",serif;font-size:26px;font-weight:800;letter-spacing:.05em}.seasonSub{font-size:11px;color:#ddd0bf;margin-top:4px}.seasonArrow{position:absolute;right:18px;bottom:21px;z-index:2;color:#ead6b7;font-size:22px}
@@ -617,11 +644,12 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 <div class="modal" id="settingsModal" onclick="closeSettings(event)">
   <div class="pickerBox infoBox" onclick="event.stopPropagation()">
     <h2>画面サイズ設定</h2>
-    <p class="infoSub">端末に合わせるか、スマホ・PC向けの表示幅を固定できます。</p>
+    <p class="infoSub">端末に合わせるか、スマホ・PC・フルサイズの表示幅を選択できます。</p>
     <div class="settingChoices">
       <button class="settingChoice" data-view-choice="auto" onclick="setViewMode('auto')">自動<br><small>画面幅に合わせて最適化</small></button>
       <button class="settingChoice" data-view-choice="mobile" onclick="setViewMode('mobile')">スマホ版<br><small>最大430pxの縦長レイアウト</small></button>
       <button class="settingChoice" data-view-choice="pc" onclick="setViewMode('pc')">PC版<br><small>盤面・カードを広く表示</small></button>
+      <button class="settingChoice" data-view-choice="full" onclick="setViewMode('full')">フルサイズ版<br><small>PC画面いっぱいに盤面を拡大</small></button>
     </div>
     <button class="modalClose" onclick="closeSettings()">閉じる</button>
   </div>
@@ -700,12 +728,12 @@ var VIEW_MODE_KEY='crossfort_view_mode_v1';
 
 function loadViewMode(){
   var saved='auto';try{saved=localStorage.getItem(VIEW_MODE_KEY)||'auto';}catch(e){}
-  if(['auto','mobile','pc'].indexOf(saved)<0)saved='auto';
+  if(['auto','mobile','pc','full'].indexOf(saved)<0)saved='auto';
   document.documentElement.setAttribute('data-view-mode',saved);
   return saved;
 }
 function setViewMode(mode){
-  if(['auto','mobile','pc'].indexOf(mode)<0)mode='auto';
+  if(['auto','mobile','pc','full'].indexOf(mode)<0)mode='auto';
   document.documentElement.setAttribute('data-view-mode',mode);
   try{localStorage.setItem(VIEW_MODE_KEY,mode);}catch(e){}
   var choices=document.querySelectorAll('[data-view-choice]');
