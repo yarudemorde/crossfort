@@ -329,7 +329,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 #gameScreen .slotIndex{color:#c1c9d2;text-shadow:0 1px 3px #000}
 #gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 </style>
-<link rel="stylesheet" href="parchment.css?v=2">
+<link rel="stylesheet" href="parchment.css?v=3">
 </head>
 <body>
 
@@ -1116,7 +1116,7 @@ function renderCatalog(){
       if(rules.dive!=null) keywords.push('潜水：'+rules.dive);
       button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
-      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardFaceMeta(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</span>';
+      button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardFaceMeta(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':card.power)+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
     })(cloneCard(pool[j],catalogColor));
   }
@@ -1318,7 +1318,7 @@ function showCardDetail(card){
   if(rules.revenge) badges.push('報復：'+rules.revenge);
   if(rules.dive!=null) badges.push('潜水：'+rules.dive);
   $('detailCard').className='detailCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
-  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardFaceMeta(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</div>';
+  $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardFaceMeta(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':card.power)+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
 function hideCardDetail(){$('detailOverlay').classList.remove('show');$('detailOverlay').setAttribute('aria-hidden','true');}
@@ -1841,8 +1841,17 @@ async function showSpellCast(card,side,options){
   document.body.appendChild(overlay);
   requestAnimationFrame(function(){overlay.classList.add('show');});
   await wait(options.revenge?1150:1050);
-  overlay.classList.add('leave');
-  await wait(220);
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced){overlay.classList.add('leave');await wait(180);}
+  else{
+    var rect=overlay.querySelector('.spellCastCard').getBoundingClientRect();
+    var fire=document.createElement('div');fire.className='spellBurnFire';fire.setAttribute('aria-hidden','true');
+    fire.style.cssText='left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;height:'+rect.height+'px';
+    fire.innerHTML='<div class="spellBurnEdge"></div>';
+    for(var i=0;i<16;i++){var ember=document.createElement('i');ember.style.cssText='--x:'+(5+(i*37)%90)+'%;--delay:'+(i%5)*.08+'s;--drift:'+((i%2?1:-1)*(10+i*2))+'px';fire.appendChild(ember);}
+    overlay.appendChild(fire);overlay.classList.add('burning');
+    await wait(900);
+  }
   overlay.remove();
 }
 

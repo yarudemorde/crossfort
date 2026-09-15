@@ -48,3 +48,26 @@
 .spellCastEffect{color:#302b25;border-color:#514738;margin-top:5px;padding-bottom:18px}
 :is(.handName,.cardName,.catalogCardName,.detailName,.spellCastName){white-space:nowrap;word-break:normal;overflow:hidden;min-width:0;max-width:100%;width:100%;box-sizing:border-box}
 .cardType{min-height:19px}
+
+/* Numeric badges: retain serif card names, use gothic numerals only. */
+:is(.cost,.boardCost,.catalogCardCost,.detailCost,.spellCastCost){font-family:Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif!important;display:grid;place-items:center;padding:0;line-height:1;text-align:center;border-radius:50%;font-variant-numeric:tabular-nums}
+:is(.power,.handPower,.catalogCardPower,.detailPower):not(.spellMark){font-family:Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif!important;display:grid;place-items:center;align-self:flex-end;flex-shrink:0;width:24px;height:24px;min-width:0;padding:0;border:1.5px solid #494035;border-radius:50%;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
+:is(.power,.handPower):not(.spellMark)::before{content:none}
+.card .power{width:20px;height:20px;font-size:11px;bottom:2px;right:3px}
+.detailPower:not(.spellMark){width:38px;height:38px;font-size:22px}
+.spellCastOverlay.burning{opacity:1}
+.spellCastOverlay.burning .spellCastShade{animation:spellShadeOut .9s ease forwards}
+.spellCastOverlay.burning .spellCastCard{animation:spellPaperBurn .82s linear forwards;transform:translateY(0) scale(1)}
+.spellBurnFire{position:fixed;z-index:3;pointer-events:none}
+.spellBurnEdge{position:absolute;left:-2%;width:104%;height:26px;bottom:0;background:linear-gradient(0deg,transparent,#e8591880 35%,#ffca6bee 65%,#4d2015 80%,transparent);clip-path:polygon(0 45%,8% 65%,17% 25%,26% 50%,37% 10%,48% 55%,59% 20%,70% 50%,82% 10%,93% 50%,100% 25%,100% 100%,0 100%);filter:drop-shadow(0 0 5px #ff7926);animation:spellBurnRise .82s linear forwards}
+.spellBurnFire i{position:absolute;left:var(--x);bottom:10%;width:3px;height:5px;background:#ffd99a;box-shadow:0 0 5px #ff7a28;opacity:0;animation:spellEmber .7s var(--delay) ease-out forwards}
+@keyframes spellPaperBurn{
+0%{clip-path:polygon(0 0,100% 0,100% 100%,90% 100%,80% 100%,70% 100%,60% 100%,50% 100%,40% 100%,30% 100%,20% 100%,10% 100%,0 100%);filter:brightness(1)}
+40%{clip-path:polygon(0 0,100% 0,100% 58%,90% 64%,80% 56%,70% 63%,60% 55%,50% 62%,40% 57%,30% 65%,20% 59%,10% 63%,0 58%);filter:brightness(.85) sepia(.25)}
+85%{clip-path:polygon(0 0,100% 0,100% 12%,90% 18%,80% 10%,70% 17%,60% 9%,50% 16%,40% 11%,30% 19%,20% 13%,10% 17%,0 12%);filter:brightness(.55) sepia(.5)}
+100%{clip-path:polygon(0 0,100% 0,100% 0,90% 0,80% 0,70% 0,60% 0,50% 0,40% 0,30% 0,20% 0,10% 0,0 0);filter:brightness(.3)}
+}
+@keyframes spellBurnRise{0%{bottom:-2%;opacity:0}10%{opacity:1}90%{opacity:1}100%{bottom:99%;opacity:0}}
+@keyframes spellEmber{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--drift),-180px) rotate(120deg)}}
+@keyframes spellShadeOut{60%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.spellBurnFire{display:none}.spellCastOverlay.burning .spellCastCard{animation:none}.spellCastOverlay.burning{opacity:0}}
