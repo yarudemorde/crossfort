@@ -1646,7 +1646,14 @@ async function prepareAttackLane(side,index,card){
   }
   return destination;
 }
+function showSelectionBanner(sourceCard,prompt){
+  var message=(sourceCard && sourceCard.name ? sourceCard.name+'の効果：' : '')+String(prompt||'対象を選択').replace(/をタップ/g,'を選択');
+  var banner=$('battleLog');
+  if(banner) banner.textContent=message;
+}
 function chooseTarget(actingSide,targetSide,prompt,filter,hint){
+  hint=hint||null;
+  if(isHumanSide(actingSide)) showSelectionBanner(hint.sourceCard,prompt);
   var board=boardFor(targetSide), candidates=[];
   for(var i=0;i<board.length;i++) if(board[i] && (!filter || filter(board[i],i))) candidates.push(i);
   if(!candidates.length) return Promise.resolve(null);
@@ -1663,14 +1670,16 @@ function resolveTarget(side,index){
   if(!request || request.targetSide!==side || request.candidates.indexOf(index)<0) return;
   state.targetRequest=null; request.resolve({side:side,index:index}); render();
 }
-function chooseZoneCard(actingSide,cards,title){
+function chooseZoneCard(actingSide,cards,title,sourceCard){
+  if(isHumanSide(actingSide)) showSelectionBanner(sourceCard,title);
   if(!cards.length) return Promise.resolve(null);
   if(!isHumanSide(actingSide)) return Promise.resolve(chooseCpuZoneCard(cards,actingSide,title||''));
   return new Promise(function(resolve){
     state.choiceRequest={kind:'single',cards:cards,title:title,resolve:resolve}; renderPicker();
   });
 }
-function chooseZoneCards(actingSide,cards,title,max){
+function chooseZoneCards(actingSide,cards,title,max,sourceCard){
+  if(isHumanSide(actingSide)) showSelectionBanner(sourceCard,title);
   if(!cards.length || max===0) return Promise.resolve([]);
   if(!isHumanSide(actingSide)){
     var preferLow=/捨て|山札の下|戻す/.test(title||''),sorted=cards.slice().sort(function(a,b){return evaluateCard(a,actingSide)-evaluateCard(b,actingSide);});
@@ -1682,7 +1691,8 @@ function chooseZoneCards(actingSide,cards,title,max){
     state.choiceRequest={kind:'multi',cards:cards,title:title,selected:[],max:max==null?cards.length:max,resolve:resolve};renderPicker();
   });
 }
-function chooseExploreDestinations(side,cards){
+function chooseExploreDestinations(side,cards,sourceCard){
+  if(isHumanSide(side)) showSelectionBanner(sourceCard,'探査：各カードを山札の上か下へ');
   if(!cards.length) return Promise.resolve([]);
   if(!isHumanSide(side)) return Promise.resolve(cards.map(function(){return 'top';}));
   return new Promise(function(resolve){
@@ -1753,7 +1763,7 @@ function cancelPicker(){
   var request=state.choiceRequest;if(!request || (request.kind!=='discover' && request.kind!=='revenge' && request.kind!=='multi')) return;
   state.choiceRequest=null;$('pickerModal').classList.remove('show');request.resolve(request.kind==='multi'?[]:false);
 }
-async function runExplore(side,amount){
+async function runExplore(side,amount,sourceCard){
   var deck=side==='player'?state.playerDeck:state.enemyDeck;
   var found=deck.splice(0,Math.min(amount,deck.length)), remaining=[];
   for(var i=0;i<found.length;i++){
@@ -1761,7 +1771,7 @@ async function runExplore(side,amount){
     if(canUseDiscover(found[i],side) && await chooseDiscoverUse(side,found[i])) await triggerCard(found[i],'onDiscover',side,-1,context);
     if(!context.claimed) remaining.push(found[i]);
   }
-  var destinations=await chooseExploreDestinations(side,remaining), top=[], bottom=[];
+  var destinations=await chooseExploreDestinations(side,remaining,sourceCard), top=[], bottom=[];
   for(var j=0;j<remaining.length;j++) (destinations[j]==='bottom'?bottom:top).push(remaining[j]);
   if(top.length) deck.unshift.apply(deck,top);
   if(bottom.length) deck.push.apply(deck,bottom);
@@ -1839,7 +1849,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     else if(a.type==='addTurn'){
       if(!state.extraTurns)state.extraTurns={player:0,enemy:0};state.extraTurns[side]+=(a.amount||1);logMsg(sideLabel(side)+'が追加ターンを獲得');
     }else if(a.type==='opponentDiscard'){
-      var discardHand=handFor(enemySide),discarded=await chooseZoneCard(enemySide,discardHand.slice(),'捨てる手札を選択');
+      var discardHand=handFor(enemySide),discarded=await chooseZoneCard(enemySide,discardHand.slice(),'捨てる手札を選択',sourceCard);
       if(discarded){var discardIndex=discardHand.indexOf(discarded);if(discardIndex>=0){discardHand.splice(discardIndex,1);graveFor(enemySide).push(discarded);logMsg(sideLabel(enemySide)+'が'+discarded.name+'を捨てた');}}
     }
     else if(a.type==='createTokens'){
@@ -1860,7 +1870,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     }else if(a.type==='returnAnyAllies'){
       var multiHand=handFor(side),returnable=[];
       for(j=0;j<own.length;j++) if(own[j] && own[j]!==sourceCard && own[j].type==='ユニット') returnable.push(own[j]);
-      var picked=await chooseZoneCards(side,returnable,'手札に戻す味方を選択',Math.max(0,8-multiHand.length)),returnedSlots=[];
+      var picked=await chooseZoneCards(side,returnable,'手札に戻す味方を選択',Math.max(0,8-multiHand.length),sourceCard),returnedSlots=[];
       for(j=0;j<picked.length;j++){
         var pickedSlot=own.indexOf(picked[j]);if(pickedSlot>=0 && multiHand.length<8){own[pickedSlot]=null;multiHand.push(picked[j]);returnedSlots.push(pickedSlot);}
       }
@@ -1869,7 +1879,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       var returnedTokenColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor),slots=context.returnedSlots||[];
       for(j=0;j<slots.length;j++) if(!own[slots[j]]){own[slots[j]]=makeToken(a.power,returnedTokenColor);render();animateSummon(side,slots[j]);await wait(180);}
     }else if(a.type==='destroyRelicForToken'){
-      var relicTarget=await chooseTarget(side,side,'破壊する聖遺物をタップ',function(c){return (rulesFor(c).tags||[]).indexOf('relic')>=0;});
+      var relicTarget=await chooseTarget(side,side,'破壊する聖遺物をタップ',function(c){return (rulesFor(c).tags||[]).indexOf('relic')>=0;},{sourceCard:sourceCard});
       if(relicTarget){var relicSlot=relicTarget.index;await destroy(side,relicSlot);if(!own[relicSlot]){own[relicSlot]=makeToken(a.power,sourceCard.color);render();animateSummon(side,relicSlot);}}
     }else if(a.type==='destroyAllRelicsForTokens'){
       var relicSlots=[];for(j=0;j<own.length;j++) if(own[j] && (rulesFor(own[j]).tags||[]).indexOf('relic')>=0) relicSlots.push(j);
@@ -1893,11 +1903,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       var sent=boardFor(target.side)[target.index];if(sent){showDestroy(target.side,target.index);boardFor(target.side)[target.index]=null;(target.side==='player'?state.playerDeck:state.enemyDeck).push(sent);}
     }else if(a.type==='sendUnitsToBottom'){
       for(j=0;j<a.amount;j++){
-        var sendTarget=await chooseTarget(side,enemySide,'山札の下へ送る敵カードをタップ',null);
+        var sendTarget=await chooseTarget(side,enemySide,'山札の下へ送る敵カードをタップ',null,{sourceCard:sourceCard});
         if(!sendTarget) break;
         var sentMany=enemy[sendTarget.index];showDestroy(enemySide,sendTarget.index);enemy[sendTarget.index]=null;(enemySide==='player'?state.playerDeck:state.enemyDeck).push(sentMany);render();
       }
-    }else if(a.type==='explore') await runExplore(side,a.amount);
+    }else if(a.type==='explore') await runExplore(side,a.amount,sourceCard);
     else if(a.type==='claimDiscovered' && context.discoveredCard===sourceCard){
       var claimHand=side==='player'?state.playerHand:state.enemyHand;
       if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
@@ -1935,7 +1945,7 @@ function changeMana(side,amount){
   else state.enemyMana=Math.max(0,state.enemyMana+amount);
 }
 async function resolveSoulEcho(side,sourceSlot,card){
-  var target=await chooseTarget(side,side,'魂響：破壊する聖遺物をタップ',function(c){return (rulesFor(c).tags||[]).indexOf('relic')>=0;});
+  var target=await chooseTarget(side,side,'魂響：破壊する聖遺物をタップ',function(c){return (rulesFor(c).tags||[]).indexOf('relic')>=0;},{sourceCard:card});
   if(!target) return;
   await destroy(side,target.index);
   var grave=graveFor(side), graveIndex=grave.lastIndexOf(card), slot=boardFor(side)[sourceSlot]?firstEmpty(boardFor(side)):sourceSlot;

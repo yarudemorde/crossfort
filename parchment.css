@@ -90,3 +90,5 @@
   html[data-view-mode="full"] .handName{font-size:clamp(14px,1.05vw,20px)}
   html[data-view-mode="full"] .catalogCardName{font-size:clamp(18px,1.25vw,24px)}
 }
+/* Selection readability */
+.pickerCard .pickerState{color:#17130f!important;text-shadow:none;}
