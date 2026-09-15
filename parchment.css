@@ -73,3 +73,20 @@
   html[data-view-mode="full"] .handCard .cost{width:clamp(28px,2vw,38px);height:clamp(28px,2vw,38px);font-size:clamp(14px,1vw,19px)}
   html[data-view-mode="full"] .handPower:not(.spellMark){width:clamp(28px,2vw,38px);height:clamp(28px,2vw,38px);font-size:clamp(14px,1vw,19px)}
 }
+/* Stronger, larger card titles; fitCardNames keeps long titles on one line. */
+:is(.handName,.cardName,.catalogCardName,.detailName,.spellCastName){
+  font-weight:900!important;
+  font-synthesis:weight;
+  -webkit-text-stroke:.22px currentColor;
+  text-shadow:.35px 0 currentColor,-.35px 0 currentColor,0 .25px currentColor;
+}
+.cardName{font-size:11px;line-height:1.12}
+.handName{font-size:13px;line-height:1.18}
+.catalogCardName{font-size:17px;line-height:1.22}
+.detailName{font-size:26px;line-height:1.2}
+.spellCastName{font-size:25px;line-height:1.2}
+@media (min-width:760px){
+  html[data-view-mode="full"] .cardName{font-size:clamp(13px,1.05vw,20px)}
+  html[data-view-mode="full"] .handName{font-size:clamp(14px,1.05vw,20px)}
+  html[data-view-mode="full"] .catalogCardName{font-size:clamp(18px,1.25vw,24px)}
+}
