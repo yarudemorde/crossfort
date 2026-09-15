@@ -1,5 +1,6 @@
 /* Shared parchment skin. Existing card widths/heights stay in index.html. */
-:is(.card,.handCard,.catalogCard,.detailCard,.pickerCard,.spellCastCard){background:#e4dcc7 url("assets/cards/parchment.webp") center/100% 100% no-repeat!important;color:#302b25!important;border-color:#706552;text-shadow:none}
+:is(.card,.handCard,.catalogCard,.detailCard,.pickerCard,.spellCastCard){background:linear-gradient(var(--paper-tint,#ffffff00),var(--paper-tint,#ffffff00)),#e4dcc7 url("assets/cards/parchment.webp") center/100% 100% no-repeat!important;color:#302b25!important;border-color:#706552;text-shadow:none}
+.green{--paper-tint:#376c4550}.white{--paper-tint:#ffffee55}.red{--paper-tint:#a83b3647}.blue{--paper-tint:#35779d50}.black{--paper-tint:#40334e60}.yellow{--paper-tint:#c5a02855}
 :is(.card,.handCard,.catalogCard,.detailCard,.pickerCard).legendary::before{display:none}
 :is(.card,.handCard).legendary::after{display:none}
 :is(.cost,.boardCost,.catalogCardCost,.detailCost){flex-shrink:0;background:transparent;border:2px solid #494035;border-radius:47% 53% 49% 51%;color:#302b25;box-shadow:none;font-family:Georgia,"Yu Mincho",serif;font-weight:900}
@@ -33,8 +34,9 @@
 .cardType{margin-left:23px;min-height:20px;font-size:6px;flex-shrink:0}
 .cardName{margin-top:auto;font-size:9px;line-height:1.1}
 .card .effect{flex:0 1 auto;max-height:29px;padding-top:2px;font-size:7px;line-height:1.15}
-.card .keywordRow{position:static;flex-shrink:0;margin-left:23px;max-height:12px;gap:1px;order:-1}
-.card .keywordIcon{flex-basis:12px;width:12px;height:12px;font-size:7px;border-color:#655948;background:transparent;color:#40372d;box-shadow:none}
+.card .keywordRow{position:static;flex-shrink:0;margin:2px 0 1px;max-height:none;gap:2px;order:-1;flex-wrap:wrap;overflow:visible}
+.card .keywordIcon{flex-basis:18px;width:18px;height:18px;border-color:#655948;background:#eee7d4;color:#302b25;box-shadow:none}
+.keywordIcon svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .card .cardType{order:-2}
 .power{bottom:3px;right:3px;padding:0 2px;font-size:12px}
 .pickerCard span{color:#494035}.pickerCard strong{border-bottom:1px solid #514738;text-align:center;color:#302b25}
@@ -44,3 +46,5 @@
 .spellCastType{position:absolute;top:40px;left:62px;color:#494035;border:0;padding:0}
 .spellCastName{margin-top:60px;padding:0;text-align:center;text-shadow:none;color:#302b25}
 .spellCastEffect{color:#302b25;border-color:#514738;margin-top:5px;padding-bottom:18px}
+:is(.handName,.cardName,.catalogCardName,.detailName,.spellCastName){white-space:nowrap;word-break:normal;overflow:hidden;min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.cardType{min-height:19px}

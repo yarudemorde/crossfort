@@ -329,7 +329,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 #gameScreen .slotIndex{color:#c1c9d2;text-shadow:0 1px 3px #000}
 #gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 </style>
-<link rel="stylesheet" href="parchment.css?v=1">
+<link rel="stylesheet" href="parchment.css?v=2">
 </head>
 <body>
 
@@ -943,7 +943,23 @@ function saveProfile(){
   renderHomeProfile();closeProfileEditor();
 }
 function showHome(){
-  hideSeasonScreens();clearSeasonBattleTheme();renderHomeProfile();renderSeason1Banner();
+  hideSeasonScreens();clearSeasonBattleTheme();// Fit names to each existing card width, including responsive and newly rendered cards.
+(function(){
+  var queued=false;
+  function fit(){queued=false;document.querySelectorAll('.handName,.cardName,.catalogCardName,.detailName,.spellCastName').forEach(function(el){
+    if(!el.clientWidth)return;
+    el.style.fontSize='';
+    var size=parseFloat(getComputedStyle(el).fontSize),width=el.clientWidth;
+    if(el.scrollWidth>width){size=Math.max(4,size*width/el.scrollWidth);el.style.fontSize=size+'px';while(el.scrollWidth>width&&size>4){size-=.25;el.style.fontSize=size+'px';}}
+  });}
+  function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
+  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+  new ResizeObserver(schedule).observe(document.body);
+  window.addEventListener('resize',schedule);
+  if(document.fonts)document.fonts.ready.then(schedule);
+  schedule();
+})();
+renderHomeProfile();renderSeason1Banner();
   $('homeScreen').style.display='block'; $('homeNav').style.display='block';
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none'; $('startScreen').style.display='none'; $('gameScreen').style.display='none'; $('controls').style.display='none';
 }
@@ -1233,8 +1249,15 @@ function hasKeyword(card,keyword,side){
   return false;
 }
 function keywordBadges(card,side){
-  var definitions=[['guard','盾','守護'],['lethal','殺','殺傷'],['pierce','貫','貫通'],['haste','襲','猛襲'],['unblockable','抜','防衛されない'],['cannotAttack','禁','攻撃不可']],html='';
-  for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][2]+'" aria-label="'+definitions[i][2]+'">'+definitions[i][1]+'</span>';
+  var definitions=[
+    ['guard','守護','<path d="M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="M12 6v11"/>'],
+    ['lethal','殺傷','<path d="M6 17C0 10 5 3 12 3s12 7 6 14v4H6Z"/><circle cx="8" cy="11" r="2"/><circle cx="16" cy="11" r="2"/><path d="m10 16 2-3 2 3M10 18v3m4-3v3"/>'],
+    ['pierce','貫通','<path d="M3 21 21 3m-8 0h8v8M4 7h8v13H4Z"/>'],
+    ['haste','猛襲','<path d="m14 2-10 12h7l-1 8L21 9h-8Z"/>'],
+    ['unblockable','防衛されない','<path d="M3 19C4 7 12 5 21 3c-1 5-3 8-7 9l4 1-5 3H8l3 2-8 3M3 21 15 9"/>'],
+    ['cannotAttack','攻撃不可','<circle cx="12" cy="12" r="10"/><path d="m5 5 14 14M8 16l8-8m-2 0h2v2"/>']
+  ],html='';
+  for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" role="img" title="'+definitions[i][1]+'" aria-label="'+definitions[i][1]+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+definitions[i][2]+'</svg></span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
 }
 function formatCardText(text){
@@ -1294,7 +1317,7 @@ function showCardDetail(card){
   var rules=rulesFor(card), badges=[];
   if(rules.revenge) badges.push('報復：'+rules.revenge);
   if(rules.dive!=null) badges.push('潜水：'+rules.dive);
-  $('detailCard').classList.toggle('legendary',!!card.legendary);
+  $('detailCard').className='detailCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
   $('detailCard').innerHTML='<div class="detailCost">'+card.cost+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardFaceMeta(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(card.text||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type==='スペル'?' spellMark':'')+'" aria-label="'+(card.type==='スペル'?'スペル':'パワー '+card.power)+'">'+(card.type==='スペル'?'✦':'⚔ '+card.power)+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
@@ -1377,7 +1400,7 @@ function renderBoard(side,rootId,asOpponent){
         var card=document.createElement('div');
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
         card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
-        card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml(cardFaceMeta(u))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
+        card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml((u.legendary?'伝説 ／ ':'')+(u.species||u.color||''))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
           +'<div class="effect">'+formatCardText(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
@@ -2559,6 +2582,22 @@ window.onerror=function(message,source,line,col,error){
   if($('startScreen').style.display!=='none'){box.style.display='block';box.textContent='エラー: '+message+'\nline '+line;}
   return false;
 };
+// Fit names to each existing card width, including responsive and newly rendered cards.
+(function(){
+  var queued=false;
+  function fit(){queued=false;document.querySelectorAll('.handName,.cardName,.catalogCardName,.detailName,.spellCastName').forEach(function(el){
+    if(!el.clientWidth)return;
+    el.style.fontSize='';
+    var size=parseFloat(getComputedStyle(el).fontSize),width=el.clientWidth;
+    if(el.scrollWidth>width){size=Math.max(4,size*width/el.scrollWidth);el.style.fontSize=size+'px';while(el.scrollWidth>width&&size>4){size-=.25;el.style.fontSize=size+'px';}}
+  });}
+  function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
+  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});
+  new ResizeObserver(schedule).observe(document.body);
+  window.addEventListener('resize',schedule);
+  if(document.fonts)document.fonts.ready.then(schedule);
+  schedule();
+})();
 renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
