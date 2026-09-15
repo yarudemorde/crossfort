@@ -306,6 +306,16 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .costBarSegment.green{background:linear-gradient(90deg,#3f7f52,#6fbd83)}.costBarSegment.white{background:linear-gradient(90deg,#bdb4a2,#f0e8d9)}.costBarSegment.red{background:linear-gradient(90deg,#963b38,#dc6a63)}.costBarSegment.blue{background:linear-gradient(90deg,#326c96,#69a8d2)}.costBarSegment.black{background:linear-gradient(90deg,#4e3f59,#8a72a0)}.costBarSegment.yellow{background:linear-gradient(90deg,#9f8324,#e4c84f)}
 .costBarSegment+.costBarSegment{border-bottom:1px solid #090c1099}
 
+/* Keep each square atlas scene proportional inside the existing menu tiles. */
+.homeTile{position:relative;overflow:hidden;isolation:isolate}
+.homeTile::before{content:"";position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:-2;background:url("assets/home/home-menu-atlas.png") no-repeat;background-size:200% 200%;image-rendering:pixelated;pointer-events:none}
+.homeTile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,10,14,.22),rgba(7,10,14,.52) 45%,rgba(7,10,14,.88));pointer-events:none}
+.homeTile.battleTile::before{background-position:0% 0%}
+.homeTile.deckTile::before{background-position:100% 0%}
+.homeTile.catalogTile::before{background-position:0% 100%}
+.homeTile.missionTile::before{background-position:100% 100%}
+.homeTile > *{text-shadow:0 2px 4px #000,0 0 10px #000}
+.homeTile .tileSub{color:#ded6ca}
 </style>
 </head>
 <body>
@@ -326,10 +336,10 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
       <span class="seasonCopy"><span class="seasonTag">シーズン1</span><br><span class="seasonTitle">暁の要塞</span><br><span class="seasonSub" id="seasonBannerStatus">王都へ報告せよ。3連戦を生き延びろ。</span></span><span class="seasonArrow">→</span>
     </button>
     <div class="homeGrid">
-      <button class="homeTile primary" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPU戦・対人テスト</span></button>
-      <button class="homeTile" onclick="showDeckLibrary()"><span class="tileIcon">♛</span><span class="tileTitle">デッキ編集</span><span class="tileSub">あなただけの戦略を</span></button>
-      <button class="homeTile" onclick="showCatalog()"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
-      <button class="homeTile" onclick="showComingSoon('ミッション')"><span class="tileIcon">✥</span><span class="tileTitle">ミッション</span><span class="tileSub">報酬を獲得しよう</span></button>
+      <button class="homeTile primary battleTile" onclick="showDeckSelect()"><span class="tileIcon">⚔</span><span class="tileTitle">バトル</span><span class="tileSub">CPU戦・対人テスト</span></button>
+      <button class="homeTile deckTile" onclick="showDeckLibrary()"><span class="tileIcon">♛</span><span class="tileTitle">デッキ編集</span><span class="tileSub">あなただけの戦略を</span></button>
+      <button class="homeTile catalogTile" onclick="showCatalog()"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
+      <button class="homeTile missionTile" onclick="showComingSoon('ミッション')"><span class="tileIcon">✥</span><span class="tileTitle">ミッション</span><span class="tileSub">報酬を獲得しよう</span></button>
     </div>
     <div class="newsHeader"><h2>お知らせ</h2><span>すべて見る ›</span></div>
     <div class="newsList">
