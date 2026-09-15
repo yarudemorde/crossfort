@@ -306,16 +306,18 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .costBarSegment.green{background:linear-gradient(90deg,#3f7f52,#6fbd83)}.costBarSegment.white{background:linear-gradient(90deg,#bdb4a2,#f0e8d9)}.costBarSegment.red{background:linear-gradient(90deg,#963b38,#dc6a63)}.costBarSegment.blue{background:linear-gradient(90deg,#326c96,#69a8d2)}.costBarSegment.black{background:linear-gradient(90deg,#4e3f59,#8a72a0)}.costBarSegment.yellow{background:linear-gradient(90deg,#9f8324,#e4c84f)}
 .costBarSegment+.costBarSegment{border-bottom:1px solid #090c1099}
 
-/* Keep each square atlas scene proportional inside the existing menu tiles. */
-.homeTile{position:relative;overflow:hidden;isolation:isolate}
-.homeTile::before{content:"";position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;transform:translate(-50%,-50%);z-index:-2;background:url("assets/home/home-menu-atlas.png") no-repeat;background-size:200% 200%;image-rendering:pixelated;pointer-events:none}
-.homeTile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(7,10,14,.22),rgba(7,10,14,.52) 45%,rgba(7,10,14,.88));pointer-events:none}
-.homeTile.battleTile::before{background-position:0% 0%}
-.homeTile.deckTile::before{background-position:100% 0%}
-.homeTile.catalogTile::before{background-position:0% 100%}
-.homeTile.missionTile::before{background-position:100% 100%}
-.homeTile > *{text-shadow:0 2px 4px #000,0 0 10px #000}
-.homeTile .tileSub{color:#ded6ca}
+/* Cool, subdued pixel-art scenes blend into the home menu. */
+.homeTile,.homeTile.primary{position:relative;overflow:hidden;isolation:isolate;background:#0c1521;border-color:#283849;color:#eeeee8}
+.homeTile.primary{border-color:#536477}
+.homeTile::before{content:"";position:absolute;inset:0;z-index:-2;background:var(--home-scene) center/cover no-repeat;opacity:.42;image-rendering:pixelated;pointer-events:none}
+.homeTile::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(9,17,28,.12),rgba(9,17,28,.22) 45%,rgba(9,17,28,.7));pointer-events:none}
+.homeTile.battleTile{--home-scene:url("assets/home/battle-cool.webp")}
+.homeTile.deckTile{--home-scene:url("assets/home/deck-cool.webp")}
+.homeTile.catalogTile{--home-scene:url("assets/home/catalog-cool.webp")}
+.homeTile.missionTile{--home-scene:url("assets/home/mission-cool.webp")}
+.homeTile > *{text-shadow:0 2px 4px #060c16,0 0 10px #060c16}
+.homeTile .tileIcon{color:#eeeee8}
+.homeTile .tileSub{color:#b9c4d0}
 </style>
 </head>
 <body>
