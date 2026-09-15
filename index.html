@@ -270,6 +270,7 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .setupDeckGrid .deckBtn.compact{min-height:50px;border-color:#47494a;border-radius:8px;font-size:13px;background:linear-gradient(145deg,#20242a,#101419)}
 .setupDeckGrid .deckBtn.compact::before{display:inline-block;font-size:10px;margin:0 6px 0 0}
 .setupDeckGrid .deckBtn.compact.selected{border:2px solid var(--gold2);box-shadow:0 0 0 2px #d7b8861c,inset 0 0 18px #d7b88615}
+.deckLibraryActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.deckImportBtn{width:100%;min-height:54px;border:1px solid #6f6252;border-radius:12px;background:#182028;color:#eadfce;font-weight:900}.savedDeckAuthor{margin-top:5px;color:#c7b79f;font-size:10px}.savedDeckActions{grid-template-columns:repeat(3,1fr)}.savedDeckActions .deckCodeBtn{color:#f0d2a5;border-color:#806b50}.deckCodeArea{width:100%;min-height:132px;resize:vertical;border:1px solid #665947;border-radius:9px;background:#080c10;color:#e9dfd0;padding:10px;font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all;outline:none}.deckCodeArea:focus{border-color:#dfbd8d;box-shadow:0 0 0 2px #dfbd8d22}.deckShareMeta{margin:2px 0 10px;color:#cbbda9;font-size:11px}.deckShareActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.deckShareActions button{min-height:44px;border:1px solid #6f604d;border-radius:9px;background:#1a2026;color:#eadfce;font-weight:900}.deckShareActions .primary{border-color:#efd8b5;background:#dcb984;color:#21170d}.deckShareStatus{min-height:18px;margin-top:7px;color:#efaaa5;font-size:10px}.deckShareStatus.success{color:#79d69a}@media(max-width:420px){.deckLibraryActions{grid-template-columns:1fr}.savedDeckActions{gap:5px}.savedDeckActions button{font-size:11px}}
 .savedDeckField{display:block;margin-top:10px}
 .savedDeckField>span{display:block;margin:0 0 5px 2px;color:#918a80;font-size:9px}
 .savedDeckField .savedDeckSelect{width:100%;min-height:44px;margin:0;border:1px solid #464a4e;border-radius:8px;background:#0b0f13;color:#e8ded0;padding:0 37px 0 12px}
@@ -455,7 +456,10 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
   <div class="deckManagerShell">
     <header class="deckManagerHeader"><button class="deckManagerBack" onclick="showHome()" aria-label="ホームへ戻る">←</button><h1>マイデッキ</h1><span></span></header>
     <p class="deckLibraryIntro">1～2色のカードから40枚を選んでデッキを作成できます。同名カードは最大4枚まで登録できます。</p>
-    <button class="deckCreateBtn" onclick="showDeckEditor()">＋ 新しいデッキを作成</button>
+    <div class="deckLibraryActions">
+      <button class="deckCreateBtn" onclick="showDeckEditor()">＋ 新しいデッキを作成</button>
+      <button class="deckImportBtn" onclick="openDeckImport()">コードからインポート</button>
+    </div>
     <div class="savedDeckList" id="savedDeckList"></div>
   </div>
 </section>
@@ -652,6 +656,32 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
       <button class="settingChoice" data-view-choice="full" onclick="setViewMode('full')">フルサイズ版<br><small>PC画面いっぱいに盤面を拡大</small></button>
     </div>
     <button class="modalClose" onclick="closeSettings()">閉じる</button>
+  </div>
+</div>
+
+<div class="modal" id="deckExportModal" onclick="closeDeckExport(event)">
+  <div class="pickerBox infoBox" onclick="event.stopPropagation()">
+    <h2>デッキコード</h2>
+    <p class="deckShareMeta" id="deckExportMeta"></p>
+    <textarea class="deckCodeArea" id="deckCodeOutput" readonly aria-label="デッキコード"></textarea>
+    <div class="deckShareActions">
+      <button class="primary" id="deckCopyBtn" onclick="copyDeckCode()">コードをコピー</button>
+      <button onclick="closeDeckExport()">閉じる</button>
+    </div>
+    <div class="deckShareStatus" id="deckCopyStatus" aria-live="polite"></div>
+  </div>
+</div>
+
+<div class="modal" id="deckImportModal" onclick="closeDeckImport(event)">
+  <div class="pickerBox infoBox" onclick="event.stopPropagation()">
+    <h2>デッキをインポート</h2>
+    <p class="deckShareMeta">共有されたデッキコードを貼り付けてください。</p>
+    <textarea class="deckCodeArea" id="deckCodeInput" placeholder="CFD1.から始まるコード" aria-label="インポートするデッキコード" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
+    <div class="deckShareActions">
+      <button class="primary" id="deckImportConfirm" onclick="importDeckCode()">インポート</button>
+      <button onclick="closeDeckImport()">閉じる</button>
+    </div>
+    <div class="deckShareStatus" id="deckImportStatus" aria-live="polite"></div>
   </div>
 </div>
 
@@ -1024,9 +1054,75 @@ function renderDeckLibrary(){
   if(!savedDecks.length){root.innerHTML='<div class="noDecks">登録済みのデッキはありません<br>最初のデッキを作成しましょう</div>';return;}
   for(var i=0;i<savedDecks.length;i++)(function(deck){
     var card=document.createElement('div');card.className='savedDeckCard';
-    card.innerHTML='<div class="savedDeckTop"><div><div class="savedDeckName">'+escapeHtml(deck.name)+'</div><div class="savedDeckMeta"><span class="inlineDeckColors" aria-label="'+escapeHtml((deck.colors||[]).join('、'))+'">'+deckColorIconsHtml(deck.colors||[])+'</span><span>'+totalDeckCards(deck.cards||{})+'枚</span></div></div><span>▥</span></div><div class="savedDeckActions"><button type="button">編集</button><button type="button" class="deleteDeckBtn">削除</button></div>';
-    var buttons=card.querySelectorAll('button');buttons[0].onclick=function(){showDeckEditor(deck.id);};buttons[1].onclick=function(){deleteSavedDeck(deck.id);};root.appendChild(card);
+    var author=deck.author||(playerProfile.name||'プレイヤー');
+    card.innerHTML='<div class="savedDeckTop"><div><div class="savedDeckName">'+escapeHtml(deck.name)+'</div><div class="savedDeckMeta"><span class="inlineDeckColors" aria-label="'+escapeHtml((deck.colors||[]).join('、'))+'">'+deckColorIconsHtml(deck.colors||[])+'</span><span>'+totalDeckCards(deck.cards||{})+'枚</span></div><div class="savedDeckAuthor">作者: '+escapeHtml(author)+'</div></div><span>▥</span></div><div class="savedDeckActions"><button type="button">編集</button><button type="button" class="deckCodeBtn">コード</button><button type="button" class="deleteDeckBtn">削除</button></div>';
+    var buttons=card.querySelectorAll('button');buttons[0].onclick=function(){showDeckEditor(deck.id);};buttons[1].onclick=function(){openDeckExport(deck.id);};buttons[2].onclick=function(){deleteSavedDeck(deck.id);};root.appendChild(card);
   })(savedDecks[i]);
+}
+function deckCodeEncodeText(text){
+  var bytes=new TextEncoder().encode(text),binary='',chunk=8192;
+  for(var i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function deckCodeDecodeText(code){
+  var base64=code.replace(/-/g,'+').replace(/_/g,'/');while(base64.length%4)base64+='=';
+  var binary=atob(base64),bytes=new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function createDeckCode(deck){
+  var entries=[];
+  for(var name in deck.cards)if(Object.prototype.hasOwnProperty.call(deck.cards,name)&&deck.cards[name]>0){
+    var resolved=CARD_NAME_ALIASES[name]||name,id=CARD_IDS[resolved];
+    if(!id)throw new Error('未登録のカードが含まれています: '+resolved);
+    entries.push([id,Number(deck.cards[name])]);
+  }
+  entries.sort(function(a,b){return a[0].localeCompare(b[0]);});
+  var payload={v:1,n:String(deck.name||'共有デッキ').slice(0,40),a:String(deck.author||(playerProfile.name||'プレイヤー')).slice(0,30),c:(deck.colors||[]).slice(0,2),d:entries};
+  return 'CFD1.'+deckCodeEncodeText(JSON.stringify(payload));
+}
+function parseDeckCode(raw){
+  raw=String(raw||'').trim();
+  if(raw.length<6||raw.length>12000||raw.slice(0,5)!=='CFD1.')throw new Error('対応していないデッキコードです');
+  var payload;try{payload=JSON.parse(deckCodeDecodeText(raw.slice(5)));}catch(e){throw new Error('デッキコードを読み取れませんでした');}
+  if(!payload||payload.v!==1||!Array.isArray(payload.d))throw new Error('デッキコードの形式が正しくありません');
+  var idToName={};for(var cardName in CARD_IDS)idToName[CARD_IDS[cardName]]=cardName;
+  var cards={},colors=[],total=0,seen={};
+  if(payload.d.length>100)throw new Error('カード情報が多すぎます');
+  for(var i=0;i<payload.d.length;i++){
+    var row=payload.d[i],id=Array.isArray(row)?String(row[0]||''):'',count=Array.isArray(row)?Number(row[1]):0,name=idToName[id],template=name?cardTemplateByName(name):null;
+    if(!name||!template)throw new Error('現在のカード図鑑にないカードが含まれています');
+    if(seen[id]||!Number.isInteger(count)||count<1||count>4)throw new Error('同名カードは1〜4枚で指定してください');
+    seen[id]=true;cards[name]=count;total+=count;if(colors.indexOf(template.color)<0)colors.push(template.color);
+  }
+  if(total!==40)throw new Error('デッキは40枚である必要があります（現在'+total+'枚）');
+  if(colors.length<1||colors.length>2)throw new Error('デッキのカラーは1〜2色にしてください');
+  var name=String(payload.n||'共有デッキ').trim().slice(0,40),author=String(payload.a||'不明').trim().slice(0,30);
+  return {id:'deck-'+Date.now()+'-'+Math.floor(Math.random()*10000),name:name||'共有デッキ',author:author||'不明',colors:colors,cards:cards};
+}
+function openDeckExport(id){
+  var deck=getSavedDeck(id);if(!deck)return;
+  try{$('deckCodeOutput').value=createDeckCode(deck);$('deckExportMeta').textContent=deck.name+' ／ 作者: '+(deck.author||(playerProfile.name||'プレイヤー'));$('deckCopyStatus').textContent='';$('deckExportModal').classList.add('show');}
+  catch(e){alert(e.message||String(e));}
+}
+function closeDeckExport(event){if(event&&event.target!==$('deckExportModal'))return;$('deckExportModal').classList.remove('show');}
+async function copyDeckCode(){
+  var field=$('deckCodeOutput'),status=$('deckCopyStatus'),copied=false;
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(field.value);copied=true;}}catch(e){}
+  if(!copied){field.focus();field.select();try{copied=document.execCommand('copy');}catch(e){}}
+  status.classList.toggle('success',copied);status.textContent=copied?'コピーしました':'コピーできませんでした。コードを長押ししてコピーしてください。';
+}
+function openDeckImport(){
+  $('deckCodeInput').value='';$('deckImportStatus').textContent='';$('deckImportStatus').classList.remove('success');$('deckImportConfirm').disabled=false;$('deckImportModal').classList.add('show');setTimeout(function(){$('deckCodeInput').focus();},50);
+}
+function closeDeckImport(event){if(event&&event.target!==$('deckImportModal'))return;$('deckImportModal').classList.remove('show');}
+function importDeckCode(){
+  var status=$('deckImportStatus');
+  try{
+    var deck=parseDeckCode($('deckCodeInput').value);savedDecks.push(deck);
+    if(!persistSavedDecks()){savedDecks.pop();throw new Error('この端末に保存できませんでした');}
+    refreshProfileUnlocks();renderDeckLibrary();status.classList.add('success');status.textContent='「'+deck.name+'」を追加しました ／ 作者: '+deck.author;$('deckImportConfirm').disabled=true;
+  }catch(e){status.classList.remove('success');status.textContent=e.message||String(e);}
 }
 function showDeckEditor(id){
   var deck=id?getSavedDeck(id):null;editingDeckId=deck?deck.id:'';editorColors=deck?(deck.colors||[]).slice(0,2):[];editorCounts={};
@@ -1107,7 +1203,8 @@ function saveEditedDeck(){
   var name=$('deckNameInput').value.trim(),total=totalDeckCards(editorCounts),error='';
   if(!name)error='デッキ名を入力してください';else if(!editorColors.length||editorColors.length>2)error='カラーを1～2種類選択してください';else if(total!==40)error='カードを合計40枚選択してください';
   if(error){$('deckEditorError').textContent=error;return;}
-  var deck={id:editingDeckId||('deck-'+Date.now()+'-'+Math.floor(Math.random()*10000)),name:name,colors:editorColors.slice(),cards:Object.assign({},editorCounts)};
+  var existing=editingDeckId?getSavedDeck(editingDeckId):null;
+  var deck={id:editingDeckId||('deck-'+Date.now()+'-'+Math.floor(Math.random()*10000)),name:name,author:(existing&&existing.author)||(playerProfile.name||'プレイヤー'),colors:editorColors.slice(),cards:Object.assign({},editorCounts)};
   var index=savedDecks.findIndex(function(d){return d.id===deck.id;});if(index>=0)savedDecks[index]=deck;else savedDecks.push(deck);
   if(!persistSavedDecks()){$('deckEditorError').textContent='この端末に保存できませんでした';return;}
   refreshProfileUnlocks();
