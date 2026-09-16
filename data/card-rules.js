@@ -71,7 +71,7 @@ var CARD_RULES={
   '白龍エルレハイヌ':{tags:['dragon'],onPlay:[{type:'draw',amount:3}]},
   '終末の亀裂 ダルディエク':{onPlay:[{type:'destroyAllUnits'}]},
   '亜龍イザルクリューネ':{tags:['dragon'],onPlay:[{type:'damageAllEnemies',amount:3}]},
-  '起源の龍モルディヤルデ':{tags:['dragon'],keywords:['pierce']},
+  '起源の龍モルディヤルデ':{tags:['dragon'],keywords:['pierce'],onPlay:[{type:'destroyOtherUnits'}]},
   'サルベージ':{onPlay:[{type:'explore',amount:2}]},
   '砂漠の贈賄者':{onPlay:[{type:'draw',amount:1}],onDiscover:[{type:'gainMana',amount:1}]},
   '流砂乗り':{onAttack:[{type:'explore',amount:2}]},
@@ -95,3 +95,49 @@ var CARD_RULES={
   '女教皇アウローン':{conditionalKeywords:[{keyword:'unblockable',relics:3}],onDestroyed:[{type:'soulEcho'}]},
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
+
+// Mordiyarde's latest DB text and behavior. Kept here so the card can be hot-fixed
+// without rewriting the large inline battle engine in index.html.
+(function(){
+  var name='起源の龍モルディヤルデ';
+  var text='■ 貫通\n■ 戦場にある自分のカードが4枚なら、このユニットの配置コストを0にする。\n■ 配置：自分の他のユニット全てを破壊する。';
+  var pool=(typeof CARD_POOLS!=='undefined'&&CARD_POOLS['黒'])||[];
+  for(var i=0;i<pool.length;i++) if(pool[i][0]===name){pool[i][4]=text;break;}
+
+  if(typeof window==='undefined')return;
+  setTimeout(function(){
+    if(typeof effectiveCost==='function'){
+      var originalEffectiveCost=effectiveCost;
+      effectiveCost=function(card,side){
+        if(card&&card.name===name){
+          var proxy=Object.assign({},card,{name:'__mordiyarde_base_cost__'});
+          var baseCost=originalEffectiveCost(proxy,side);
+          var occupied=typeof boardFor==='function'?boardFor(side).filter(function(c){return !!c;}).length:0;
+          return occupied===4?0:baseCost;
+        }
+        return originalEffectiveCost(card,side);
+      };
+    }
+
+    if(typeof executeActions==='function'){
+      var originalExecuteActions=executeActions;
+      executeActions=async function(actions,side,sourceSlot,sourceCard,context){
+        var hasCustom=false;
+        for(var i=0;i<actions.length;i++) if(actions[i]&&actions[i].type==='destroyOtherUnits'){hasCustom=true;break;}
+        if(!hasCustom)return originalExecuteActions(actions,side,sourceSlot,sourceCard,context);
+
+        for(var j=0;j<actions.length;j++){
+          var action=actions[j];
+          if(action&&action.type==='destroyOtherUnits'){
+            var own=boardFor(side);
+            var slots=[];
+            for(var k=0;k<own.length;k++) if(own[k]&&own[k]!==sourceCard&&own[k].type==='ユニット')slots.push(k);
+            for(var s=0;s<slots.length;s++) if(boardFor(side)[slots[s]]&&boardFor(side)[slots[s]]!==sourceCard)await destroy(side,slots[s]);
+          }else{
+            await originalExecuteActions([action],side,sourceSlot,sourceCard,context);
+          }
+        }
+      };
+    }
+  },0);
+})();
