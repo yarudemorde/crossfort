@@ -96,8 +96,9 @@ var CARD_RULES={
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
 
-// Mordiyarde's latest DB text and behavior. Kept here so the card can be hot-fixed
-// without rewriting the large inline battle engine in index.html.
+// Mordiyarde compatibility patch. The old engine still contains a legacy
+// "5 units in graveyard => cost 0" branch, so this wrapper deliberately
+// calculates Mordiyarde from its printed cost and current board only.
 (function(){
   var name='起源の龍モルディヤルデ';
   var text='■ 貫通\n■ 戦場にある自分のカードが4枚なら、このユニットの配置コストを0にする。\n■ 配置：自分の他のユニット全てを破壊する。';
@@ -105,23 +106,25 @@ var CARD_RULES={
   for(var i=0;i<pool.length;i++) if(pool[i][0]===name){pool[i][4]=text;break;}
 
   if(typeof window==='undefined')return;
-  setTimeout(function(){
-    if(typeof effectiveCost==='function'){
+  function installMordiyardePatch(){
+    if(typeof effectiveCost==='function'&&!effectiveCost.__mordiyardeFixed){
       var originalEffectiveCost=effectiveCost;
-      effectiveCost=function(card,side){
+      var fixedEffectiveCost=function(card,side){
         if(card&&card.name===name){
-          var proxy=Object.assign({},card,{name:'__mordiyarde_base_cost__'});
-          var baseCost=originalEffectiveCost(proxy,side);
-          var occupied=typeof boardFor==='function'?boardFor(side).filter(function(c){return !!c;}).length:0;
-          return occupied===4?0:baseCost;
+          var board=typeof boardFor==='function'?boardFor(side):[];
+          var occupied=board.filter(function(c){return !!c;}).length;
+          var alreadyPresent=board.some(function(c){return c&&c.name===name;});
+          return occupied===4&&!alreadyPresent?0:Math.max(0,Number(card.cost)||0);
         }
         return originalEffectiveCost(card,side);
       };
+      fixedEffectiveCost.__mordiyardeFixed=true;
+      effectiveCost=fixedEffectiveCost;
     }
 
-    if(typeof executeActions==='function'){
+    if(typeof executeActions==='function'&&!executeActions.__mordiyardeFixed){
       var originalExecuteActions=executeActions;
-      executeActions=async function(actions,side,sourceSlot,sourceCard,context){
+      var fixedExecuteActions=async function(actions,side,sourceSlot,sourceCard,context){
         var hasCustom=false;
         for(var i=0;i<actions.length;i++) if(actions[i]&&actions[i].type==='destroyOtherUnits'){hasCustom=true;break;}
         if(!hasCustom)return originalExecuteActions(actions,side,sourceSlot,sourceCard,context);
@@ -129,8 +132,7 @@ var CARD_RULES={
         for(var j=0;j<actions.length;j++){
           var action=actions[j];
           if(action&&action.type==='destroyOtherUnits'){
-            var own=boardFor(side);
-            var slots=[];
+            var own=boardFor(side),slots=[];
             for(var k=0;k<own.length;k++) if(own[k]&&own[k]!==sourceCard&&own[k].type==='ユニット')slots.push(k);
             for(var s=0;s<slots.length;s++) if(boardFor(side)[slots[s]]&&boardFor(side)[slots[s]]!==sourceCard)await destroy(side,slots[s]);
           }else{
@@ -138,6 +140,11 @@ var CARD_RULES={
           }
         }
       };
+      fixedExecuteActions.__mordiyardeFixed=true;
+      executeActions=fixedExecuteActions;
     }
-  },0);
+  }
+
+  setTimeout(installMordiyardePatch,0);
+  window.addEventListener('load',installMordiyardePatch,{once:true});
 })();
