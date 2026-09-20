@@ -206,6 +206,8 @@ var CARD_IDS={
   "統合王の動員令":"C002-039",
   "銀騎士の誓い":"C002-040"
 };
+// The printed set for each card ID prefix, matching the Cards sheet's パック column.
+var CARD_SETS={C001:'第一弾 開戦の狼煙',C002:'第二弾 聖砂と海の王冠'};
 var CARD_SPECIES={
   "群れ呼び蜥蜴":"リスカリ",
   "沼潜みの射手":"リスカリ",

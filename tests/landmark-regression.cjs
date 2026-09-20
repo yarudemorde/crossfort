@@ -53,5 +53,11 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   reset();ctx.state.matchMode='local';ctx.state.playerBoard[2]=unit();ctx.state.selectedCard=-1;await ctx.endTurn();check(ctx.state.playerTurn===false&&!ctx.state.animating,'local match advances to player two');
   reset();ctx.state.eventMode=true;ctx.state.playerHand.push(unit());ctx.state.selectedCard=0;ctx.state.selectedSlot=1;await ctx.playSelectedCard();await ctx.endTurn();check(ctx.state.playerBoard[1]?.type==='ユニット'&&ctx.state.playerTurn===false,'event battle can place a unit and end turn');
   reset();ctx.state.matchMode='cpu';ctx.state.eventMode=true;ctx.state.playerTurn=false;await ctx.cpuTurn(true);check(ctx.state.playerTurn===true&&!ctx.state.animating,'event match CPU turn returns control');
+  const shelf=node('deckBookShelf');run("editorCounts={'クロスフォート城':4,'危険海域':1};renderDeckBookShelf(5)");check((shelf.innerHTML.match(/class="bookSpine /g)||[]).length===5&&shelf.innerHTML.includes('×4')&&node('deckShelfSummary').textContent==='2種類・5枚','shelf adds one colored book per card and shows grouped quantity');check(shelf.innerHTML.includes('bookSpine white')&&shelf.innerHTML.includes('bookSpine blue'),'spines reflect each card color');
+  const found=[];node('catalogGrid').appendChild=button=>found.push(button);
+  run("catalogColor='白';catalogTypeFilter='ランドマーク';catalogSetFilter='C001';renderCatalog()");check(found.length===1&&found[0].innerHTML.includes('クロスフォート城'),'catalog type and first set filters combine');
+  found.length=0;run("catalogSetFilter='C002';renderCatalog()");check(found.length===1&&found[0].innerHTML.includes('フィリポス山脈'),'catalog second set filter finds matching landmark');
+  found.length=0;run("catalogColor='青';catalogTypeFilter='all';catalogSetFilter='all';renderCatalog()");let costs=found.map(button=>Number(button.innerHTML.match(/catalogCardCost">(\d+)/)?.[1]));check(costs.length>1&&costs.every((cost,i)=>!i||cost>=costs[i-1]),'catalog cards sort by ascending printed cost');
+  check(ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'ユニット','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C001'),'editor filters use type and printed set ID');
   console.log(`${count} phase2 and landmark regression assertions passed`);
 })().catch(e=>{console.error(e);process.exitCode=1});

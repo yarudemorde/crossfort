@@ -378,6 +378,27 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 @keyframes collapseDebris{0%{opacity:0;transform:translateY(-12%) scale(.68)}25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(28%) scale(1.08)}}
 @media(prefers-reduced-motion:reduce){.landmarkCollapsePiece{display:none}.landmarkCollapseDebris{animation:none;opacity:1}}
 html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
+/* Deck shelf and collection filters. Keep book spines scrollable instead of shrinking 40 titles. */
+.cardFilterBar{display:flex;align-items:center;gap:8px;margin:8px 0 11px;flex-wrap:wrap}
+.cardFilterBar label{display:flex;align-items:center;gap:5px;color:#dce4e9;font-size:11px;font-weight:800}
+.cardFilterBar select{min-height:36px;max-width:188px;min-width:112px;border:1px solid #647b8e;border-radius:7px;background:#14212d;color:#f4f0e6;padding:5px 9px;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.cardFilterBar select:focus-visible{outline:2px solid #a9c6d6;outline-offset:2px}
+.bookShelfSection{position:sticky;top:65px;z-index:23;margin:12px 0 15px;padding:9px 11px 0;border:1px solid #657c8c;border-radius:11px;background:linear-gradient(180deg,#1a2b38ee,#0c1721f6);box-shadow:0 10px 25px #000a;backdrop-filter:blur(12px)}
+.bookShelfHeading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px;color:#f1efea;font:900 12px Georgia,"Yu Mincho",serif}
+.bookShelfHeading small{color:#aec3d1;font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.bookShelf{display:flex;align-items:flex-end;gap:3px;min-height:149px;padding:6px 6px 8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#8298aa #132332;background:repeating-linear-gradient(90deg,#d6e4ee08 0 1px,transparent 1px 39px),linear-gradient(180deg,#111f2b,#08121c);border:1px solid #597085;border-radius:5px 5px 1px 1px;scroll-behavior:smooth}
+.bookShelf::after{content:"";flex:1 0 12px}
+.bookShelfEmpty{align-self:center;margin:auto;color:#bdcad3;font-size:11px;text-align:center;white-space:nowrap}
+.bookGroup{display:flex;align-items:flex-end;gap:1px;flex:none;border-right:1px solid #b9cbd326;padding-right:3px}
+.bookSpine{--spine:#314c62;--spine-light:#54738b;position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:29px;height:128px;margin:0;padding:6px 2px 4px;border:1px solid #cbd9dc55;border-radius:3px 5px 2px 2px;background:linear-gradient(90deg,#080f18b0 0 12%,var(--spine) 18% 66%,var(--spine-light) 86%,#071019 100%);color:#f5f3e9;box-shadow:inset 1px 0 #ffffff35,inset -2px 0 #0008,2px 1px 2px #000b;font:800 10px Georgia,"Yu Mincho",serif;cursor:pointer}
+.bookSpine:hover,.bookSpine:focus-visible{transform:translateY(-5px);outline:2px solid #eef4f5;outline-offset:1px}
+.bookSpine:nth-child(even){height:122px}
+.bookSpine.green{--spine:#275546;--spine-light:#5a997d}.bookSpine.white{--spine:#87919a;--spine-light:#b2bdc5}.bookSpine.red{--spine:#673e51;--spine-light:#a56673}.bookSpine.blue{--spine:#235279;--spine-light:#5e9dc3}.bookSpine.black{--spine:#383445;--spine-light:#726b87}.bookSpine.yellow{--spine:#6c6445;--spine-light:#a9a180}
+.bookSpineCost{flex:none;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;border:1px solid #f3f1df80;background:#0a1825a8;font:900 10px Arial,sans-serif}
+.bookSpineName{min-height:0;max-height:91px;writing-mode:vertical-rl;text-orientation:upright;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1;letter-spacing:-.09em;text-shadow:0 1px 2px #000}
+.bookSpineCount{position:absolute;bottom:2px;left:1px;right:1px;border-top:1px solid #f7f0e76b;background:#0a1524ad;text-align:center;font:900 9px Arial,sans-serif}
+.bookShelfRail{height:8px;margin:0 -11px;border-top:2px solid #afc1cb;border-bottom:1px solid #546a78;border-radius:0 0 9px 9px;background:linear-gradient(#3e596c,#152632)}
+@media(max-width:600px){.bookShelfSection{top:61px;padding:7px 7px 0}.bookShelf{min-height:125px;padding:5px 4px 7px}.bookSpine{height:104px;width:26px;font-size:9px}.bookSpine:nth-child(even){height:99px}.bookSpineName{max-height:70px}.bookShelfRail{margin:0 -7px}.cardFilterBar select{min-width:104px;max-width:158px}}
 </style>
 <link rel="stylesheet" href="parchment.css?v=5">
 </head>
@@ -498,6 +519,11 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
       </div>
     </div>
     <div class="deckProgress" id="deckProgress"><span>選択中のカード</span><strong id="deckTotalCount">0 / 40</strong></div>
+    <section class="bookShelfSection" aria-label="編成中のデッキ">
+      <div class="bookShelfHeading"><span>編成中の本棚</span><small id="deckShelfSummary" aria-live="polite">0種類・0枚</small></div>
+      <div class="bookShelf" id="deckBookShelf"><span class="bookShelfEmpty">カードを追加すると本が並びます</span></div>
+      <div class="bookShelfRail" aria-hidden="true"></div>
+    </section>
     <section class="deckStatsPanel" aria-label="デッキ統計">
       <div class="deckStatsHeader">
         <div><span class="deckStatsLabel">デッキカラー</span><div class="deckColorIcons" id="deckColorIcons" aria-label="未選択"><span class="deckColorEmpty">未選択</span></div></div>
@@ -506,7 +532,11 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
       <div class="costCurveTitle"><span>コスト分布</span><small>採用枚数</small></div>
       <div class="costCurve" id="deckCostCurve" role="img" aria-label="カードはまだ選択されていません"></div>
     </section>
-    <div class="editorLabel"><span>カードを選択</span><small>カード名を長押しで詳細</small></div>
+    <div class="editorLabel"><span>カードを選択</span><small id="editorResultCount">カード名を長押しで詳細</small></div>
+    <div class="cardFilterBar" aria-label="デッキ用カードの絞り込み">
+      <label for="editorTypeFilter">カードタイプ<select id="editorTypeFilter" onchange="setEditorFilter('type',this.value)"><option value="all">すべて</option><option value="ユニット">ユニット</option><option value="スペル">スペル</option><option value="ランドマーク">ランドマーク</option></select></label>
+      <label for="editorSetFilter">収録弾<select id="editorSetFilter" onchange="setEditorFilter('set',this.value)"><option value="all">すべて</option></select></label>
+    </div>
     <div class="deckEditList" id="deckEditList"></div>
     <div class="deckEditorFooter"><button class="deckSaveBtn" id="deckSaveBtn" onclick="saveEditedDeck()" disabled>この内容で登録</button><div class="deckEditorError" id="deckEditorError"></div></div>
   </div>
@@ -527,6 +557,10 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
         <button class="colorTab blue" data-catalog-color="青" onclick="selectCatalogColor('青')" role="tab">青</button>
         <button class="colorTab black" data-catalog-color="黒" onclick="selectCatalogColor('黒')" role="tab">黒</button>
         <button class="colorTab yellow" data-catalog-color="黄" onclick="selectCatalogColor('黄')" role="tab">黄</button>
+      </div>
+      <div class="cardFilterBar" aria-label="カード図鑑の絞り込み">
+        <label for="catalogTypeFilter">カードタイプ<select id="catalogTypeFilter" onchange="setCatalogFilter('type',this.value)"><option value="all">すべて</option><option value="ユニット">ユニット</option><option value="スペル">スペル</option><option value="ランドマーク">ランドマーク</option></select></label>
+        <label for="catalogSetFilter">収録弾<select id="catalogSetFilter" onchange="setCatalogFilter('set',this.value)"><option value="all">すべて</option></select></label>
       </div>
     </header>
     <div class="catalogGrid" id="catalogGrid" role="tabpanel"></div>
@@ -725,6 +759,7 @@ var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'bla
 var selectedColor='青',setupMode='cpu',setupFirstChoice='random',setupPlayerColor='青',setupEnemyColor='赤';
 var setupPlayerDeckId='',setupEnemyDeckId='';
 var catalogColor='緑';
+var catalogTypeFilter='all',catalogSetFilter='all',editorTypeFilter='all',editorSetFilter='all';
 var savedDecks=loadSavedDecks(),editingDeckId='',editorColors=[],editorCounts={};
 var PROFILE_KEY='crossfort_profile_v1',PROFILE_STATS_KEY='crossfort_profile_stats_v1';
 var playerStats=loadPlayerStats(),playerProfile=loadPlayerProfile(),editingProfileTitleId=playerProfile.titleId;
@@ -1040,6 +1075,7 @@ function showCatalog(){
   hideSeasonScreens();clearSeasonBattleTheme();
   $('homeScreen').style.display='none'; $('homeNav').style.display='none'; $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';
   $('gameScreen').style.display='none'; $('controls').style.display='none'; $('catalogScreen').style.display='block';
+  catalogTypeFilter='all';catalogSetFilter='all';$('catalogTypeFilter').value='all';populateSetFilter('catalogSetFilter','all');
   renderCatalog();window.scrollTo(0,0);
 }
 function loadSavedDecks(){
@@ -1136,8 +1172,18 @@ function importDeckCode(){
 function showDeckEditor(id){
   var deck=id?getSavedDeck(id):null;editingDeckId=deck?deck.id:'';editorColors=deck?(deck.colors||[]).slice(0,2):[];editorCounts={};
   if(deck)for(var name in deck.cards)if(deck.cards[name]>0){var resolvedName=CARD_NAME_ALIASES[name]||name;editorCounts[resolvedName]=Math.min(4,(editorCounts[resolvedName]||0)+deck.cards[name]);}
+  editorTypeFilter='all';editorSetFilter='all';$('editorTypeFilter').value='all';populateSetFilter('editorSetFilter','all');
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='block';$('deckEditorTitle').textContent=deck?'デッキ編集':'デッキ作成';$('deckNameInput').value=deck?deck.name:'デッキ'+(savedDecks.length+1);$('deckEditorError').textContent='';renderDeckEditor();window.scrollTo(0,0);
 }
+function populateSetFilter(id,selected){
+  var select=$(id),options=['<option value="all">すべて</option>'];
+  for(var code in CARD_SETS)if(Object.prototype.hasOwnProperty.call(CARD_SETS,code))options.push('<option value="'+escapeHtml(code)+'">'+escapeHtml(CARD_SETS[code])+'</option>');
+  select.innerHTML=options.join('');select.value=selected;
+}
+function matchesCardFilters(card,type,set){return (type==='all'||card.type===type)&&(set==='all'||card.id.split('-')[0]===set);}
+function cardCostOrder(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');}
+function setEditorFilter(kind,value){if(kind==='type')editorTypeFilter=value;else editorSetFilter=value;renderDeckEditor();}
+function setCatalogFilter(kind,value){if(kind==='type')catalogTypeFilter=value;else catalogSetFilter=value;renderCatalog();}
 function toggleEditorColor(color){
   var index=editorColors.indexOf(color);
   if(index>=0){editorColors.splice(index,1);var pool=CARD_POOLS[color]||[];for(var i=0;i<pool.length;i++)delete editorCounts[pool[i][0]];}
@@ -1196,12 +1242,33 @@ function renderDeckEditorStats(total){
   }
   var curve=$('deckCostCurve');curve.innerHTML=html.join('');curve.setAttribute('aria-label',total?labels.join('、'):'カードはまだ選択されていません');
 }
+function renderDeckBookShelf(total){
+  var shelf=$('deckBookShelf'),previousScroll=shelf.scrollLeft,chosen=[];
+  for(var name in editorCounts)if(Object.prototype.hasOwnProperty.call(editorCounts,name)&&editorCounts[name]>0){
+    var template=cardTemplateByName(name);if(template)chosen.push({card:cloneCard(template.row,template.color),count:Number(editorCounts[name])});
+  }
+  chosen.sort(function(a,b){return cardCostOrder(a.card,b.card);});
+  $('deckShelfSummary').textContent=chosen.length+'種類・'+total+'枚';
+  if(!chosen.length){shelf.innerHTML='<span class="bookShelfEmpty">カードを追加すると本が並びます</span>';return;}
+  var html=[];
+  for(var i=0;i<chosen.length;i++){
+    var card=chosen[i].card,count=chosen[i].count,escaped=escapeHtml(card.name);
+    html.push('<div class="bookGroup" aria-label="'+escaped+'を'+count+'枚採用">');
+    for(var copy=0;copy<count;copy++)html.push('<button type="button" class="bookSpine '+(COLOR_CLASS[card.color]||'')+(copy===0?' first':'')+'" data-book-name="'+escaped+'" title="'+escaped+'：'+count+'枚採用" aria-label="'+escaped+'、コスト'+card.cost+'、'+count+'枚中'+(copy+1)+'枚目。カード詳細を表示"><span class="bookSpineCost">'+card.cost+'</span><span class="bookSpineName">'+escaped+'</span>'+(copy===0?'<span class="bookSpineCount">×'+count+'</span>':'')+'</button>');
+    html.push('</div>');
+  }
+  shelf.innerHTML=html.join('');shelf.scrollLeft=previousScroll;
+  shelf.onclick=function(event){var spine=event.target.closest('.bookSpine');if(!spine||!shelf.contains(spine))return;var template=cardTemplateByName(spine.getAttribute('data-book-name'));if(template)showCardDetail(cloneCard(template.row,template.color));};
+}
 function renderDeckEditor(){
   var tabs=document.querySelectorAll('[data-editor-color]');for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('selected',editorColors.indexOf(tabs[i].getAttribute('data-editor-color'))>=0);
   var total=totalDeckCards(editorCounts),root=$('deckEditList');$('deckTotalCount').textContent=total+' / 40';$('deckProgress').classList.toggle('complete',total===40);$('deckSaveBtn').disabled=!(editorColors.length>=1&&editorColors.length<=2&&total===40);renderDeckEditorStats(total);
+  renderDeckBookShelf(total);
   root.innerHTML='';if(!editorColors.length){root.innerHTML='<div class="deckEditorEmpty">先にデッキのカラーを選択してください</div>';return;}
   var cards=[];for(var c=0;c<editorColors.length;c++){var pool=CARD_POOLS[editorColors[c]]||[];for(var p=0;p<pool.length;p++)cards.push(cloneCard(pool[p],editorColors[c]));}
-  cards.sort(function(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');});
+  cards=cards.filter(function(card){return matchesCardFilters(card,editorTypeFilter,editorSetFilter);}).sort(cardCostOrder);
+  $('editorResultCount').textContent=cards.length+'枚表示 ／ 長押しで詳細';
+  if(!cards.length){root.innerHTML='<div class="deckEditorEmpty">条件に合うカードがありません</div>';return;}
   for(var j=0;j<cards.length;j++)(function(card){
     var count=editorCounts[card.name]||0,row=document.createElement('div');row.className='deckEditCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
     row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ '+(card.type==='スペル'?'✦ スペル':card.type==='ランドマーク'?escapeHtml(cardFaceMeta(card)):'⚔ '+card.power+' ／ '+escapeHtml(cardFaceMeta(card)))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
@@ -1237,13 +1304,14 @@ function selectCatalogColor(color){
 }
 function renderCatalog(){
   var pool=CARD_POOLS[catalogColor]||[],root=$('catalogGrid'),tabs=document.querySelectorAll('[data-catalog-color]');
-  $('catalogCount').textContent=catalogColor+'のカード '+pool.length+'枚';root.innerHTML='';
+  var cards=pool.map(function(row){return cloneCard(row,catalogColor);}).filter(function(card){return matchesCardFilters(card,catalogTypeFilter,catalogSetFilter);}).sort(cardCostOrder);
+  $('catalogCount').textContent=catalogColor+'のカード '+cards.length+'枚表示 ／ 全'+pool.length+'枚';root.innerHTML='';
   for(var i=0;i<tabs.length;i++){
     var selected=tabs[i].getAttribute('data-catalog-color')===catalogColor;
     tabs[i].classList.toggle('selected',selected);tabs[i].setAttribute('aria-selected',selected?'true':'false');
   }
-  if(!pool.length){root.innerHTML='<div class="catalogEmpty">カードがありません</div>';return;}
-  for(var j=0;j<pool.length;j++){
+  if(!cards.length){root.innerHTML='<div class="catalogEmpty">条件に合うカードがありません</div>';return;}
+  for(var j=0;j<cards.length;j++){
     (function(card){
       var button=document.createElement('button'),rules=rulesFor(card),keywords=[];
       if(rules.revenge) keywords.push('報復：'+rules.revenge);
@@ -1252,7 +1320,7 @@ function renderCatalog(){
       button.setAttribute('aria-label',card.name+'の詳細を表示');
       button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardFaceMeta(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type!=='ユニット'?' spellMark':'')+'" aria-label="'+(card.type==='ユニット'?'パワー '+card.power:card.type)+'">'+(card.type==='ユニット'?card.power:'✦')+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
-    })(cloneCard(pool[j],catalogColor));
+    })(cards[j]);
   }
 }
 function showComingSoon(name){
