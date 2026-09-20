@@ -386,19 +386,20 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 .bookShelfSection{position:sticky;top:65px;z-index:23;margin:12px 0 15px;padding:9px 11px 0;border:1px solid #657c8c;border-radius:11px;background:linear-gradient(180deg,#1a2b38ee,#0c1721f6);box-shadow:0 10px 25px #000a;backdrop-filter:blur(12px)}
 .bookShelfHeading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px;color:#f1efea;font:900 12px Georgia,"Yu Mincho",serif}
 .bookShelfHeading small{color:#aec3d1;font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.bookShelf{display:flex;align-items:flex-end;gap:3px;min-height:149px;padding:6px 6px 8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#8298aa #132332;background:repeating-linear-gradient(90deg,#d6e4ee08 0 1px,transparent 1px 39px),linear-gradient(180deg,#111f2b,#08121c);border:1px solid #597085;border-radius:5px 5px 1px 1px;scroll-behavior:smooth}
+.bookShelf{display:flex;align-items:flex-end;gap:3px;min-height:188px;padding:6px clamp(25px,6%,55px) 13px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#8298aa #132332;background-image:linear-gradient(180deg,#07111b1c,#07111b10),url("assets/deck-bookshelf.webp");background-size:100% 100%,100% 137%;background-position:center,center top;background-repeat:no-repeat;border:1px solid #597085;border-radius:5px 5px 1px 1px;image-rendering:pixelated;scroll-behavior:smooth}
 .bookShelf::after{content:"";flex:1 0 12px}
-.bookShelfEmpty{align-self:center;margin:auto;color:#bdcad3;font-size:11px;text-align:center;white-space:nowrap}
 .bookGroup{display:flex;align-items:flex-end;gap:1px;flex:none;border-right:1px solid #b9cbd326;padding-right:3px}
-.bookSpine{--spine:#314c62;--spine-light:#54738b;position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:29px;height:128px;margin:0;padding:6px 2px 4px;border:1px solid #cbd9dc55;border-radius:3px 5px 2px 2px;background:linear-gradient(90deg,#080f18b0 0 12%,var(--spine) 18% 66%,var(--spine-light) 86%,#071019 100%);color:#f5f3e9;box-shadow:inset 1px 0 #ffffff35,inset -2px 0 #0008,2px 1px 2px #000b;font:800 10px Georgia,"Yu Mincho",serif;cursor:pointer}
+.bookSpine{--spine:#314c62;--spine-light:#54738b;position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:31px;height:160px;margin:0;padding:6px 2px 4px;border:2px solid #cbd9dc85;border-radius:3px 5px 2px 2px;background:linear-gradient(90deg,#080f18e0 0 12%,var(--spine) 18% 66%,var(--spine-light) 86%,#071019 100%);color:#f5f3e9;box-shadow:inset 1px 0 #ffffff65,inset -2px 0 #0009,2px 1px 3px #000e;font:800 10px Georgia,"Yu Mincho",serif;cursor:pointer}
+.bookSpine::before{content:"";position:absolute;inset:2px 3px;border-top:2px double #f5f0df95;border-bottom:2px double #f5f0df95;border-left:1px solid #f5f0df45;border-right:1px solid #f5f0df45;box-shadow:inset 0 2px #0006,inset 0 -2px #0006;pointer-events:none}
 .bookSpine:hover,.bookSpine:focus-visible{transform:translateY(-5px);outline:2px solid #eef4f5;outline-offset:1px}
-.bookSpine:nth-child(even){height:122px}
+.bookSpine:nth-child(even){height:154px}
 .bookSpine.green{--spine:#275546;--spine-light:#5a997d}.bookSpine.white{--spine:#87919a;--spine-light:#b2bdc5}.bookSpine.red{--spine:#673e51;--spine-light:#a56673}.bookSpine.blue{--spine:#235279;--spine-light:#5e9dc3}.bookSpine.black{--spine:#383445;--spine-light:#726b87}.bookSpine.yellow{--spine:#6c6445;--spine-light:#a9a180}
 .bookSpineCost{flex:none;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;border:1px solid #f3f1df80;background:#0a1825a8;font:900 10px Arial,sans-serif}
-.bookSpineName{min-height:0;max-height:91px;writing-mode:vertical-rl;text-orientation:upright;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1;letter-spacing:-.09em;text-shadow:0 1px 2px #000}
+.bookSpineName{min-height:0;max-height:130px;writing-mode:vertical-rl;text-orientation:upright;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;letter-spacing:-.06em;font-size:var(--book-font,10px);text-shadow:0 1px 2px #000}
+.bookSpine.first .bookSpineName{max-height:115px}
 .bookSpineCount{position:absolute;bottom:2px;left:1px;right:1px;border-top:1px solid #f7f0e76b;background:#0a1524ad;text-align:center;font:900 9px Arial,sans-serif}
 .bookShelfRail{height:8px;margin:0 -11px;border-top:2px solid #afc1cb;border-bottom:1px solid #546a78;border-radius:0 0 9px 9px;background:linear-gradient(#3e596c,#152632)}
-@media(max-width:600px){.bookShelfSection{top:61px;padding:7px 7px 0}.bookShelf{min-height:125px;padding:5px 4px 7px}.bookSpine{height:104px;width:26px;font-size:9px}.bookSpine:nth-child(even){height:99px}.bookSpineName{max-height:70px}.bookShelfRail{margin:0 -7px}.cardFilterBar select{min-width:104px;max-width:158px}}
+@media(max-width:600px){.bookShelfSection{top:61px;padding:7px 7px 0}.bookShelf{min-height:173px;padding:5px 25px 11px}.bookSpine{height:146px;width:29px}.bookSpine:nth-child(even){height:141px}.bookSpineName{max-height:112px;font-size:var(--book-font-mobile,9px)}.bookSpine.first .bookSpineName{max-height:96px}.bookShelfRail{margin:0 -7px}.cardFilterBar select{min-width:104px;max-width:158px}}
 </style>
 <link rel="stylesheet" href="parchment.css?v=5">
 </head>
@@ -520,8 +521,8 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
     </div>
     <div class="deckProgress" id="deckProgress"><span>選択中のカード</span><strong id="deckTotalCount">0 / 40</strong></div>
     <section class="bookShelfSection" aria-label="編成中のデッキ">
-      <div class="bookShelfHeading"><span>編成中の本棚</span><small id="deckShelfSummary" aria-live="polite">0種類・0枚</small></div>
-      <div class="bookShelf" id="deckBookShelf"><span class="bookShelfEmpty">カードを追加すると本が並びます</span></div>
+      <div class="bookShelfHeading"><span>編成中のデッキ</span><small id="deckShelfSummary" aria-live="polite">0種類・0枚</small></div>
+      <div class="bookShelf" id="deckBookShelf"></div>
       <div class="bookShelfRail" aria-hidden="true"></div>
     </section>
     <section class="deckStatsPanel" aria-label="デッキ統計">
@@ -1251,12 +1252,15 @@ function renderDeckBookShelf(total){
   }
   chosen.sort(function(a,b){return cardCostOrder(a.card,b.card);});
   $('deckShelfSummary').textContent=chosen.length+'種類・'+total+'枚';
-  if(!chosen.length){shelf.innerHTML='<span class="bookShelfEmpty">カードを追加すると本が並びます</span>';return;}
+  if(!chosen.length){shelf.innerHTML='';return;}
   var html=[];
   for(var i=0;i<chosen.length;i++){
     var card=chosen[i].card,count=chosen[i].count,escaped=escapeHtml(card.name);
     html.push('<div class="bookGroup" aria-label="'+escaped+'を'+count+'枚採用">');
-    for(var copy=0;copy<count;copy++)html.push('<button type="button" class="bookSpine '+(COLOR_CLASS[card.color]||'')+(copy===0?' first':'')+'" data-book-name="'+escaped+'" title="'+escaped+'：'+count+'枚採用" aria-label="'+escaped+'、コスト'+card.cost+'、'+count+'枚中'+(copy+1)+'枚目。カード詳細を表示"><span class="bookSpineCost">'+card.cost+'</span><span class="bookSpineName">'+escaped+'</span>'+(copy===0?'<span class="bookSpineCount">×'+count+'</span>':'')+'</button>');
+    for(var copy=0;copy<count;copy++){
+      var length=Array.from(card.name).length,desktopFont=Math.max(7,Math.min(11,Math.floor((copy===0?115:130)/length))),mobileFont=Math.max(6,Math.min(10,Math.floor((copy===0?96:112)/length)));
+      html.push('<button type="button" class="bookSpine '+(COLOR_CLASS[card.color]||'')+(copy===0?' first':'')+'" style="--book-font:'+desktopFont+'px;--book-font-mobile:'+mobileFont+'px" data-book-name="'+escaped+'" title="'+escaped+'：'+count+'枚採用" aria-label="'+escaped+'、コスト'+card.cost+'、'+count+'枚中'+(copy+1)+'枚目。カード詳細を表示"><span class="bookSpineCost">'+card.cost+'</span><span class="bookSpineName">'+escaped+'</span>'+(copy===0?'<span class="bookSpineCount">×'+count+'</span>':'')+'</button>');
+    }
     html.push('</div>');
   }
   shelf.innerHTML=html.join('');shelf.scrollLeft=previousScroll;
