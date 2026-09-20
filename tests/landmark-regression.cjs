@@ -59,5 +59,7 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   found.length=0;run("catalogSetFilter='C002';renderCatalog()");check(found.length===1&&found[0].innerHTML.includes('フィリポス山脈'),'catalog second set filter finds matching landmark');
   found.length=0;run("catalogColor='青';catalogTypeFilter='all';catalogSetFilter='all';renderCatalog()");let costs=found.map(button=>Number(button.innerHTML.match(/catalogCardCost">(\d+)/)?.[1]));check(costs.length>1&&costs.every((cost,i)=>!i||cost>=costs[i-1]),'catalog cards sort by ascending printed cost');
   check(ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'ユニット','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C001'),'editor filters use type and printed set ID');
+  const liveSets=ctx.CARD_SETS;ctx.CARD_SETS=undefined;ctx.window.scrollTo=()=>{};ctx.showDeckEditor();check(node('deckEditorScreen').style.display==='block'&&node('editorSetFilter').innerHTML.includes('C001'),'new deck opens when an older cached cards.js lacks set metadata');
+  found.length=0;run("catalogColor='青'");ctx.showCatalog();check(run("catalogColor==='緑'")&&found.length===ctx.CARD_POOLS['緑'].length&&html.includes('class="colorTab green selected"'),'first catalog opening starts with green cards visible despite stale card metadata');ctx.CARD_SETS=liveSets;
   console.log(`${count} phase2 and landmark regression assertions passed`);
 })().catch(e=>{console.error(e);process.exitCode=1});

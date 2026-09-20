@@ -551,7 +551,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
         <div class="catalogMark" aria-hidden="true">◇</div>
       </div>
       <div class="colorTabs" id="colorTabs" role="tablist" aria-label="カードの色">
-        <button class="colorTab green" data-catalog-color="緑" onclick="selectCatalogColor('緑')" role="tab">緑</button>
+        <button class="colorTab green selected" data-catalog-color="緑" onclick="selectCatalogColor('緑')" role="tab" aria-selected="true">緑</button>
         <button class="colorTab white" data-catalog-color="白" onclick="selectCatalogColor('白')" role="tab">白</button>
         <button class="colorTab red" data-catalog-color="赤" onclick="selectCatalogColor('赤')" role="tab">赤</button>
         <button class="colorTab blue" data-catalog-color="青" onclick="selectCatalogColor('青')" role="tab">青</button>
@@ -752,7 +752,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
   </div>
 </div>
 
-<script src="data/cards.js?v=3"></script>
+<script src="data/cards.js?v=4"></script>
 <script src="data/card-rules.js?v=3"></script>
 <script>
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
@@ -1075,6 +1075,7 @@ function showCatalog(){
   hideSeasonScreens();clearSeasonBattleTheme();
   $('homeScreen').style.display='none'; $('homeNav').style.display='none'; $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('startScreen').style.display='none';
   $('gameScreen').style.display='none'; $('controls').style.display='none'; $('catalogScreen').style.display='block';
+  catalogColor='緑';
   catalogTypeFilter='all';catalogSetFilter='all';$('catalogTypeFilter').value='all';populateSetFilter('catalogSetFilter','all');
   renderCatalog();window.scrollTo(0,0);
 }
@@ -1176,8 +1177,9 @@ function showDeckEditor(id){
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='block';$('deckEditorTitle').textContent=deck?'デッキ編集':'デッキ作成';$('deckNameInput').value=deck?deck.name:'デッキ'+(savedDecks.length+1);$('deckEditorError').textContent='';renderDeckEditor();window.scrollTo(0,0);
 }
 function populateSetFilter(id,selected){
-  var select=$(id),options=['<option value="all">すべて</option>'];
-  for(var code in CARD_SETS)if(Object.prototype.hasOwnProperty.call(CARD_SETS,code))options.push('<option value="'+escapeHtml(code)+'">'+escapeHtml(CARD_SETS[code])+'</option>');
+  var select=$(id),options=['<option value="all">すべて</option>'],sets=typeof CARD_SETS==='undefined'?{}:CARD_SETS,codes={};
+  for(var name in CARD_IDS)if(Object.prototype.hasOwnProperty.call(CARD_IDS,name))codes[CARD_IDS[name].split('-')[0]]=true;
+  Object.keys(codes).sort().forEach(function(code){options.push('<option value="'+escapeHtml(code)+'">'+escapeHtml(sets[code]||'第'+Number(code.slice(1))+'弾')+'</option>');});
   select.innerHTML=options.join('');select.value=selected;
 }
 function matchesCardFilters(card,type,set){return (type==='all'||card.type===type)&&(set==='all'||card.id.split('-')[0]===set);}
