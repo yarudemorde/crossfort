@@ -25,7 +25,7 @@ var CARD_RULES={
   '永遠樹の恩寵':{onPlay:[{type:'gainMaxMana',amount:1}]},
   '決闘場のチャンピオン':{onPlay:[{type:'moveEnemyToOpposing',target:'enemyUnit'}]},
   '王室近衛兵':{damageReduction:1},
-  'クロスフォート城':{auras:[{keyword:'guard',minPower:3}]},
+  'クロスフォート城':{auras:[{keyword:'guard',sameLane:true}]},
   '白獅子の将軍':{onPlay:[{type:'gainMana',amount:3}]},
   '王国の反逆者グレン':{onHandPlay:[{type:'addTurn',amount:1}]},
   '大正門の見張り手':{onPlay:[{type:'heal',amount:1}]},
@@ -95,4 +95,3 @@ var CARD_RULES={
   '女教皇アウローン':{conditionalKeywords:[{keyword:'unblockable',relics:3}],onDestroyed:[{type:'soulEcho'}]},
   '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
 };
-
