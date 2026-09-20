@@ -358,12 +358,11 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 #gameScreen .slot.empty::after{color:#a4afb999;text-shadow:0 1px 4px #000}
 .landmarkWrap{padding:2px 0}.landmarkBoard{gap:clamp(3px,1vw,9px)}
 .landmarkSlot{min-width:0;height:clamp(25px,5vw,36px);border:1px solid #34465a;border-radius:3px;background:#0b1420bb;color:#b8c6d5;font:700 clamp(8px,1.4vw,11px) Georgia,"Yu Mincho",serif;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px;overflow:hidden;position:relative}
-.landmarkSlot.occupied{border-color:#849eb5;background:#162536e8;color:#f2eee6;cursor:help}
+.landmarkSlot.occupied{border-color:#a8bfd2;background:#162536e8;color:#f2eee6;cursor:help;box-shadow:inset 0 0 0 1px #b9d1e54d,0 0 9px #b9d1e536}
 .landmarkSlot.selectable{cursor:pointer;border-color:#a7bdcf;box-shadow:0 0 9px #87a9c84d}
 .landmarkSlot.selectedSlot{cursor:pointer;border:2px solid #eef3f1;background:#253b50;box-shadow:0 0 0 2px #a8c8e033,0 0 16px #bad6e39c;color:#fff}
 .landmarkSlot.targetable{border:2px solid #d9e9f5;box-shadow:0 0 12px #a3c6ea88;cursor:pointer}
-.landmarkSlot.fortified::after,.slot.fortified::before{content:"";position:absolute;inset:0;background:url("assets/fortified-lane.png") center / 100% 100% no-repeat;opacity:.29;pointer-events:none;image-rendering:pixelated}
-.slot.fortified::before{opacity:.23}
+.landmarkSlot.fortified::after{content:"";position:absolute;inset:0;background:url("assets/fortified-lane.png") center / 100% 100% no-repeat;opacity:.9;pointer-events:none;image-rendering:pixelated}
 .landmarkAppearing{animation:landmarkFadeIn .45s ease-out}
 @keyframes landmarkFadeIn{from{opacity:.2;filter:brightness(2)}to{opacity:1;filter:none}}
 .landmarkCollapse{position:fixed;z-index:90;pointer-events:none;isolation:isolate;image-rendering:pixelated}
@@ -1557,7 +1556,7 @@ function renderBoard(side,rootId,asOpponent){
       var isSelected=(side===acting && selectedCard && selectedCard.type==='ユニット' && state.selectedSlot===index);
       var targetable=!!(state.targetRequest && state.targetRequest.zone!=='landmark' && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
       var activeHand=handFor(acting),canSelect=(side===acting && humanTurn && !board[index] && state.selectedCard>=0 && activeHand[state.selectedCard] && activeHand[state.selectedCard].type==='ユニット');
-      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(landmarkFor(side)[index]?' fortified':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
+      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
       var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
       if(targetable) slot.onclick=function(){ resolveTarget(side,index); };
       else if(canSelect) slot.onclick=function(){ selectSlot(index); };

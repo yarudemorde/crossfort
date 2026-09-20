@@ -40,6 +40,11 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   reset();let over=ctx.checkedBattle(Promise.resolve('old'),ctx.state.generation).then(()=>false,error=>error===ctx.staleBattle);ctx.state.gameOver=true;check(await over,'game over cancels awaited continuation');
   check(html.indexOf('id="enemyLandmarks"')<html.indexOf('id="enemyBoard"')&&html.indexOf('id="playerBoard"')<html.indexOf('id="playerLandmarks"'),'four rows appear in specified order');
   check(html.includes('assets/fortified-lane.png')&&fs.existsSync(dir+'/assets/fortified-lane.png'),'fortification art integrated');
+  reset();ctx.state.playerBoard[2]=unit();ctx.state.playerBoard[2].canAttack=true;ctx.state.playerLandmarks[2]=landmark();ctx.state.selectedCard=-1;
+  const renderedSlots=[];node('playerBoard').appendChild=slot=>renderedSlots.push(slot);
+  ctx.renderBoard('player','playerBoard',false);
+  check(renderedSlots[2].className.indexOf('fortified')===-1,'occupied landmark does not place fortification art on an attackable unit slot');
+  check(!html.includes('.slot.fortified::before')&&/\.landmarkSlot\.fortified::after\{[^}]*opacity:\.9/.test(html),'attack marker cannot inherit fortification image geometry; landmark art is visible');
   check(html.includes('assets/landmark-collapse.png')&&fs.existsSync(dir+'/assets/landmark-collapse.png'),'transparent rubble art integrated');
   reset();ctx.state.animating=true;ctx.reportRuntimeError(new Error('sync test'));check(ctx.state.animating===false&&notices.at(-1).includes('sync test'),'synchronous exception unlocks and notifies');ctx.state.animating=true;handlers.unhandledrejection({reason:new Error('async test')});check(ctx.state.animating===false&&notices.at(-1).includes('async test'),'promise rejection unlocks and notifies');
   reset();ctx.state.matchMode='local';ctx.state.playerBoard[2]=unit();ctx.state.selectedCard=-1;await ctx.endTurn();check(ctx.state.playerTurn===false&&!ctx.state.animating,'local match advances to player two');
