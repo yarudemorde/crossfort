@@ -359,12 +359,22 @@ body.seasonBattle{overflow-anchor:none}body.seasonBattle #gameScreen{overflow-an
 .landmarkWrap{padding:2px 0}.landmarkBoard{gap:clamp(3px,1vw,9px)}
 .landmarkSlot{min-width:0;height:clamp(25px,5vw,36px);border:1px solid #34465a;border-radius:3px;background:#0b1420bb;color:#b8c6d5;font:700 clamp(8px,1.4vw,11px) Georgia,"Yu Mincho",serif;display:flex;align-items:center;justify-content:center;text-align:center;padding:2px;overflow:hidden;position:relative}
 .landmarkSlot.occupied{border-color:#849eb5;background:#162536e8;color:#f2eee6;cursor:help}
+.landmarkSlot.selectable{cursor:pointer;border-color:#a7bdcf;box-shadow:0 0 9px #87a9c84d}
+.landmarkSlot.selectedSlot{cursor:pointer;border:2px solid #eef3f1;background:#253b50;box-shadow:0 0 0 2px #a8c8e033,0 0 16px #bad6e39c;color:#fff}
 .landmarkSlot.targetable{border:2px solid #d9e9f5;box-shadow:0 0 12px #a3c6ea88;cursor:pointer}
 .landmarkSlot.fortified::after,.slot.fortified::before{content:"";position:absolute;inset:0;background:url("assets/fortified-lane.png") center / 100% 100% no-repeat;opacity:.29;pointer-events:none;image-rendering:pixelated}
 .slot.fortified::before{opacity:.23}
-.landmarkAppearing{animation:landmarkFadeIn .45s ease-out}.landmarkFading{animation:landmarkFadeOut .45s ease-in}
+.landmarkAppearing{animation:landmarkFadeIn .45s ease-out}
 @keyframes landmarkFadeIn{from{opacity:.2;filter:brightness(2)}to{opacity:1;filter:none}}
-@keyframes landmarkFadeOut{to{opacity:0;filter:brightness(1.5)}}
+.landmarkCollapse{position:fixed;z-index:90;pointer-events:none;isolation:isolate;image-rendering:pixelated}
+.landmarkCollapsePiece{position:absolute;inset:0;border:1px solid #849eb5;border-radius:3px;background:#162536e8;color:#f2eee6;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;font:700 clamp(8px,1.4vw,11px) Georgia,"Yu Mincho",serif}
+.landmarkCollapsePiece.left{clip-path:polygon(0 0,53% 0,42% 48%,54% 100%,0 100%);animation:collapseLeft .58s cubic-bezier(.25,.2,.68,1) forwards}
+.landmarkCollapsePiece.right{clip-path:polygon(53% 0,100% 0,100% 100%,54% 100%,42% 48%);animation:collapseRight .58s cubic-bezier(.25,.2,.68,1) forwards}
+.landmarkCollapseDebris{position:absolute;inset:-65% -12% -90%;background:url("assets/landmark-collapse.png") center bottom / 100% 100% no-repeat;animation:collapseDebris .62s ease-out forwards}
+@keyframes collapseLeft{to{transform:translate(-19%,72%) rotate(-18deg);opacity:0}}
+@keyframes collapseRight{to{transform:translate(20%,88%) rotate(15deg);opacity:0}}
+@keyframes collapseDebris{0%{opacity:0;transform:translateY(-12%) scale(.68)}25%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translateY(28%) scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.landmarkCollapsePiece{display:none}.landmarkCollapseDebris{animation:none;opacity:1}}
 html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 </style>
 <link rel="stylesheet" href="parchment.css?v=5">
@@ -1527,7 +1537,7 @@ function render(){
   $('playBtn').textContent=special?'通常':'配置';
   $('specialBtn').textContent=special?special.label:'特殊';
   $('specialBtn').disabled=!special || !humanTurn || state.gameOver || state.animating || special.cost>manaFor(side) || !selected || (selected.type==='ユニット' && state.selectedSlot<0);
-  $('playBtn').disabled=(!humanTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type==='ユニット' && state.selectedSlot<0));
+  $('playBtn').disabled=(!humanTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type!=='スペル' && (state.selectedSlot<0 || placementBoard(side,selected)[state.selectedSlot])));
   $('endBtn').disabled=(!humanTurn || state.gameOver || state.animating);
   renderLandmarks(topSide,'enemyLandmarks');
   renderBoard(topSide,'enemyBoard',true);
@@ -1543,7 +1553,8 @@ function renderBoard(side,rootId,asOpponent){
     (function(index){
       var slot=document.createElement('div');
       var acting=activeSide(),humanTurn=isHumanSide(acting);
-      var isSelected=(side===acting && state.selectedSlot===index);
+      var selectedCard=handFor(acting)[state.selectedCard];
+      var isSelected=(side===acting && selectedCard && selectedCard.type==='ユニット' && state.selectedSlot===index);
       var targetable=!!(state.targetRequest && state.targetRequest.zone!=='landmark' && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
       var activeHand=handFor(acting),canSelect=(side===acting && humanTurn && !board[index] && state.selectedCard>=0 && activeHand[state.selectedCard] && activeHand[state.selectedCard].type==='ユニット');
       slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(landmarkFor(side)[index]?' fortified':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
@@ -1567,13 +1578,15 @@ function renderBoard(side,rootId,asOpponent){
   }
 }
 function renderLandmarks(side,rootId){
-  var root=$(rootId),landmarks=landmarkFor(side),acting=activeSide();root.innerHTML='';
+  var root=$(rootId),landmarks=landmarkFor(side),acting=activeSide(),activeCard=handFor(acting)[state.selectedCard];root.innerHTML='';
   for(var i=0;i<5;i++)(function(index){
     var card=landmarks[index],target=state.targetRequest;
     var targetable=!!(target&&target.zone==='landmark'&&target.targetSide===side&&target.candidates.indexOf(index)>=0);
-    var slot=document.createElement('div');slot.className='landmarkSlot'+(card?' occupied fortified':'')+(targetable?' targetable':'');
+    var selectable=side===acting&&isHumanSide(acting)&&!state.animating&&!state.gameOver&&activeCard&&activeCard.type==='ランドマーク'&&!card;
+    var selected=selectable&&state.selectedSlot===index;
+    var slot=document.createElement('div');slot.className='landmarkSlot'+(card?' occupied fortified':'')+(targetable?' targetable':'')+(selectable?' selectable':'')+(selected?' selectedSlot':'');
     if(card){slot.textContent=card.name;slot.title=card.name+'：'+card.text;attachCardHold(slot,card,targetable?function(){resolveTarget(side,index);}:function(){showCardDetail(card);});}
-    else{slot.textContent=String(index+1);if(targetable)slot.onclick=function(){resolveTarget(side,index);};}
+    else{slot.textContent=String(index+1);if(targetable)slot.onclick=function(){resolveTarget(side,index);};else if(selectable)slot.onclick=function(){selectLandmarkSlot(index);};}
     root.appendChild(slot);
   })(i);
 }
@@ -1581,7 +1594,17 @@ function landmarkCard(side,index){
   var rootId=state&&state.matchMode==='local'?(side===activeSide()?'playerLandmarks':'enemyLandmarks'):side+'Landmarks';
   return $(rootId).children[index];
 }
-function animateLandmark(side,index,kind){pulseClass(landmarkCard(side,index),kind==='destroy'?'landmarkFading':'landmarkAppearing',480);}
+function animateLandmark(side,index){pulseClass(landmarkCard(side,index),'landmarkAppearing',480);}
+function showLandmarkCollapse(side,index){
+  var slot=landmarkCard(side,index);if(!slot)return;
+  var rect=slot.getBoundingClientRect(),ghost=document.createElement('div');
+  ghost.className='landmarkCollapse';ghost.style.left=rect.left+'px';ghost.style.top=rect.top+'px';ghost.style.width=rect.width+'px';ghost.style.height=rect.height+'px';
+  for(var piece=0;piece<2;piece++){
+    var fragment=document.createElement('div');fragment.className='landmarkCollapsePiece '+(piece?'right':'left');fragment.textContent=slot.textContent;ghost.appendChild(fragment);
+  }
+  var debris=document.createElement('div');debris.className='landmarkCollapseDebris';ghost.appendChild(debris);
+  document.body.appendChild(ghost);setTimeout(function(){ghost.remove();},650);
+}
 function renderHand(){
   var root=$('playerHand'); root.innerHTML='';
   var side=state.matchMode==='local'?activeSide():'player',hand=handFor(side),humanTurn=isHumanSide(activeSide()) && side===activeSide(),count=hand.length;
@@ -1624,6 +1647,13 @@ function selectSlot(i){
   state.selectedSlot=(state.selectedSlot===i?-1:i);
   render();
 }
+function selectLandmarkSlot(i){
+  var side=activeSide(),card=handFor(side)[state.selectedCard];
+  if(!isHumanSide(side)||state.gameOver||state.animating||!card||card.type!=='ランドマーク')return;
+  if(i<0||i>=5||landmarkFor(side)[i]){logMsg('そのレーンにはすでにランドマークがあります');return;}
+  state.selectedSlot=state.selectedSlot===i?-1:i;
+  render();
+}
 function playSpecialCard(){var special=selectedSpecial();if(special)playSelectedCard(special.mode);}
 async function playSelectedCard(mode){
   const battleGeneration = state && state.generation;
@@ -1635,7 +1665,7 @@ async function playSelectedCard(mode){
   if(cost>manaFor(side)) return;
   var slot=state.selectedSlot;
   if(c.type==='ユニット' && (slot<0 || board[slot])){logMsg('空いているスロットを選択してください');return;}
-  if(c.type==='ランドマーク' && firstEmpty(landmarkFor(side))<0){logMsg('空いているランドマーク枠がありません');return;}
+  if(c.type==='ランドマーク' && (slot<0 || landmarkFor(side)[slot])){logMsg('空いているランドマーク枠を選択してください');return;}
   state.animating=true;spendMana(side,cost);
   hand.splice(state.selectedCard,1);state.selectedCard=-1;state.selectedSlot=-1;
   if(c.type==='スペル'){
@@ -1644,8 +1674,6 @@ async function playSelectedCard(mode){
     await checkedBattle(triggerCard(c,'onPlay',side,-1,{}), battleGeneration);
     graveFor(side).push(c);
   }else{
-    if(c.type==='ランドマーク')slot=await checkedBattle(chooseOpenSlot(side,side,c.name+'を配置するレーンを選択','landmark'), battleGeneration);
-    if(slot==null)return;
     c.canAttack=c.type==='ユニット' && hasKeyword(c,'haste',side);
     placementBoard(side,c)[slot]=c;
     logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render(); if(c.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot); await checkedBattle(wait(240), battleGeneration);
@@ -2159,7 +2187,7 @@ async function destroy(side,index){
 async function destroyLandmark(side,index){
   const battleGeneration = state && state.generation;
   var landmarks=landmarkFor(side),destroyed=landmarks[index];if(!destroyed)return;
-  animateLandmark(side,index,'destroy');landmarks[index]=null;
+  showLandmarkCollapse(side,index);landmarks[index]=null;
   if(!destroyed.isToken)graveFor(side).push(destroyed);
   logMsg('レーン'+(index+1)+'の'+destroyed.name+'が破壊された');render();
   var units=boardFor(side).slice(),survivors=landmarks.slice();
