@@ -41,6 +41,7 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   check(html.includes('assets/fortified-lane.png')&&fs.existsSync(dir+'/assets/fortified-lane.png'),'pixel art asset integrated');
   reset();ctx.state.animating=true;ctx.reportRuntimeError(new Error('sync test'));check(ctx.state.animating===false&&notices.at(-1).includes('sync test'),'synchronous exception unlocks and notifies');ctx.state.animating=true;handlers.unhandledrejection({reason:new Error('async test')});check(ctx.state.animating===false&&notices.at(-1).includes('async test'),'promise rejection unlocks and notifies');
   reset();ctx.state.matchMode='local';ctx.state.playerBoard[2]=unit();ctx.state.selectedCard=-1;await ctx.endTurn();check(ctx.state.playerTurn===false&&!ctx.state.animating,'local match advances to player two');
+  reset();ctx.state.eventMode=true;ctx.state.playerHand.push(unit());ctx.state.selectedCard=0;ctx.state.selectedSlot=1;await ctx.playSelectedCard();await ctx.endTurn();check(ctx.state.playerBoard[1]?.type==='ユニット'&&ctx.state.playerTurn===false,'event battle can place a unit and end turn');
   reset();ctx.state.matchMode='cpu';ctx.state.eventMode=true;ctx.state.playerTurn=false;await ctx.cpuTurn(true);check(ctx.state.playerTurn===true&&!ctx.state.animating,'event match CPU turn returns control');
   console.log(`${count} phase2 and landmark regression assertions passed`);
 })().catch(e=>{console.error(e);process.exitCode=1});
