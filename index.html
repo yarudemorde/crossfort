@@ -753,8 +753,8 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
   </div>
 </div>
 
-<script src="data/cards.js?v=4"></script>
-<script src="data/card-rules.js?v=3"></script>
+<script src="data/cards.js?v=5"></script>
+<script src="data/card-rules.js?v=4"></script>
 <script>
 var COLOR_CLASS={'緑':'green','白':'white','赤':'red','青':'blue','黒':'black','黄':'yellow'};
 var selectedColor='青',setupMode='cpu',setupFirstChoice='random',setupPlayerColor='青',setupEnemyColor='赤';
@@ -2946,6 +2946,8 @@ function reportRuntimeError(error,location){
   }
 }
 window.onerror=function(message,source,line,col,error){
+  // An opaque cross-origin error has no stack or location; it cannot identify a game failure.
+  if(!error && line===0 && /^Script error\.?$/.test(String(message)))return false;
   reportRuntimeError(error || message,'line '+line);
   return false;
 };
