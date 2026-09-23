@@ -437,7 +437,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=7">
+<link rel="stylesheet" href="parchment.css?v=8">
 </head>
 <body>
 
@@ -664,9 +664,11 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 
 <section id="gameScreen">
   <div class="eventBattleBadge" id="eventBattleBadge">SEASON 1</div>
+  <button class="battleMenuToggle" id="battleMenuToggle" type="button" onclick="toggleBattleMenu()" aria-label="戦闘メニューを開く" aria-expanded="false" aria-controls="battleMenu" title="戦闘メニュー"><span aria-hidden="true">☰</span></button>
+  <div class="battleMenu" id="battleMenu" hidden><button type="button" onclick="returnToLobby()">ロビーに戻る</button></div>
   <div class="topbar battleHud" id="topBattleHud">
-    <div class="battleHudHeading"><span class="small" id="enemyName">CPU</span><span class="turn" id="turnLabel">TURN 1</span><span class="battleHudMeta">手札 <span id="enemyHandCount">5</span> · 山札 <span id="enemyDeckCount">25</span></span></div>
-    <div class="battleHudStats"><span class="life enemy"><img src="assets/ui/battle/life_heart.png" alt=""><span id="enemyLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="enemyResourceTrack"><div class="resourceSlots" id="enemyResourceSlots"></div></div><b id="enemyMana">1/1</b></div></div>
+    <div class="battleHudHeading"><span class="small" id="enemyName">CPU</span><span class="turn" id="turnLabel">TURN 1</span><span class="battleHudMeta">手札 <span id="enemyHandCount">5</span></span></div>
+    <div class="battleHudStats"><div class="battleDeckCounts">山札 <span id="enemyDeckCount">25</span> · 墓地 <span id="enemyGraveCount">0</span></div><span class="life enemy"><img src="assets/ui/battle/life_heart.png" alt=""><span id="enemyLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="enemyResourceTrack"><div class="resourceSlots" id="enemyResourceSlots"></div></div><b id="enemyMana">1/1</b></div></div>
   </div>
 
   <div class="boardWrap defenseWrap"><div class="board defenseBoard" id="enemyDefense" aria-label="相手の防衛線"></div></div>
@@ -680,8 +682,8 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
   <div class="boardWrap landmarkWrap"><div class="board landmarkBoard" id="playerLandmarks"></div></div>
   <div class="boardWrap defenseWrap"><div class="board defenseBoard" id="playerDefense" aria-label="自分の防衛線"></div></div>
   <div class="battleHud battleHudPlayer" id="bottomBattleHud">
-    <div class="battleHudHeading"><span class="small" id="playerName">PLAYER 1</span><span class="battleHudMeta">山札 <span id="playerDeckCount">25</span> · 墓地 <span id="graveCount">0</span></span><button class="battleReturn" id="backBattleBtn" onclick="returnToDecks()">デッキ選択</button></div>
-    <div class="battleHudStats"><span class="life player"><img src="assets/ui/battle/life_heart.png" alt=""><span id="playerLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="playerResourceTrack"><div class="resourceSlots" id="playerResourceSlots"></div></div><b id="mana">1/1</b></div></div>
+    <div class="battleHudHeading"><span class="small" id="playerName">PLAYER 1</span><button class="battleReturn" id="backBattleBtn" onclick="returnToDecks()">デッキ選択</button></div>
+    <div class="battleHudStats"><div class="battleDeckCounts">山札 <span id="playerDeckCount">25</span> · 墓地 <span id="graveCount">0</span></div><span class="life player"><img src="assets/ui/battle/life_heart.png" alt=""><span id="playerLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="playerResourceTrack"><div class="resourceSlots" id="playerResourceSlots"></div></div><b id="mana">1/1</b></div></div>
   </div>
   <div class="controls" id="controls" style="display:none">
     <div class="controlInner">
@@ -898,12 +900,13 @@ function hideSeasonScreens(){
   for(var i=0;i<ids.length;i++)if($(ids[i]))$(ids[i]).style.display='none';
 }
 function hideCoreScreens(){
+  document.body.classList.remove('battleActive');closeBattleMenu();
   $('homeScreen').style.display='none';$('homeNav').style.display='none';
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
   $('startScreen').style.display='none';$('gameScreen').style.display='none';$('controls').style.display='none';
 }
 function clearSeasonBattleTheme(){
-  document.body.classList.remove('seasonBattle');document.body.classList.remove('bossBattle');
+  document.body.classList.remove('seasonBattle','bossBattle','battleActive');closeBattleMenu();
   if($('eventBattleBadge'))$('eventBattleBadge').classList.remove('show');
 }
 function renderSeason1Banner(){
@@ -1463,7 +1466,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
     hideSeasonScreens();
     $('startScreen').style.display='none';$('homeScreen').style.display='none';$('homeNav').style.display='none';
     $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
-    $('gameScreen').style.display='grid';$('controls').style.display='block';document.body.classList.add('battleActive');
+    closeBattleMenu();$('gameScreen').style.display='grid';$('controls').style.display='block';document.body.classList.add('battleActive');
     syncCompactBattleMode();
     $('resultModal').classList.remove('show');
     document.body.classList.toggle('seasonBattle',state.eventMode);document.body.classList.toggle('bossBattle',state.eventBoss);
@@ -1480,9 +1483,23 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
 function returnToDecks(){
   if(state){cancelBattleRequests(state);state.generation=++battleGenerationCounter;state.gameOver=true;state.animating=false;}
   $('resultModal').classList.remove('show');
-  $('gameScreen').style.display='none';$('controls').style.display='none';document.body.classList.remove('battleActive');
+  $('gameScreen').style.display='none';$('controls').style.display='none';document.body.classList.remove('battleActive');closeBattleMenu();
   if(state&&state.eventMode){showSeason1Hub();return;}
   clearSeasonBattleTheme();$('startScreen').style.display='flex';renderSavedDeckSelectors();
+}
+function closeBattleMenu(){
+  var menu=$('battleMenu'),toggle=$('battleMenuToggle');
+  if(menu)menu.hidden=true;
+  if(toggle){toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','戦闘メニューを開く');}
+}
+function toggleBattleMenu(){
+  var menu=$('battleMenu'),toggle=$('battleMenuToggle');
+  menu.hidden=!menu.hidden;
+  toggle.setAttribute('aria-expanded',String(!menu.hidden));
+  toggle.setAttribute('aria-label',menu.hidden?'戦闘メニューを開く':'戦闘メニューを閉じる');
+}
+function returnToLobby(){
+  returnToDecks();showHome();window.scrollTo(0,0);
 }
 async function drawCard(side){
   const battleGeneration = state && state.generation;
@@ -1641,6 +1658,7 @@ function render(){
   renderBattleHud(topSide,bottomSide);
   $('enemyHandCount').textContent=handFor(topSide).length;
   $('enemyDeckCount').textContent=deckFor(topSide).length;
+  $('enemyGraveCount').textContent=graveFor(topSide).length;
   $('playerDeckCount').textContent=deckFor(bottomSide).length;
   $('graveCount').textContent=graveFor(bottomSide).length;
   $('graveToolCount').textContent=graveFor(bottomSide).length;
@@ -3028,7 +3046,7 @@ function escapeHtml(s){
 function reportRuntimeError(error,location){
   var message=error && error.message ? error.message : String(error || '不明なエラー');
   var gameScreen=$('gameScreen');
-  if(state && !state.gameOver && (state.animating || (gameScreen && gameScreen.style.display==='block'))){
+  if(state && !state.gameOver && (state.animating || (gameScreen && gameScreen.style.display==='grid'))){
     state.animating=false;
     // Recovery unlocks controls; already-applied card effects are not rolled back.
     var notice='戦闘中にエラーが発生しました。操作ロックを解除しました。\n'+message;
