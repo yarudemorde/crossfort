@@ -437,7 +437,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=9">
+<link rel="stylesheet" href="parchment.css?v=10">
 </head>
 <body>
 
@@ -664,9 +664,9 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 
 <section id="gameScreen">
   <div class="eventBattleBadge" id="eventBattleBadge">SEASON 1</div>
-  <button class="battleMenuToggle" id="battleMenuToggle" type="button" onclick="toggleBattleMenu()" aria-label="戦闘メニューを開く" aria-expanded="false" aria-controls="battleMenu" title="戦闘メニュー"><span aria-hidden="true">☰</span></button>
-  <div class="battleMenu" id="battleMenu" hidden><button type="button" onclick="returnToLobby()">ロビーに戻る</button></div>
   <div class="topbar battleHud" id="topBattleHud">
+    <button class="battleMenuToggle" id="battleMenuToggle" type="button" onclick="toggleBattleMenu()" aria-label="戦闘メニューを開く" aria-expanded="false" aria-controls="battleMenu" title="戦闘メニュー"><span aria-hidden="true">☰</span></button>
+    <div class="battleMenu" id="battleMenu" hidden><button type="button" onclick="returnToLobby()">ロビーに戻る</button></div>
     <div class="battleHudHeading"><span class="small" id="enemyName">CPU</span><span class="turn" id="turnLabel">TURN 1</span><span class="battleHudMeta">手札 <span id="enemyHandCount">5</span></span></div>
     <div class="battleHudStats"><div class="battleDeckCounts">山札 <span id="enemyDeckCount">25</span> · 墓地 <span id="enemyGraveCount">0</span></div><span class="life enemy"><img src="assets/ui/battle/life_heart.png" alt=""><span id="enemyLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="enemyResourceTrack"><div class="resourceSlots" id="enemyResourceSlots"></div></div><b id="enemyMana">1/1</b></div></div>
   </div>

@@ -111,14 +111,17 @@ body.battleActive #gameScreen{
 }
 body.battleActive #gameScreen .eventBattleBadge.show{position:absolute;z-index:12;top:calc(env(safe-area-inset-top) + 14px);right:54px;margin:0;padding:1px 4px;font-size:8px;pointer-events:none}
 body.battleActive #gameScreen .battleHud{height:100%;min-height:0;padding:2px clamp(5px,1vw,9px);overflow:visible;position:relative}
-body.battleActive #gameScreen #topBattleHud{padding-left:50px}
 body.battleActive #gameScreen .topbar{margin:0;z-index:10}
-body.battleActive #gameScreen .battleHudHeading{height:13px;min-height:0;line-height:13px}
+body.battleActive #gameScreen .battleHudHeading{height:13px;min-height:0;line-height:13px;position:relative}
 body.battleActive #gameScreen .battleHudHeading .small{max-width:29%;font-size:clamp(9px,1.2vw,11px)}
 body.battleActive #gameScreen .battleHudHeading .turn{min-height:0;line-height:13px;font-size:clamp(9px,1.2vw,11px)}
 body.battleActive #gameScreen .battleHudMeta{font-size:clamp(8px,1.05vw,10px)}
+body.battleActive #gameScreen #topBattleHud .battleHudHeading .small{padding-left:48px}
+body.battleActive #gameScreen #topBattleHud .battleHudHeading .turn{position:absolute;left:50%;transform:translateX(-50%)}
+body.battleActive #gameScreen #topBattleHud .battleHudMeta{margin-left:auto}
 body.battleActive #gameScreen .battleHudStats{height:calc(100% - 13px);margin:0;gap:3px;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
 body.battleActive #gameScreen .battleDeckCounts{min-width:0;justify-self:start;white-space:nowrap;color:#c6d0d7;font:800 clamp(9px,1.2vw,11px) Arial,sans-serif}
+body.battleActive #gameScreen #topBattleHud .battleDeckCounts{padding-left:48px}
 body.battleActive #gameScreen .life{width:clamp(42px,6dvh,50px);height:100%;max-height:100%;justify-self:center;font-size:clamp(16px,2.2dvh,19px)}
 body.battleActive #gameScreen .resourceHud{height:100%;width:100%;justify-content:flex-end}
 body.battleActive #gameScreen .resourceTrack{width:min(170px,calc(100% - 28px));height:auto;max-height:100%;aspect-ratio:1502/287;background-size:100% 100%;flex:0 1 auto}
@@ -128,10 +131,10 @@ body.battleActive #gameScreen .resourceSlot.filled img{transform:translateY(1%)}
 body.battleActive #gameScreen .resourceSlot.spent img,body.battleActive #gameScreen .resourceSlot.locked img{transform:translate(4.7%,1%)}
 body.battleActive #gameScreen .resourceHud{gap:3px}
 body.battleActive #gameScreen .resourceHud b{min-width:25px;font-size:10px}
-body.battleActive #gameScreen .battleMenuToggle{position:absolute;left:clamp(6px,1.1vw,14px);top:calc(env(safe-area-inset-top) + 5px);z-index:12;width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid #607080;border-radius:4px;background:#172634;color:#e9e6dc;font-size:21px;line-height:1;cursor:pointer}
+body.battleActive #gameScreen .battleMenuToggle{position:absolute;left:-1px;top:-1px;bottom:-1px;z-index:12;width:44px;height:auto;padding:0;display:grid;place-items:center;border:1px solid #607080;border-radius:3px 0 0 3px;background:#172634;color:#e9e6dc;font-size:21px;line-height:1;cursor:pointer}
 body.battleActive #gameScreen .battleMenuToggle:focus-visible,body.battleActive #gameScreen .battleMenu button:focus-visible{outline:2px solid #f2dcc0;outline-offset:2px}
 body.battleActive #gameScreen .battleMenu[hidden]{display:none}
-body.battleActive #gameScreen .battleMenu{position:absolute;left:clamp(6px,1.1vw,14px);top:calc(env(safe-area-inset-top) + 51px);z-index:15;min-width:150px;padding:5px;border:1px solid #698094;border-radius:5px;background:#111e2a;box-shadow:0 10px 25px #000b}
+body.battleActive #gameScreen .battleMenu{position:absolute;left:-1px;top:calc(100% + 4px);z-index:15;min-width:150px;padding:5px;border:1px solid #698094;border-radius:5px;background:#111e2a;box-shadow:0 10px 25px #000b}
 body.battleActive #gameScreen .battleMenu button{width:100%;min-height:44px;padding:5px 10px;border:1px solid #52687b;border-radius:4px;background:#263748;color:#f3eee4;text-align:center;font-size:12px;font-weight:800;cursor:pointer}
 body.battleActive #gameScreen .boardWrap{height:100%;min-height:0;padding:0;overflow:visible}
 body.battleActive #gameScreen .board{height:100%;min-height:0;gap:clamp(3px,.7vw,6px);align-items:stretch}
