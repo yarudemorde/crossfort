@@ -123,6 +123,14 @@ body.battleActive #gameScreen .battleHudStats{height:calc(100% - 13px);margin:0;
 body.battleActive #gameScreen .battleDeckCounts{min-width:0;justify-self:start;white-space:nowrap;color:#c6d0d7;font:800 clamp(9px,1.2vw,11px) Arial,sans-serif}
 body.battleActive #gameScreen #topBattleHud .battleDeckCounts{padding-left:48px}
 body.battleActive #gameScreen .life{width:clamp(42px,6dvh,50px);height:100%;max-height:100%;justify-self:center;font-size:clamp(16px,2.2dvh,19px)}
+body.battleActive #gameScreen .life.wallShielded::after{content:"";position:absolute;z-index:3;inset:-4px -7px;pointer-events:none;border:2px solid #c8f8ff;border-radius:50%;box-shadow:0 0 5px #d9fbff,0 0 13px #5edcf0aa,inset 0 0 8px #84eaff88;animation:lifeBarrierFlash .62s ease-out forwards}
+.fxDefenseShield{position:fixed;z-index:100;pointer-events:none;display:grid;place-items:center;animation:defenseBarrierFade .62s ease-out forwards}
+.fxDefenseShield::before{content:"";display:block;width:min(44%,28px);height:calc(100% + 6px);max-height:42px;background:linear-gradient(145deg,#ecfdffe6 0%,#7fe9f2a6 35%,#3ab9d466 100%);clip-path:polygon(50% 0,88% 14%,82% 64%,50% 100%,18% 64%,12% 14%);filter:drop-shadow(0 0 4px #d9fbff) drop-shadow(0 0 9px #53d9ee);animation:defenseShieldFlash .62s ease-out forwards}
+.fxDefenseShield::after{content:"";position:absolute;width:82%;height:72%;border:1px solid #a9f5ffbb;border-radius:50%;box-shadow:0 0 8px #61ddf0aa;animation:defenseBarrierRing .62s ease-out forwards}
+@keyframes lifeBarrierFlash{0%{opacity:0;transform:scale(.72)}25%{opacity:1;transform:scale(1)}65%{opacity:.7}100%{opacity:0;transform:scale(1.18)}}
+@keyframes defenseBarrierFade{0%,75%{opacity:1}100%{opacity:0}}
+@keyframes defenseShieldFlash{0%{opacity:0;transform:scale(.55)}24%{opacity:.92;transform:scale(1.05)}55%{opacity:.72;transform:scale(.95)}100%{opacity:0;transform:scale(1.08)}}
+@keyframes defenseBarrierRing{0%{opacity:0;transform:scale(.35)}28%{opacity:.9}100%{opacity:0;transform:scale(1.12)}}
 body.battleActive #gameScreen .resourceHud{height:100%;width:100%;justify-content:flex-end}
 body.battleActive #gameScreen .resourceTrack{width:min(170px,calc(100% - 28px));height:auto;max-height:100%;aspect-ratio:1502/287;background-size:100% 100%;flex:0 1 auto}
 body.battleActive #gameScreen .resourceSlots{inset:32% 7.2% 17% 7.2%}

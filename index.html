@@ -437,7 +437,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=10">
+<link rel="stylesheet" href="parchment.css?v=11">
 </head>
 <body>
 
@@ -2272,6 +2272,17 @@ function floatAt(el,text,type){
   f.style.left=(r.left+r.width/2)+'px'; f.style.top=(r.top+r.height/2)+'px';
   document.body.appendChild(f); setTimeout(function(){f.remove();},760);
 }
+function showDefenseShield(side,laneIndex){
+  var life=document.querySelector('.battleHud[data-side="'+side+'"] .life');
+  pulseClass(life,'wallShielded',620);
+  var rootId=state&&state.matchMode==='local'?(side===activeSide()?'playerDefense':'enemyDefense'):side+'Defense';
+  var root=$(rootId),slot=root&&root.children[laneIndex];
+  if(!slot||typeof slot.getBoundingClientRect!=='function')return;
+  var rect=slot.getBoundingClientRect(),shield=document.createElement('div');
+  shield.className='fxDefenseShield';shield.setAttribute('aria-hidden','true');
+  shield.style.left=rect.left+'px';shield.style.top=rect.top+'px';shield.style.width=rect.width+'px';shield.style.height=rect.height+'px';
+  document.body.appendChild(shield);setTimeout(function(){shield.remove();},620);
+}
 function showPowerGain(side,index,amount){
   amount=Number(amount)||0;
   if(amount<=0) return;
@@ -2304,13 +2315,13 @@ async function changeLife(side,amount,source){
     var rootId=state.matchMode==='local'?(side===activeSide()?'playerDefense':'enemyDefense'):side+'Defense';
     renderDefenseLine(side,rootId);
     var laneLabel='左から'+(source.laneIndex+1)+'番目の防衛線';
-    logMsg(stage===0?laneLabel+'が攻撃を防ぎ、ヒビが入った（防衛線 BLOCK）':stage===1?laneLabel+'が突破された':'突破済みの'+laneLabel+'から侵入：戦闘ダメージ+1');
+    logMsg(stage===0?laneLabel+'が攻撃を防ぎ、ヒビが入った':stage===1?laneLabel+'が突破された':'突破済みの'+laneLabel+'から侵入：戦闘ダメージ+1');
   }
   if(state.eventMode&&side==='player'){eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(0,state.playerLife));persistSeason1State();}
   renderBattleHud(state.matchMode==='local'?otherSide(activeSide()):'enemy',state.matchMode==='local'?activeSide():'player');
   var el=document.querySelector('.battleHud[data-side="'+side+'"] .life');
-  floatAt(el,wallAbsorbed?'防衛線 BLOCK':(amount>0?'+':'')+amount,amount>0?'heal':'damage');
-  if(!wallAbsorbed)pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);
+  if(wallAbsorbed)showDefenseShield(side,source.laneIndex);
+  else{floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);}
   if(combat&&actualDamage>0&&landmarkFor(side)[source.laneIndex])await checkedBattle(destroyLandmark(side,source.laneIndex), battleGeneration);
   if(actualDamage>0) await checkedBattle(resolveRevenge(side,actualDamage), battleGeneration);
   return actualDamage;
@@ -2416,11 +2427,11 @@ async function attack(side,i){
     var pierceDealt=null;
     if(hasKeyword(a,'pierce',side) && aPower>tBasePower) pierceDealt=await checkedBattle(changeLife(enemySide,-(aPower-tBasePower),{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);
     if(enemy[target]) await checkedBattle(triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a}), battleGeneration);
-    logMsg(a.name+' → '+t.name+(pierceDealt===0?' ／ 防衛線 BLOCK（貫通0ダメージ）':''));
+    logMsg(a.name+' → '+t.name+(pierceDealt===0?' ／ 城壁が貫通攻撃を防いだ':''));
   }else{
     var directPower=a.power*damageMultiplierFor(side);
     var dealt=await checkedBattle(changeLife(enemySide,-directPower,{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);
-    logMsg(dealt===0?a.name+' → 防衛線 BLOCK（LIFEダメージ0）':a.name+' → 相手LIFE '+dealt+'ダメージ');
+    logMsg(dealt===0?a.name+'の攻撃を城壁が防いだ':a.name+' → 相手LIFE '+dealt+'ダメージ');
   }
   if(own[i]) own[i].canAttack=false;
   state.animating=false;

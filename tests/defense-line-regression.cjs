@@ -4,6 +4,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 const dir=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
+const css=fs.readFileSync(path.join(dir,'parchment.css'),'utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 new vm.Script(script);
 const nodes=new Map();
@@ -34,7 +35,8 @@ run('render=function(){};renderPicker=function(){};wait=async function(){};anima
     check(ctx.state.enemyDefense[0]===Math.min(2,hit),'defense stage after combat '+hit);
     check(before-ctx.state.enemyLife===(hit===1?0:hit===2?2:3),'intact blocks, cracked takes normal damage, breached gains one damage');
   }
-  check(ctx.state.battleHistory.some(e=>e.text.includes('防衛線 BLOCK'))&&ctx.state.battleHistory.some(e=>e.text.includes('突破された'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'block, transition, and bonus messages enter battle history');
+  check(ctx.state.battleHistory.some(e=>e.text.includes('攻撃を防ぎ、ヒビが入った'))&&ctx.state.battleHistory.some(e=>e.text.includes('突破された'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'defense, transition, and bonus messages enter battle history');
+  check(!html.includes('防衛線 BLOCK')&&!html.includes('0ダメージ')&&css.includes('.fxDefenseShield')&&css.includes('.life.wallShielded'),'blocked combat uses a text-free shield effect');
   const slots=node('enemyDefense');slots.children=[];ctx.renderDefenseLine('enemy','enemyDefense');check(slots.children.length===5&&slots.children[0].innerHTML.includes('defense_wall_breached.png')&&slots.children[1].innerHTML.includes('defense_wall_intact.png'),'five aligned wall images reflect state');
   ctx.state.enemyMana=3;ctx.state.enemyMaxMana=5;ctx.renderResourceSlots('enemy','enemyResourceSlots','enemyResourceTrack');const track=node('enemyResourceSlots').innerHTML;
   check((track.match(/resourceSlot filled/g)||[]).length===3&&(track.match(/resourceSlot spent/g)||[]).length===2&&(track.match(/resourceSlot locked/g)||[]).length===5,'resource track distinguishes three coins, two spent, and five locked slots');
