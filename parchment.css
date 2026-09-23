@@ -93,59 +93,88 @@
 /* Selection readability */
 .pickerCard .pickerState{color:#17130f!important;text-shadow:none;}
 
-/* Compact battle layout: only the mobile/auto-small display modes use this grid. */
-html.battleCompact #gameScreen{
-  position:relative;width:min(430px,100%);height:min(100vh,640px);height:min(100dvh,640px);
-  min-height:0;max-height:100dvh;margin:max(0px,calc((100dvh - 640px)/2)) auto;
-  padding:env(safe-area-inset-top) 6px env(safe-area-inset-bottom);
-  grid-template-rows:42px 19px 20px minmax(54px,1fr) 27px minmax(54px,1fr) 20px 19px 42px 42px minmax(82px,1.15fr);
-  row-gap:3px;overflow:hidden;
+/* Battle viewport: all eleven rows fit inside the usable viewport in every view mode. */
+body.battleActive{height:100vh;height:100dvh;overflow:hidden;overscroll-behavior:none}
+body.battleActive #gameScreen{
+  --battle-gap:clamp(2px,.36dvh,4px);
+  --hud-h:clamp(50px,6.5dvh,56px);
+  --defense-h:clamp(32px,5.5dvh,44px);
+  --landmark-h:clamp(20px,3.3dvh,28px);
+  --unit-row-h:clamp(82px,14dvh,112px);
+  --log-h:clamp(28px,4.4dvh,36px);
+  --controls-h:clamp(44px,6.4dvh,52px);
+  --hand-h:clamp(92px,15dvh,124px);
+  position:relative;width:min(900px,100%);max-width:900px;height:100vh;height:100dvh;min-height:0;max-height:100dvh;
+  margin:0 auto;padding:calc(env(safe-area-inset-top) + 3px) clamp(6px,1.1vw,14px) calc(env(safe-area-inset-bottom) + 3px);
+  grid-template-rows:var(--hud-h) var(--defense-h) var(--landmark-h) var(--unit-row-h) var(--log-h) var(--unit-row-h) var(--landmark-h) var(--defense-h) var(--hud-h) var(--controls-h) var(--hand-h);
+  row-gap:var(--battle-gap);align-content:center;overflow:visible;
 }
-html.battleCompact #gameScreen .eventBattleBadge.show{position:absolute;z-index:12;top:calc(env(safe-area-inset-top) + 1px);right:9px;margin:0;padding:1px 3px;font-size:7px;pointer-events:none}
-html.battleCompact #gameScreen .battleHud{min-height:0;padding:2px 5px;overflow:hidden}
-html.battleCompact #gameScreen .topbar{margin:0;z-index:10}
-html.battleCompact #gameScreen .battleHudHeading{height:13px;min-height:0;line-height:13px}
-html.battleCompact #gameScreen .battleHudHeading .small{font-size:9px;max-width:28%}
-html.battleCompact #gameScreen .battleHudHeading .turn{font-size:9px;min-height:0;line-height:13px}
-html.battleCompact #gameScreen .battleHudMeta{font-size:8px}
-html.battleCompact #gameScreen .battleHudStats{height:23px;margin:0;gap:4px}
-html.battleCompact #gameScreen .life{width:30px;height:27px;font-size:13px}
-html.battleCompact #gameScreen .resourceTrack{width:min(172px,51vw)}
-html.battleCompact #gameScreen .resourceHud{gap:3px}
-html.battleCompact #gameScreen .resourceHud b{font-size:10px;min-width:25px}
-html.battleCompact #gameScreen .boardWrap{min-height:0;padding:0;overflow:visible}
-html.battleCompact #gameScreen .board{height:100%;min-height:0;gap:3px;align-items:stretch}
-html.battleCompact #gameScreen .boardWrap::before{inset:-2px -3px}
-html.battleCompact #gameScreen .slot{height:100%;min-height:0;padding:2px;border-radius:4px}
-html.battleCompact #gameScreen .slotIndex{top:1px;right:2px;font-size:8px}
-html.battleCompact #gameScreen .card{min-height:0;padding:2px 2px 18px;gap:1px;border-radius:3px}
-html.battleCompact #gameScreen .card:has(.keywordRow){padding-bottom:18px}
-html.battleCompact #gameScreen .cardType{min-height:16px;margin-left:19px;font-size:6px;line-height:1.05}
-html.battleCompact #gameScreen .boardCost{top:2px;left:2px;width:16px;height:16px;font-size:9px}
-html.battleCompact #gameScreen .cardName{font-size:9px;line-height:1.1}
-html.battleCompact #gameScreen .card .effect{max-height:21px;padding-top:1px;font-size:7px}
-html.battleCompact #gameScreen .card .keywordRow{max-height:16px;margin:0;gap:1px;flex-wrap:nowrap;overflow:hidden}
-html.battleCompact #gameScreen .card .keywordIcon{width:15px;height:15px;flex-basis:15px}
-html.battleCompact #gameScreen .card .power{width:17px;height:17px;bottom:1px;right:1px;font-size:10px}
-html.battleCompact #gameScreen .landmarkSlot{height:100%;min-height:0;padding:1px;font-size:9px;line-height:1.1;white-space:nowrap;text-overflow:ellipsis}
-html.battleCompact #gameScreen .defenseWrap{padding:0}
-html.battleCompact #gameScreen .defenseSlot{height:100%;min-height:0;border:1px solid #3d5265;background:#0b1621;overflow:hidden}
-html.battleCompact #gameScreen .defenseSlot img{width:100%;height:100%;object-fit:fill}
-html.battleCompact #gameScreen .battleInfoRow{margin:0;gap:3px;grid-template-columns:28px minmax(0,1fr)}
-html.battleCompact #gameScreen .battleInfoRow .log{height:27px;min-height:0;padding:5px 4px;font-size:10px;line-height:15px}
-html.battleCompact #gameScreen .battleInfoRow .battleToolBtn{width:27px;height:27px;font-size:14px}
-html.battleCompact #gameScreen .battleReturn{font-size:8px}
-html.battleCompact #gameScreen .controls{height:42px;padding:0;min-height:0}
-html.battleCompact #gameScreen .controlInner,html.battleCompact #gameScreen .controlInner.hasSpecial{height:100%;grid-template-columns:42px repeat(2,minmax(0,1fr));gap:3px}
-html.battleCompact #gameScreen .controlInner.hasSpecial{grid-template-columns:42px repeat(2,minmax(0,1fr)) minmax(0,1.2fr)}
-html.battleCompact #gameScreen .controlInner .ctrl{height:42px;min-height:0;padding:0 2px;font-size:10px}
-html.battleCompact #gameScreen .graveAction{width:42px;height:42px;border-radius:4px}
-html.battleCompact #gameScreen .hand{--hand-card-width:clamp(76px,23vw,96px);height:100%;min-height:0;margin:0 2px;padding:0;overflow:visible}
-html.battleCompact #gameScreen .handCard{top:0;height:100%;min-height:0;padding:3px;gap:1px;border-radius:5px}
-html.battleCompact #gameScreen .handCard.selected{transform:translateX(var(--hand-shift,-50%)) translateY(-5px)}
-html.battleCompact #gameScreen .handCard .cost{top:2px;left:2px;width:19px;height:19px;font-size:10px}
-html.battleCompact #gameScreen .handMeta{min-height:17px;margin-left:21px;font-size:7px;line-height:1.05}
-html.battleCompact #gameScreen .handName{font-size:10px;line-height:1.1}
-html.battleCompact #gameScreen .handText{max-height:27px;padding-top:2px;font-size:7px;line-height:1.16}
-html.battleCompact #gameScreen .handPower:not(.spellMark){width:18px;height:18px;font-size:10px}
-@media(max-height:610px){html.battleCompact #gameScreen{row-gap:2px}html.battleCompact #gameScreen .card .effect{max-height:13px}}
+body.battleActive #gameScreen .eventBattleBadge.show{position:absolute;z-index:12;top:calc(env(safe-area-inset-top) + 2px);right:10px;margin:0;padding:1px 4px;font-size:8px;pointer-events:none}
+body.battleActive #gameScreen .battleHud{height:100%;min-height:0;padding:2px clamp(5px,1vw,9px);overflow:visible}
+body.battleActive #gameScreen .topbar{margin:0;z-index:10}
+body.battleActive #gameScreen .battleHudHeading{height:13px;min-height:0;line-height:13px}
+body.battleActive #gameScreen .battleHudHeading .small{max-width:29%;font-size:clamp(9px,1.2vw,11px)}
+body.battleActive #gameScreen .battleHudHeading .turn{min-height:0;line-height:13px;font-size:clamp(9px,1.2vw,11px)}
+body.battleActive #gameScreen .battleHudMeta{font-size:clamp(8px,1.05vw,10px)}
+body.battleActive #gameScreen .battleHudStats{height:calc(100% - 13px);margin:0;gap:5px}
+body.battleActive #gameScreen .life{width:clamp(27px,4.2dvh,34px);height:clamp(27px,4.2dvh,34px);max-height:100%;font-size:clamp(13px,1.8dvh,16px)}
+body.battleActive #gameScreen .resourceHud{height:100%}
+body.battleActive #gameScreen .resourceTrack{width:auto;height:100%;max-width:min(190px,52vw);aspect-ratio:1502/287;background-size:100% 100%;flex:0 1 auto}
+body.battleActive #gameScreen .resourceSlots{inset:32% 7.2% 17% 7.2%}
+body.battleActive #gameScreen .resourceSlot img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+body.battleActive #gameScreen .resourceSlot.filled img{transform:translateY(1%)}
+body.battleActive #gameScreen .resourceSlot.spent img,body.battleActive #gameScreen .resourceSlot.locked img{transform:translate(4.7%,1%)}
+body.battleActive #gameScreen .resourceHud{gap:3px}
+body.battleActive #gameScreen .resourceHud b{min-width:25px;font-size:10px}
+body.battleActive #gameScreen .boardWrap{height:100%;min-height:0;padding:0;overflow:visible}
+body.battleActive #gameScreen .board{height:100%;min-height:0;gap:clamp(3px,.7vw,6px);align-items:stretch}
+body.battleActive #gameScreen .boardWrap::before{inset:-2px -3px}
+body.battleActive #gameScreen .slot{height:100%;min-height:0;padding:clamp(2px,.45vw,4px);border-radius:4px}
+body.battleActive #gameScreen .slotIndex{top:1px;right:3px;font-size:8px}
+body.battleActive #gameScreen .card{min-height:0;padding:2px 2px 18px;gap:1px;border-radius:3px}
+body.battleActive #gameScreen .card:has(.keywordRow){padding-bottom:18px}
+body.battleActive #gameScreen .cardType{min-height:16px;margin-left:19px;font-size:6px;line-height:1.05}
+body.battleActive #gameScreen .boardCost{top:2px;left:2px;width:16px;height:16px;font-size:9px}
+body.battleActive #gameScreen .cardName{font-size:clamp(9px,1.2vw,11px);line-height:1.1}
+body.battleActive #gameScreen .card .effect{max-height:20px;padding-top:1px;font-size:7px;line-height:1.12}
+body.battleActive #gameScreen .card .keywordRow{max-height:16px;margin:0;gap:1px;flex-wrap:nowrap;overflow:hidden}
+body.battleActive #gameScreen .card .keywordIcon{width:15px;height:15px;flex-basis:15px}
+body.battleActive #gameScreen .card .power{width:17px;height:17px;bottom:1px;right:1px;font-size:10px}
+body.battleActive #gameScreen .landmarkSlot{height:100%;min-height:0;padding:1px;font-size:clamp(8px,1.2vw,10px);line-height:1.1;white-space:nowrap;text-overflow:ellipsis}
+body.battleActive #gameScreen .defenseWrap{padding:0}
+body.battleActive #gameScreen .defenseSlot{height:100%;min-height:0;border:1px solid #3d5265;background:#0b1621;overflow:visible}
+body.battleActive #gameScreen .defenseSlot img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center;image-rendering:pixelated}
+body.battleActive #gameScreen .battleInfoRow{height:100%;margin:0;gap:3px;grid-template-columns:var(--log-h) minmax(0,1fr)}
+body.battleActive #gameScreen .battleInfoRow .log{height:100%;min-height:0;padding:0 5px;display:grid;place-items:center;font-size:clamp(9px,1.25vw,11px);line-height:1.1}
+body.battleActive #gameScreen .battleInfoRow .battleToolBtn{width:var(--log-h);height:var(--log-h);font-size:14px}
+body.battleActive #gameScreen .battleReturn{font-size:8px}
+body.battleActive #gameScreen .controls{height:100%;min-height:0;padding:0}
+body.battleActive #gameScreen .controlInner,body.battleActive #gameScreen .controlInner.hasSpecial{height:100%;grid-template-columns:var(--controls-h) repeat(2,minmax(0,1fr));gap:clamp(3px,.7vw,6px)}
+body.battleActive #gameScreen .controlInner.hasSpecial{grid-template-columns:var(--controls-h) repeat(2,minmax(0,1fr)) minmax(0,1.2fr)}
+body.battleActive #gameScreen .controlInner .ctrl{height:100%;min-height:44px;padding:0 4px;border-radius:5px;font-size:clamp(10px,1.3vw,12px)}
+body.battleActive #gameScreen .graveAction{width:var(--controls-h);height:100%;min-height:44px;border-radius:5px}
+body.battleActive #gameScreen .hand{--hand-card-width:clamp(76px,21vw,116px);height:100%;min-height:0;margin:0 2px;padding:0;overflow:visible}
+body.battleActive #gameScreen .handCard{top:0;width:var(--hand-card-width);height:100%;min-height:0;padding:3px;gap:1px;border-radius:5px}
+body.battleActive #gameScreen .handCard.selected{transform:translateX(var(--hand-shift,-50%)) translateY(-5px)}
+body.battleActive #gameScreen .handCard .cost{top:2px;left:2px;width:19px;height:19px;font-size:10px}
+body.battleActive #gameScreen .handMeta{min-height:17px;margin-left:21px;font-size:7px;line-height:1.05}
+body.battleActive #gameScreen .handName{font-size:clamp(10px,1.35vw,12px);line-height:1.1}
+body.battleActive #gameScreen .handText{max-height:27px;padding-top:2px;font-size:7px;line-height:1.16}
+body.battleActive #gameScreen .handPower:not(.spellMark){width:18px;height:18px;font-size:10px}
+
+@media(max-width:600px){
+  body.battleActive #gameScreen{width:min(430px,100%);padding-left:6px;padding-right:6px}
+  body.battleActive #gameScreen .resourceTrack{max-width:min(172px,51vw)}
+}
+@media(max-height:750px){
+  body.battleActive #gameScreen .card .effect{display:none}
+  body.battleActive #gameScreen .cardName{margin:auto 0}
+  body.battleActive #gameScreen .handText{max-height:20px}
+}
+@media(max-height:610px){
+  body.battleActive #gameScreen{--hud-h:38px;--defense-h:29px;--landmark-h:18px;--unit-row-h:78px;--log-h:26px;--controls-h:44px;--hand-h:88px;--battle-gap:2px}
+  body.battleActive #gameScreen .battleHud{padding-top:1px;padding-bottom:1px}
+  body.battleActive #gameScreen .battleHudHeading{height:12px;line-height:12px}
+  body.battleActive #gameScreen .battleHudStats{height:calc(100% - 12px)}
+  body.battleActive #gameScreen .handText{display:none}
+}
