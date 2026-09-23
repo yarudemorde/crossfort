@@ -1982,11 +1982,11 @@ function chooseRevengeCard(side,cards,damageAmount){
     state.choiceRequest={kind:'revenge',cards:cards,title:'報復：'+damageAmount+'ダメージを受けました',resolve:resolve};renderPicker();
   });
 }
-function chooseOpenSlot(actingSide,side,prompt,zone){
+function chooseOpenSlot(actingSide,side,prompt,zone,sourceCard){
   var board=zone==='landmark'?landmarkFor(side):boardFor(side),candidates=[];
   for(var i=0;i<board.length;i++) if(!board[i]) candidates.push(i);
   if(!candidates.length) return Promise.resolve(null);
-  if(!isHumanSide(actingSide)) return Promise.resolve(chooseCpuOpenSlot(side,candidates,zone));
+  if(!isHumanSide(actingSide)) return Promise.resolve(chooseCpuOpenSlot(side,candidates,zone,sourceCard));
   showSelectionBanner(null,prompt);
   return new Promise(function(resolve){state.targetRequest={targetSide:side,zone:zone,candidates:candidates,prompt:prompt,resolve:function(target){resolve(target?target.index:null);}};render();});
 }
@@ -2074,7 +2074,7 @@ async function deployFromZone(side,zone,action){
   const battleGeneration = state && state.generation;
   var cards=zoneCandidates(zone,action).filter(function(card){return firstEmpty(placementBoard(side,card))>=0;}), card=await checkedBattle(chooseZoneCard(side,cards,action.title||'配置するカードを選択'), battleGeneration);
   if(!card) return null;
-  var slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'を配置するレーンを選択',card.type==='ランドマーク'?'landmark':null), battleGeneration);
+  var slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'を配置するレーンを選択',card.type==='ランドマーク'?'landmark':null,card), battleGeneration);
   if(slot==null) return null;
   var own=placementBoard(side,card),index=zone.indexOf(card);if(index<0 || own[slot]) return null;
   zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
@@ -2183,11 +2183,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       var claimHand=side==='player'?state.playerHand:state.enemyHand;
       if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
     }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
-      var discoveryBoard=placementBoard(side,sourceCard),discoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null), battleGeneration);
+      var discoveryBoard=placementBoard(side,sourceCard),discoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
       if(discoverySlot!=null&&!discoveryBoard[discoverySlot]){discoveryBoard[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,discoverySlot,'appear');else animateSummon(side,discoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,discoverySlot,{}), battleGeneration);}
     }else if(a.type==='deployDiscoveredForCost' && context.discoveredCard===sourceCard){
       if(manaFor(side)>=a.cost){
-        var paidDiscoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null), battleGeneration);
+        var paidDiscoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
         if(paidDiscoverySlot!=null){spendMana(side,a.cost);placementBoard(side,sourceCard)[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=sourceCard.type==='ユニット'&&hasKeyword(sourceCard,'haste',side);context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,paidDiscoverySlot,'appear');else animateSummon(side,paidDiscoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{}), battleGeneration);}
       }
     }else if(a.type==='deployDiveFromBottom'){
@@ -2499,6 +2499,7 @@ var AI_MAX_PLAYS_PER_TURN=12;
 var AI_MAX_ATTACKS_PER_TURN=16;
 var AI_FORCE_ATTACK_AFTER=1;
 var AI_FORCE_ATTACK_BOARD_SCORE=-8;
+var aiProjectionCache={};
 var AI_WEIGHTS={
   life:1.5,
   boardPower:2,
@@ -2522,7 +2523,18 @@ var AI_WEIGHTS={
   lifeDefense:2.8,
   preventLethal:8000,
   fullBlock:1.4,
-  cheapWall:.16
+  cheapWall:.16,
+  defenseState:1.7,
+  defenseCrackValue:2.8,
+  defenseBreakValue:4.4,
+  breachedLaneDamageValue:1.35,
+  focusLaneValue:1.15,
+  protectBreachedLane:4.6,
+  protectCrackedLane:2.5,
+  hasteDefensePressure:2.2,
+  landmarkSafety:2.8,
+  comboOrder:3.2,
+  lookAhead:.12
 };
 
 function aiLifeFor(side){return side==='player'?state.playerLife:state.enemyLife;}
@@ -2533,15 +2545,29 @@ function aiBoardPower(side){
 function aiUnitCount(side){
   return boardFor(side).filter(function(card){return card&&card.type==='ユニット';}).length;
 }
+function aiDefenseProgress(side){
+  return defenseFor(side).reduce(function(total,stage){return total+Math.max(0,Math.min(2,Number(stage)||0));},0);
+}
+function aiLandmarkValue(card,side){
+  if(!card)return 0;
+  var rules=rulesFor(card),value=1.4+(rules.onTurnStart||[]).length*1.8+(rules.auras||[]).length*2.2;
+  if((rules.tags||[]).indexOf('relic')>=0)value+=2.2;
+  if(card.name==='危険海域'||card.name==='クロスフォート城')value+=1.8;
+  return value;
+}
 function evaluateBoard(side){
   var enemySide=otherSide(side),own=boardFor(side),enemy=boardFor(enemySide);
   var ownGuards=own.filter(function(card){return card&&hasKeyword(card,'guard',side);}).length;
   var enemyGuards=enemy.filter(function(card){return card&&hasKeyword(card,'guard',enemySide);}).length;
+  var ownLandmarks=landmarkFor(side).reduce(function(total,card){return total+aiLandmarkValue(card,side);},0);
+  var enemyLandmarks=landmarkFor(enemySide).reduce(function(total,card){return total+aiLandmarkValue(card,enemySide);},0);
   return (aiLifeFor(side)-aiLifeFor(enemySide))*AI_WEIGHTS.life
     +(aiBoardPower(side)-aiBoardPower(enemySide))*AI_WEIGHTS.boardPower
     +(handFor(side).length*AI_WEIGHTS.hand-handFor(enemySide).length*(AI_WEIGHTS.hand*.5))
     +(aiUnitCount(side)-aiUnitCount(enemySide))*AI_WEIGHTS.unitCount
-    +(ownGuards-enemyGuards)*AI_WEIGHTS.guard;
+    +(ownGuards-enemyGuards)*AI_WEIGHTS.guard
+    +(aiDefenseProgress(enemySide)-aiDefenseProgress(side))*AI_WEIGHTS.defenseState
+    +(ownLandmarks-enemyLandmarks)*.55;
 }
 function evaluateCard(card,side){
   if(!card)return 0;
@@ -2578,6 +2604,9 @@ function aiAllyUnits(side,sourceCard,otherOnly){
 }
 function aiMaxValue(items){return items.reduce(function(best,item){return Math.max(best,item.value||0);},0);}
 function aiMinValue(items){return items.length?items.reduce(function(best,item){return Math.min(best,item.value||0);},Infinity):0;}
+function aiBestZoneCardValue(cards,side,action,sourceCard){
+  return zoneCandidates(cards,action||{}).reduce(function(best,card){return card===sourceCard?best:Math.max(best,evaluateCard(card,side));},0);
+}
 function aiAvailableSlots(side,sourceCard,sourceLane){
   var empty=boardFor(side).filter(function(card){return !card;}).length;
   if(sourceCard&&sourceCard.type!=='スペル'&&sourceLane>=0)empty=Math.max(0,empty-1);
@@ -2612,8 +2641,11 @@ function aiEffectScore(action,side,sourceCard,sourceLane){
     },0);
   }
   if(action.type==='destroyAllUnits'){
-    var enemyValue=aiMaxValue(enemies)+aiBoardPower(enemySide)*1.4,ownValue=aiBoardPower(side)*1.1;
-    return enemyValue-ownValue;
+    var enemyValue=enemies.reduce(function(total,item){return total+item.value;},0),ownValue=allies.reduce(function(total,item){return total+item.value;},0);
+    var wipeScore=enemyValue-ownValue;
+    if(aiExpectedIncomingLifeDamage(side)>=ownLife)wipeScore+=AI_WEIGHTS.preventLethal;
+    else wipeScore+=Math.max(0,aiExpectedIncomingLifeDamage(side)-ownLife*.35)*AI_WEIGHTS.lifeDefense;
+    return wipeScore;
   }
   if(action.type==='setPower'){
     var setBest=0;for(var j=0;j<enemies.length;j++)setBest=Math.max(setBest,(enemies[j].card.power-amount)*1.6);
@@ -2642,15 +2674,27 @@ function aiEffectScore(action,side,sourceCard,sourceLane){
     return allies.length?-aiMinValue(allies)*.12:0;
   }
   if(action.type==='moveEnemyToOpposing')return enemies.length?1.8:0;
-  if(action.type==='deployFromHand'||action.type==='deployFromGrave'||action.type==='deployDiveFromBottom'||action.type==='deployDiscoveredForCost'||action.type==='deploySelf')return slots>0?3.8:0;
-  if(action.type==='recoverGrave')return graveFor(side).length?3.2:0;
+  if(action.type==='deployFromHand')return slots>0?3.8+aiBestZoneCardValue(handFor(side),side,action,sourceCard)*.78:0;
+  if(action.type==='deployFromGrave')return slots>0?3.8+aiBestZoneCardValue(graveFor(side),side,action,sourceCard)*.72:0;
+  if(action.type==='deployDiveFromBottom'||action.type==='deployDiscoveredForCost'||action.type==='deploySelf')return slots>0?3.8:0;
+  if(action.type==='recoverGrave')return graveFor(side).length?3.2+aiBestZoneCardValue(graveFor(side),side,action,sourceCard)*.35:0;
   if(action.type==='opponentDiscard'||action.type==='enemyHandToBottom')return handFor(enemySide).length?2.8:0;
   if(action.type==='handToBottom')return handFor(side).length>1?.5:-1.5;
   if(action.type==='mill')return amount*.35;
   if(action.type==='explore')return (amount||1)*1.15;
   if(action.type==='claimDiscovered')return handFor(side).length<8?2.2:0;
   if(action.type==='addTurn')return 8;
-  if(action.type==='destroyRelicForToken'||action.type==='destroyAllRelicsForTokens')return relicCount(side)>0?2.5:0;
+  if(action.type==='destroyRelicForToken'){
+    var relics=landmarkFor(side).filter(function(card){return card&&(rulesFor(card).tags||[]).indexOf('relic')>=0;});
+    if(!relics.length||slots<=0)return 0;
+    var cheapestRelic=relics.reduce(function(best,card){return Math.min(best,aiLandmarkValue(card,side));},Infinity);
+    return (Number(action.power)||1)*AI_WEIGHTS.cardPower-cheapestRelic*.65;
+  }
+  if(action.type==='destroyAllRelicsForTokens'){
+    var relicTotal=relicCount(side),tokenCount=Math.min(relicTotal,slots),lostValue=landmarkFor(side).reduce(function(total,card){return total+(card&&(rulesFor(card).tags||[]).indexOf('relic')>=0?aiLandmarkValue(card,side):0);},0);
+    return tokenCount*(Number(action.power)||1)*AI_WEIGHTS.cardPower+tokenCount*AI_WEIGHTS.unitCount-lostValue*.55;
+  }
+  if(action.type==='destroyOtherUnits')return -aiAllyUnits(side,sourceCard,true).reduce(function(total,item){return total+item.value*.72;},0);
   if(action.type==='soulEcho')return relicCount(side)>0?4:0;
   return .4;
 }
@@ -2678,38 +2722,106 @@ function aiCanUseCard(card,side,lane,mode){
   for(var i=0;i<actions.length;i++)if(aiHasValidTarget(actions[i],side,card,lane)){hasUsable=true;break;}
   return hasUsable;
 }
-function aiExpectedIncomingLifeDamage(side){
-  var enemySide=otherSide(side),enemy=boardFor(enemySide),own=boardFor(side),total=0;
-  for(var lane=0;lane<enemy.length;lane++){
-    var attacker=enemy[lane];
-    if(!attacker||attacker.type==='ランドマーク'||hasKeyword(attacker,'cannotAttack',enemySide))continue;
-    var attackPower=aiCardPower(attacker)*damageMultiplierFor(enemySide);
-    var destinations=rulesFor(attacker).moveOnAttack?attackMoveCandidates(enemySide,lane):[lane];
-    var bestDamage=0;
-    for(var i=0;i<destinations.length;i++){
-      var destination=destinations[i];
-      var defender=hasKeyword(attacker,'unblockable',enemySide)?-1:defenderIndex(side,destination);
-      var damage=attackPower;
-      if(defender>=0&&own[defender]){
-        damage=hasKeyword(attacker,'pierce',enemySide)?Math.max(0,attackPower-aiCardPower(own[defender])):0;
+function aiAttackEffectDamage(card,side){
+  return (rulesFor(card).onAttack||[]).reduce(function(total,action){
+    return total+(action.type==='damageLife'&&action.target!=='self'?effectDamageAmount(card,side,Number(action.amount)||0):0);
+  },0);
+}
+function aiAttackDestinations(card,lane,side){
+  return rulesFor(card).moveOnAttack?attackMoveCandidates(side,lane):[lane];
+}
+function aiRawCombatDamage(card,lane,side,destination){
+  if(!card||card.type!=='ユニット'||hasKeyword(card,'cannotAttack',side))return 0;
+  var enemySide=otherSide(side),enemy=boardFor(enemySide),power=aiCardPower(card)*damageMultiplierFor(side);
+  var defender=hasKeyword(card,'unblockable',side)?-1:defenderIndex(enemySide,destination);
+  if(defender<0)return power;
+  if(!hasKeyword(card,'pierce',side)||!enemy[defender])return 0;
+  return Math.max(0,power-aiCardPower(enemy[defender]));
+}
+function aiWallAttackValue(defendingSide,lane,rawDamage,actualDamage){
+  if(rawDamage<=0)return 0;
+  var stage=defenseFor(defendingSide)[lane];
+  if(stage===0)return AI_WEIGHTS.defenseCrackValue;
+  if(stage===1)return AI_WEIGHTS.defenseBreakValue+actualDamage*AI_WEIGHTS.directDamage;
+  return actualDamage*(AI_WEIGHTS.directDamage+AI_WEIGHTS.breachedLaneDamageValue);
+}
+function aiMaxRawCombatToLane(attackingSide,lane,readyOnly){
+  var own=boardFor(attackingSide),best=0;
+  for(var i=0;i<own.length;i++){
+    var card=own[i];
+    if(!card||card.type!=='ユニット'||hasKeyword(card,'cannotAttack',attackingSide)||(readyOnly&&!card.canAttack))continue;
+    var destinations=aiAttackDestinations(card,i,attackingSide);
+    if(destinations.indexOf(lane)>=0)best=Math.max(best,aiRawCombatDamage(card,i,attackingSide,lane));
+  }
+  return best;
+}
+function aiReadyAttackersForLane(attackingSide,lane,excludeCard){
+  var own=boardFor(attackingSide),count=0;
+  for(var i=0;i<own.length;i++){
+    var card=own[i];if(!card||card===excludeCard||!card.canAttack||card.type!=='ユニット')continue;
+    if(aiAttackDestinations(card,i,attackingSide).indexOf(lane)>=0&&aiRawCombatDamage(card,i,attackingSide,lane)>0)count++;
+  }
+  return count;
+}
+function aiProjectionKey(side,includeNextTurn){
+  function cardKey(card){return card?[card.name,card.power,card.canAttack?1:0].join(':'):'-';}
+  return side+'|'+(includeNextTurn?1:0)+'|'+boardFor(side).map(cardKey).join(',')+'|'+boardFor(otherSide(side)).map(cardKey).join(',')+'|'+landmarkFor(side).map(cardKey).join(',')+'|'+landmarkFor(otherSide(side)).map(cardKey).join(',')+'|'+defenseFor(otherSide(side)).join('');
+}
+function aiProjectedCombatDamage(side,includeNextTurn){
+  var cacheKey=aiProjectionKey(side,includeNextTurn),cached=aiProjectionCache[cacheKey];
+  if(cached!=null)return cached;
+  if(Object.keys(aiProjectionCache).length>200)aiProjectionCache={};
+  var own=boardFor(side),enemySide=otherSide(side),attackers=[],occupied=0;
+  for(var occupiedLane=0;occupiedLane<own.length;occupiedLane++)if(own[occupiedLane])occupied|=(1<<occupiedLane);
+  for(var lane=0;lane<own.length;lane++){
+    var card=own[lane];if(!card||(!card.canAttack&&!includeNextTurn)||card.type!=='ユニット'||hasKeyword(card,'cannotAttack',side))continue;
+    var destinations=[lane];
+    if(rulesFor(card).moveOnAttack){if(lane>0)destinations.push(lane-1);if(lane<4)destinations.push(lane+1);}
+    var options=destinations.map(function(destination){return {lane:destination,raw:aiRawCombatDamage(card,lane,side,destination)};});
+    attackers.push({card:card,origin:lane,effect:aiAttackEffectDamage(card,side),options:options});
+  }
+  var initial=defenseFor(enemySide).slice(),memo={};
+  function search(mask,stages,occupancy){
+    var key=mask+'|'+stages.join('')+'|'+occupancy,cached=memo[key];if(cached!=null)return cached;
+    var best=0;
+    for(var i=0;i<attackers.length;i++)if(!(mask&(1<<i))){
+      var attacker=attackers[i];
+      for(var j=0;j<attacker.options.length;j++){
+        var option=attacker.options[j],next=stages.slice(),combat=0;
+        if(option.lane!==attacker.origin&&(occupancy&(1<<option.lane)))continue;
+        var nextOccupancy=option.lane===attacker.origin?occupancy:(occupancy&~(1<<attacker.origin))|(1<<option.lane);
+        if(option.raw>0){combat=next[option.lane]===0?0:option.raw+(next[option.lane]>=2?1:0);next[option.lane]=Math.min(2,next[option.lane]+1);}
+        best=Math.max(best,attacker.effect+combat+search(mask|(1<<i),next,nextOccupancy));
       }
-      bestDamage=Math.max(bestDamage,damage);
     }
-    total+=bestDamage;
+    memo[key]=best;return best;
+  }
+  var result=search(0,initial,occupied);aiProjectionCache[cacheKey]=result;return result;
+}
+function aiIncomingWallPressure(side){
+  var enemySide=otherSide(side),total=0;
+  for(var lane=0;lane<5;lane++){
+    var raw=aiMaxRawCombatToLane(enemySide,lane,false);if(raw<=0)continue;
+    var stage=defenseFor(side)[lane];
+    if(stage===0)total+=AI_WEIGHTS.defenseCrackValue;
+    else if(stage===1)total+=AI_WEIGHTS.defenseBreakValue;
   }
   return total;
+}
+function aiExpectedIncomingLifeDamage(side){
+  return aiProjectedCombatDamage(otherSide(side),true);
 }
 function aiDefensivePlacementScore(card,lane,side){
   if(!card||card.type!=='ユニット')return {score:0,before:0,after:0,prevented:0,preventsLethal:false};
   var own=boardFor(side);
   if(lane<0||lane>=own.length||own[lane])return {score:0,before:0,after:0,prevented:0,preventsLethal:false};
-  var before=aiExpectedIncomingLifeDamage(side),after=before;
+  var before=aiExpectedIncomingLifeDamage(side),beforePressure=aiIncomingWallPressure(side),after=before,afterPressure=beforePressure;
   own[lane]=card;
-  try{after=aiExpectedIncomingLifeDamage(side);}
+  try{after=aiExpectedIncomingLifeDamage(side);afterPressure=aiIncomingWallPressure(side);}
   finally{own[lane]=null;}
   var prevented=Math.max(0,before-after),life=aiLifeFor(side);
   var preventsLethal=before>=life&&after<life;
-  var score=prevented*AI_WEIGHTS.lifeDefense;
+  var score=prevented*AI_WEIGHTS.lifeDefense+Math.max(0,beforePressure-afterPressure);
   if(preventsLethal)score+=AI_WEIGHTS.preventLethal;
   if(prevented>0&&after===0)score+=AI_WEIGHTS.fullBlock;
   if(prevented>0){
@@ -2719,10 +2831,30 @@ function aiDefensivePlacementScore(card,lane,side){
   }
   return {score:score,before:before,after:after,prevented:prevented,preventsLethal:preventsLethal};
 }
+function aiGuardLaneScore(card,lane,side){
+  if(!card||card.type!=='ユニット'||!hasKeyword(card,'guard',side))return 0;
+  var enemySide=otherSide(side),score=0;
+  for(var protectedLane=Math.max(0,lane-1);protectedLane<=Math.min(4,lane+1);protectedLane++){
+    var raw=aiMaxRawCombatToLane(enemySide,protectedLane,false);if(raw<=0)continue;
+    var stage=defenseFor(side)[protectedLane];
+    if(stage>=2)score+=AI_WEIGHTS.protectBreachedLane+Math.min(raw+1,aiLifeFor(side))*.35;
+    else if(stage===1)score+=AI_WEIGHTS.protectCrackedLane+Math.min(raw,aiLifeFor(side))*.2;
+    else score+=AI_WEIGHTS.defenseCrackValue*.35;
+  }
+  return score;
+}
+function aiLandmarkLaneScore(card,lane,side){
+  var enemySide=otherSide(side),stage=defenseFor(side)[lane],raw=aiMaxRawCombatToLane(enemySide,lane,false);
+  var durableValue=aiLandmarkValue(card,side),danger=stage===0?.15:stage===1?.75:1.35;
+  if(raw>0)danger+=stage===0?.25:Math.min(1.5,raw*.18+.45);
+  var protectedByUnit=defenderIndex(side,lane)>=0;
+  if(protectedByUnit)danger*=.45;
+  return (2-Math.abs(2-lane))*.18-danger*AI_WEIGHTS.landmarkSafety*Math.min(1.8,.65+durableValue/8);
+}
 function evaluateLaneForCard(card,lane,side){
   var own=boardFor(side),enemySide=otherSide(side),enemy=boardFor(enemySide);
   if(lane<0||lane>=own.length||placementBoard(side,card||{type:'ユニット'})[lane])return -Infinity;
-  if(card&&card.type==='ランドマーク')return (2-Math.abs(2-lane))*.18+(own[lane]?1:0);
+  if(card&&card.type==='ランドマーク')return aiLandmarkLaneScore(card,lane,side)+(own[lane]?1:0);
   var defense=aiDefensivePlacementScore(card,lane,side);
   var score=(2-Math.abs(2-lane))*.18+defense.score;
   var defender=defenderIndex(enemySide,lane);
@@ -2740,11 +2872,15 @@ function evaluateLaneForCard(card,lane,side){
   }
   if(card&&hasKeyword(card,'guard',side)){
     var coverage=1+(lane>0?1:0)+(lane<own.length-1?1:0);
-    score+=coverage*.9;
+    score+=coverage*.55+aiGuardLaneScore(card,lane,side);
   }
   if(card&&hasKeyword(card,'haste',side)){
     var immediate=aiCardPower(card)*damageMultiplierFor(side),targetIndex=hasKeyword(card,'unblockable',side)?-1:defender;
-    if(targetIndex<0)score+=immediate*1.8;
+    if(targetIndex<0){
+      var immediateDamage=combatLifeDamage(enemySide,immediate,lane);
+      score+=aiWallAttackValue(enemySide,lane,immediate,immediateDamage)+AI_WEIGHTS.hasteDefensePressure;
+      score+=aiReadyAttackersForLane(side,lane,card)*AI_WEIGHTS.focusLaneValue;
+    }
     else if(hasKeyword(card,'lethal',side)||immediate>=aiCardPower(enemy[targetIndex]))score+=4;
   }
   return score;
@@ -2754,26 +2890,60 @@ function aiOtherAffordableCount(side,handIndex,remainingMana){
   for(var i=0;i<hand.length;i++)if(i!==handIndex&&lowestPlayableCost(hand[i],side)<=remainingMana)count++;
   return count;
 }
-function cpuDirectDamagePotential(side){
-  var own=boardFor(side),enemySide=otherSide(side),total=0,multiplier=damageMultiplierFor(side);
-  for(var i=0;i<own.length;i++){
-    var card=own[i];
-    if(!card||!card.canAttack||card.type==='ランドマーク'||hasKeyword(card,'cannotAttack',side))continue;
-    if(hasKeyword(card,'unblockable',side)){total+=combatLifeDamage(enemySide,aiCardPower(card)*multiplier,i);continue;}
-    var lanes=rulesFor(card).moveOnAttack?attackMoveCandidates(side,i):[i],best=0;
-    for(var j=0;j<lanes.length;j++)if(defenderIndex(enemySide,lanes[j])<0)best=Math.max(best,combatLifeDamage(enemySide,aiCardPower(card)*multiplier,lanes[j]));
-    total+=best;
+function aiFuturePlaySequenceScore(side,handIndex,remainingMana){
+  var hand=handFor(side),values=[];
+  for(var i=0;i<hand.length;i++)if(i!==handIndex){
+    var card=hand[i],cost=lowestPlayableCost(card,side);
+    if(cost<=remainingMana)values.push({value:evaluateCard(card,side),cost:cost});
   }
-  return total;
+  values.sort(function(a,b){return b.value-a.value;});
+  var score=0,mana=remainingMana;
+  for(var j=0;j<Math.min(2,values.length);j++)if(values[j].cost<=mana){score+=values[j].value*AI_WEIGHTS.lookAhead;mana-=values[j].cost;}
+  return score;
+}
+function aiComboOrderScore(card,handIndex,lane,side,remainingMana){
+  var hand=handFor(side),own=boardFor(side),score=0,empty=own.filter(function(unit){return !unit;}).length;
+  var commanderIndex=hand.findIndex(function(candidate,index){return index!==handIndex&&candidate.name==='強襲の指揮官';});
+  if(card.name==='強襲の指揮官'){
+    var futureHaste=hand.filter(function(candidate,index){return index!==handIndex&&candidate.type==='ユニット'&&!hasKeyword(candidate,'haste',side)&&effectiveCost(candidate,side)<=remainingMana;}).length;
+    score+=Math.min(3,futureHaste)*AI_WEIGHTS.comboOrder;
+    score+=Math.min(2,Math.max(0,empty-1))*AI_WEIGHTS.hasteDefensePressure*.45;
+  }else if(card.type==='ユニット'&&!hasKeyword(card,'haste',side)&&commanderIndex>=0&&effectiveCost(hand[commanderIndex],side)<=manaFor(side)&&empty>=2){
+    score-=AI_WEIGHTS.comboOrder*.7;
+  }
+  if(card.name==='鱗の頭領シャトゥルツカ'){
+    var riskari=hand.filter(function(candidate,index){return index!==handIndex&&candidate.type==='ユニット'&&candidate.species==='リスカリ';}).length;
+    score+=Math.min(3,riskari)*AI_WEIGHTS.comboOrder*.75;
+  }else if(card.type==='ユニット'&&card.species==='リスカリ'&&hand.some(function(candidate,index){return index!==handIndex&&candidate.name==='鱗の頭領シャトゥルツカ'&&effectiveCost(candidate,side)<=manaFor(side);})){
+    score-=AI_WEIGHTS.comboOrder*.45;
+  }
+  if(card.name==='龍皇帝ヴァンビエッタⅢ'){
+    var bestDragon=aiBestZoneCardValue(hand,side,{unitOnly:true,tag:'dragon'},card);
+    score+=bestDragon*.45;
+  }else if((rulesFor(card).tags||[]).indexOf('dragon')>=0&&hand.some(function(candidate,index){return index!==handIndex&&candidate.name==='龍皇帝ヴァンビエッタⅢ'&&effectiveCost(candidate,side)<=manaFor(side);})){
+    score-=AI_WEIGHTS.comboOrder;
+  }
+  if(card.type==='ユニット'&&card.name!=='起源の龍モルディヤルデ'&&aiUnitCount(side)===3&&hand.some(function(candidate,index){return index!==handIndex&&candidate.name==='起源の龍モルディヤルデ';})&&empty>=2){
+    score+=AI_WEIGHTS.comboOrder*2.1;
+  }
+  var actions=aiPlayActions(card,'normal',side);
+  if(actions.some(function(action){return action.type==='mill';})&&hand.some(function(candidate,index){return index!==handIndex&&candidate.name==='港印卿コルドロッホ';}))score+=AI_WEIGHTS.comboOrder*.6;
+  if(card.type==='ランドマーク'&&(rulesFor(card).tags||[]).indexOf('relic')>=0&&hand.some(function(candidate,index){return index!==handIndex&&(candidate.name==='黄金文明の再興'||(rulesFor(candidate).conditionalOnPlay||[]).length);}))score+=AI_WEIGHTS.comboOrder*.7;
+  return score;
+}
+function cpuDirectDamagePotential(side){
+  return aiProjectedCombatDamage(side,false);
 }
 function aiPlayLethalDamage(card,lane,side,mode){
-  var actions=aiPlayActions(card,mode,side),damage=0;
-  for(var i=0;i<actions.length;i++)if(actions[i].type==='damageLife'&&actions[i].target!=='self')damage+=effectDamageAmount(card,side,Number(actions[i].amount)||0);
-  if(mode==='normal'&&card.type==='ユニット'&&hasKeyword(card,'haste',side)){
-    var enemySide=otherSide(side);
-    if(hasKeyword(card,'unblockable',side)||defenderIndex(enemySide,lane)<0)damage+=aiCardPower(card)*damageMultiplierFor(side);
+  var actions=aiPlayActions(card,mode,side),effectDamage=0;
+  for(var i=0;i<actions.length;i++)if(actions[i].type==='damageLife'&&actions[i].target!=='self')effectDamage+=effectDamageAmount(card,side,Number(actions[i].amount)||0);
+  var projected=cpuDirectDamagePotential(side);
+  if(mode==='normal'&&lane>=0&&card.type==='ユニット'&&hasKeyword(card,'haste',side)&&!boardFor(side)[lane]){
+    var oldReady=card.canAttack;boardFor(side)[lane]=card;card.canAttack=true;
+    try{projected=aiProjectedCombatDamage(side,false);}
+    finally{boardFor(side)[lane]=null;card.canAttack=oldReady;}
   }
-  return damage;
+  return projected+effectDamage;
 }
 function evaluatePlayAction(card,handIndex,lane,side,mode,cost){
   var base=evaluateCard(card,side),actions=aiPlayActions(card,mode,side);
@@ -2782,8 +2952,10 @@ function evaluatePlayAction(card,handIndex,lane,side,mode,cost){
   score+=cost*AI_WEIGHTS.manaSpend;
   var remaining=Math.max(0,manaFor(side)-cost);
   score+=Math.min(3,aiOtherAffordableCount(side,handIndex,remaining))*AI_WEIGHTS.followUp;
+  score+=aiFuturePlaySequenceScore(side,handIndex,remaining);
+  score+=aiComboOrderScore(card,handIndex,lane,side,remaining);
   var lethalDamage=aiPlayLethalDamage(card,lane,side,mode);
-  var lethal=lethalDamage>0&&cpuDirectDamagePotential(side)+lethalDamage>=aiLifeFor(otherSide(side));
+  var lethal=lethalDamage>0&&lethalDamage>=aiLifeFor(otherSide(side));
   if(lethal)score+=AI_WEIGHTS.lethal;
   return {kind:'play',card:card,handIndex:handIndex,lane:lane,side:side,mode:mode,cost:cost,score:score,lethal:lethal};
 }
@@ -2838,9 +3010,10 @@ function evaluateAttackAction(attacker,lane,side,destination){
   var killsTarget=false,attackerDies=false,direct=targetIndex<0;
   if(direct){
     var directDamage=combatLifeDamage(enemySide,attackPower,destination);
-    score+=directDamage*AI_WEIGHTS.directDamage;
+    score+=aiWallAttackValue(enemySide,destination,attackPower,directDamage);
+    score+=aiReadyAttackersForLane(side,destination,attacker)*AI_WEIGHTS.focusLaneValue*(defenseFor(enemySide)[destination]+1);
     var totalDirect=cpuDirectDamagePotential(side);
-    lethal=directDamage>=aiLifeFor(enemySide)||totalDirect>=aiLifeFor(enemySide);
+    lethal=totalDirect>=aiLifeFor(enemySide);
     if(lethal)score+=AI_WEIGHTS.lethal;
   }else{
     target=enemy[targetIndex];
@@ -2853,7 +3026,11 @@ function evaluateAttackAction(attacker,lane,side,destination){
     if(!attackerDies)score+=AI_WEIGHTS.surviveTrade;
     else if(killsTarget)score+=(evaluateCard(target,enemySide)-evaluateCard(attacker,side))*.45;
     else score-=evaluateCard(attacker,side)*1.15+3;
-    if(hasKeyword(attacker,'pierce',side)&&attackPower>aiCardPower(target))score+=combatLifeDamage(enemySide,attackPower-aiCardPower(target),destination)*AI_WEIGHTS.pierceDamage;
+    if(hasKeyword(attacker,'pierce',side)&&attackPower>aiCardPower(target)){
+      var pierceRaw=attackPower-aiCardPower(target),pierceDamage=combatLifeDamage(enemySide,pierceRaw,destination),pierceStage=defenseFor(enemySide)[destination];
+      score+=(pierceStage===0?AI_WEIGHTS.defenseCrackValue:pierceStage===1?AI_WEIGHTS.defenseBreakValue+pierceDamage*AI_WEIGHTS.pierceDamage:pierceDamage*(AI_WEIGHTS.pierceDamage+AI_WEIGHTS.breachedLaneDamageValue));
+      score+=aiReadyAttackersForLane(side,destination,attacker)*AI_WEIGHTS.focusLaneValue*(pierceStage+1);
+    }
     if(attackerDies)score+=aiBestReplacementValue(side)*AI_WEIGHTS.postAttackDeploy;
   }
   if(!lethal)score+=aiAttackPressure(side);
@@ -2880,6 +3057,14 @@ function chooseCpuTarget(actingSide,targetSide,candidates,prompt,hint){
   for(var i=0;i<candidates.length;i++){
     var card=boardFor(targetSide)[candidates[i]],value=evaluateCard(card,targetSide);
     var score=enemyTarget?value:(preferLow?-value:value),action=hint&&hint.action;
+    if(enemyTarget&&card&&card.type==='ユニット'){
+      var threatLane=candidates[i],rawThreat=aiRawCombatDamage(card,threatLane,targetSide,threatLane);
+      var lifeThreat=combatLifeDamage(actingSide,rawThreat,threatLane),wallStage=defenseFor(actingSide)[threatLane];
+      score+=lifeThreat*AI_WEIGHTS.lifeDefense;
+      if(rawThreat>0&&wallStage>=2)score+=AI_WEIGHTS.protectBreachedLane;
+      else if(rawThreat>0&&wallStage===1)score+=AI_WEIGHTS.protectCrackedLane;
+      if(lifeThreat>=aiLifeFor(actingSide))score+=AI_WEIGHTS.preventLethal;
+    }
     if(enemyTarget&&action&&action.type==='damageUnit'){
       var damage=effectDamageAmount(hint.sourceCard,actingSide,Number(action.amount)||0);
       var actual=Math.max(0,damage-(rulesFor(card).damageReduction||0));
@@ -2898,10 +3083,10 @@ function chooseCpuZoneCard(cards,side,title){
   }
   return best;
 }
-function chooseCpuOpenSlot(side,candidates,zone){
+function chooseCpuOpenSlot(side,candidates,zone,card){
   var best=candidates[0],bestScore=-Infinity;
   for(var i=0;i<candidates.length;i++){
-    var score=zone==='landmark'?((2-Math.abs(2-candidates[i]))*.18+(boardFor(side)[candidates[i]]?1:0)):evaluateLaneForCard(null,candidates[i],side);
+    var score=zone==='landmark'?aiLandmarkLaneScore(card,candidates[i],side)+(boardFor(side)[candidates[i]]?1:0):evaluateLaneForCard(card||null,candidates[i],side);
     if(score>bestScore){bestScore=score;best=candidates[i];}
   }
   return best;
