@@ -417,9 +417,9 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 .resourceHud{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
 .resourceHud b{flex:none;min-width:29px;color:#e7e9e4;font:800 11px Arial,sans-serif;text-align:right}
 .resourceTrack{position:relative;width:min(185px,53vw);aspect-ratio:1502/287;background:url("assets/ui/battle/resource_bar_10slots.png") center/100% 100% no-repeat;image-rendering:pixelated}
-.resourceSlots{position:absolute;inset:16% 6.1% 14%;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:center}
+.resourceSlots{position:absolute;inset:32% 7.4% 17% 7.1%;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:center}
 .resourceSlot{min-width:0;display:grid;place-items:center}
-.resourceSlot img{width:100%;height:auto;max-height:100%;object-fit:contain}
+.resourceSlot img{width:100%;height:100%;object-fit:contain}
 .resourceSlot.locked img{opacity:.24;filter:grayscale(1)}
 .resourceSlot.spent img{opacity:.85}
 #gameScreen .defenseWrap{padding:1px 0 2px}
@@ -852,15 +852,23 @@ function loadViewMode(){
   var saved='auto';try{saved=localStorage.getItem(VIEW_MODE_KEY)||'auto';}catch(e){}
   if(['auto','mobile','pc','full'].indexOf(saved)<0)saved='auto';
   document.documentElement.setAttribute('data-view-mode',saved);
+  syncCompactBattleMode();
   return saved;
+}
+function syncCompactBattleMode(){
+  var mode=document.documentElement.getAttribute('data-view-mode');
+  var compact=mode==='mobile'||(mode==='auto'&&typeof window.innerWidth==='number'&&window.innerWidth<=600);
+  document.documentElement.classList.toggle('battleCompact',compact);
+  if(state&&$('gameScreen').style.display!=='none')$('gameScreen').style.display=compact?'grid':'block';
 }
 function setViewMode(mode){
   if(['auto','mobile','pc','full'].indexOf(mode)<0)mode='auto';
   document.documentElement.setAttribute('data-view-mode',mode);
+  syncCompactBattleMode();
   try{localStorage.setItem(VIEW_MODE_KEY,mode);}catch(e){}
   var choices=document.querySelectorAll('[data-view-choice]');
   for(var i=0;i<choices.length;i++)choices[i].classList.toggle('selected',choices[i].getAttribute('data-view-choice')===mode);
-  if(state&&$('gameScreen').style.display==='block')renderHand();
+  if(state&&$('gameScreen').style.display!=='none')renderHand();
 }
 function openSettings(){setViewMode(document.documentElement.getAttribute('data-view-mode')||loadViewMode());$('settingsModal').classList.add('show');}
 function closeSettings(event){if(event&&event.target!==$('settingsModal'))return;$('settingsModal').classList.remove('show');}
@@ -1456,6 +1464,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
     $('startScreen').style.display='none';$('homeScreen').style.display='none';$('homeNav').style.display='none';
     $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
     $('gameScreen').style.display='block';$('controls').style.display='block';
+    syncCompactBattleMode();
     $('resultModal').classList.remove('show');
     document.body.classList.toggle('seasonBattle',state.eventMode);document.body.classList.toggle('bossBattle',state.eventBoss);
     $('eventBattleBadge').classList.toggle('show',state.eventMode);$('eventBattleBadge').textContent=state.eventMode?'SEASON 1 ／ '+SEASON1_STAGES[state.eventStage].label:'';
@@ -1778,7 +1787,7 @@ function renderHand(){
     })(i);
   }
 }
-window.addEventListener('resize',function(){if(state&&$('gameScreen').style.display==='block')renderHand();});
+window.addEventListener('resize',function(){syncCompactBattleMode();if(state&&$('gameScreen').style.display!=='none')renderHand();});
 function selectCard(i){
   var side=activeSide(),hand=handFor(side);
   if(!isHumanSide(side) || state.gameOver || state.animating) return;

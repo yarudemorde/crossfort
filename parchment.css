@@ -92,3 +92,60 @@
 }
 /* Selection readability */
 .pickerCard .pickerState{color:#17130f!important;text-shadow:none;}
+
+/* Compact battle layout: only the mobile/auto-small display modes use this grid. */
+html.battleCompact #gameScreen{
+  position:relative;width:min(430px,100%);height:min(100vh,640px);height:min(100dvh,640px);
+  min-height:0;max-height:100dvh;margin:max(0px,calc((100dvh - 640px)/2)) auto;
+  padding:env(safe-area-inset-top) 6px env(safe-area-inset-bottom);
+  grid-template-rows:42px 19px 20px minmax(54px,1fr) 27px minmax(54px,1fr) 20px 19px 42px 42px minmax(82px,1.15fr);
+  row-gap:3px;overflow:hidden;
+}
+html.battleCompact #gameScreen .eventBattleBadge.show{position:absolute;z-index:12;top:calc(env(safe-area-inset-top) + 1px);right:9px;margin:0;padding:1px 3px;font-size:7px;pointer-events:none}
+html.battleCompact #gameScreen .battleHud{min-height:0;padding:2px 5px;overflow:hidden}
+html.battleCompact #gameScreen .topbar{margin:0;z-index:10}
+html.battleCompact #gameScreen .battleHudHeading{height:13px;min-height:0;line-height:13px}
+html.battleCompact #gameScreen .battleHudHeading .small{font-size:9px;max-width:28%}
+html.battleCompact #gameScreen .battleHudHeading .turn{font-size:9px;min-height:0;line-height:13px}
+html.battleCompact #gameScreen .battleHudMeta{font-size:8px}
+html.battleCompact #gameScreen .battleHudStats{height:23px;margin:0;gap:4px}
+html.battleCompact #gameScreen .life{width:30px;height:27px;font-size:13px}
+html.battleCompact #gameScreen .resourceTrack{width:min(172px,51vw)}
+html.battleCompact #gameScreen .resourceHud{gap:3px}
+html.battleCompact #gameScreen .resourceHud b{font-size:10px;min-width:25px}
+html.battleCompact #gameScreen .boardWrap{min-height:0;padding:0;overflow:visible}
+html.battleCompact #gameScreen .board{height:100%;min-height:0;gap:3px;align-items:stretch}
+html.battleCompact #gameScreen .boardWrap::before{inset:-2px -3px}
+html.battleCompact #gameScreen .slot{height:100%;min-height:0;padding:2px;border-radius:4px}
+html.battleCompact #gameScreen .slotIndex{top:1px;right:2px;font-size:8px}
+html.battleCompact #gameScreen .card{min-height:0;padding:2px 2px 18px;gap:1px;border-radius:3px}
+html.battleCompact #gameScreen .card:has(.keywordRow){padding-bottom:18px}
+html.battleCompact #gameScreen .cardType{min-height:16px;margin-left:19px;font-size:6px;line-height:1.05}
+html.battleCompact #gameScreen .boardCost{top:2px;left:2px;width:16px;height:16px;font-size:9px}
+html.battleCompact #gameScreen .cardName{font-size:9px;line-height:1.1}
+html.battleCompact #gameScreen .card .effect{max-height:21px;padding-top:1px;font-size:7px}
+html.battleCompact #gameScreen .card .keywordRow{max-height:16px;margin:0;gap:1px;flex-wrap:nowrap;overflow:hidden}
+html.battleCompact #gameScreen .card .keywordIcon{width:15px;height:15px;flex-basis:15px}
+html.battleCompact #gameScreen .card .power{width:17px;height:17px;bottom:1px;right:1px;font-size:10px}
+html.battleCompact #gameScreen .landmarkSlot{height:100%;min-height:0;padding:1px;font-size:9px;line-height:1.1;white-space:nowrap;text-overflow:ellipsis}
+html.battleCompact #gameScreen .defenseWrap{padding:0}
+html.battleCompact #gameScreen .defenseSlot{height:100%;min-height:0;border:1px solid #3d5265;background:#0b1621;overflow:hidden}
+html.battleCompact #gameScreen .defenseSlot img{width:100%;height:100%;object-fit:fill}
+html.battleCompact #gameScreen .battleInfoRow{margin:0;gap:3px;grid-template-columns:28px minmax(0,1fr)}
+html.battleCompact #gameScreen .battleInfoRow .log{height:27px;min-height:0;padding:5px 4px;font-size:10px;line-height:15px}
+html.battleCompact #gameScreen .battleInfoRow .battleToolBtn{width:27px;height:27px;font-size:14px}
+html.battleCompact #gameScreen .battleReturn{font-size:8px}
+html.battleCompact #gameScreen .controls{height:42px;padding:0;min-height:0}
+html.battleCompact #gameScreen .controlInner,html.battleCompact #gameScreen .controlInner.hasSpecial{height:100%;grid-template-columns:42px repeat(2,minmax(0,1fr));gap:3px}
+html.battleCompact #gameScreen .controlInner.hasSpecial{grid-template-columns:42px repeat(2,minmax(0,1fr)) minmax(0,1.2fr)}
+html.battleCompact #gameScreen .controlInner .ctrl{height:42px;min-height:0;padding:0 2px;font-size:10px}
+html.battleCompact #gameScreen .graveAction{width:42px;height:42px;border-radius:4px}
+html.battleCompact #gameScreen .hand{--hand-card-width:clamp(76px,23vw,96px);height:100%;min-height:0;margin:0 2px;padding:0;overflow:visible}
+html.battleCompact #gameScreen .handCard{top:0;height:100%;min-height:0;padding:3px;gap:1px;border-radius:5px}
+html.battleCompact #gameScreen .handCard.selected{transform:translateX(var(--hand-shift,-50%)) translateY(-5px)}
+html.battleCompact #gameScreen .handCard .cost{top:2px;left:2px;width:19px;height:19px;font-size:10px}
+html.battleCompact #gameScreen .handMeta{min-height:17px;margin-left:21px;font-size:7px;line-height:1.05}
+html.battleCompact #gameScreen .handName{font-size:10px;line-height:1.1}
+html.battleCompact #gameScreen .handText{max-height:27px;padding-top:2px;font-size:7px;line-height:1.16}
+html.battleCompact #gameScreen .handPower:not(.spellMark){width:18px;height:18px;font-size:10px}
+@media(max-height:610px){html.battleCompact #gameScreen{row-gap:2px}html.battleCompact #gameScreen .card .effect{max-height:13px}}
