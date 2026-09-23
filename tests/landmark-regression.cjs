@@ -11,7 +11,7 @@ vm.runInContext(script.slice(0,script.lastIndexOf('// Fit names to each existing
 const originalRender=ctx.render;
 function run(expr){return vm.runInContext(expr,ctx)}
 run('render=function(){};renderPicker=function(){};animateSummon=function(){};animateLandmark=function(){};showDestroy=function(){};showPowerGain=function(){};pulseClass=function(){};floatAt=function(){};logMsg=function(){};wait=async function(){};window.collapses=[];showLandmarkCollapse=function(side,index){window.collapses.push([side,index]);};');
-function reset(){run("state={generation:++battleGenerationCounter,playerBoard:Array(5).fill(null),enemyBoard:Array(5).fill(null),playerLandmarks:Array(5).fill(null),enemyLandmarks:Array(5).fill(null),playerHand:[],enemyHand:[],playerDeck:[],enemyDeck:[],grave:[],enemyGrave:[],playerLife:20,enemyLife:20,mana:12,enemyMana:12,maxMana:12,enemyMaxMana:12,playerTurn:true,matchMode:'cpu',gameOver:false,animating:false,targetRequest:null,choiceRequest:null,turn:1};")}
+function reset(){run("state={generation:++battleGenerationCounter,playerBoard:Array(5).fill(null),enemyBoard:Array(5).fill(null),playerLandmarks:Array(5).fill(null),enemyLandmarks:Array(5).fill(null),playerDefense:Array(5).fill(0),enemyDefense:Array(5).fill(0),playerHand:[],enemyHand:[],playerDeck:[],enemyDeck:[],grave:[],enemyGrave:[],playerLife:20,enemyLife:20,mana:12,enemyMana:12,maxMana:12,enemyMaxMana:12,playerTurn:true,matchMode:'cpu',gameOver:false,animating:false,targetRequest:null,choiceRequest:null,turn:1};")}
 function card(name){return run(`(function(){var t=cardTemplateByName(${JSON.stringify(name)});return cloneCard(t.row,t.color)})()`)}
 const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフォート城');
 (async()=>{

@@ -400,6 +400,42 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 .bookSpineCount{position:absolute;bottom:2px;left:1px;right:1px;border-top:1px solid #f7f0e76b;background:#0a1524ad;text-align:center;font:900 9px Arial,sans-serif}
 .bookShelfRail{height:8px;margin:0 -11px;border-top:2px solid #afc1cb;border-bottom:1px solid #546a78;border-radius:0 0 9px 9px;background:linear-gradient(#3e596c,#152632)}
 @media(max-width:600px){.bookShelfSection{top:61px;padding:7px 7px 0}.bookShelf{min-height:173px;padding:5px 25px 11px}.bookSpine{height:146px;width:29px}.bookSpine:nth-child(even){height:141px}.bookSpineName{max-height:112px;font-size:var(--book-font-mobile,9px)}.bookSpine.first .bookSpineName{max-height:96px}.bookShelfRail{margin:0 -7px}.cardFilterBar select{min-width:104px;max-width:158px}}
+
+/* Battle rows share one five-column grid, including the non-card defense lines. */
+#gameScreen{padding-bottom:calc(env(safe-area-inset-bottom) + 20px);overflow-x:clip}
+#gameScreen .board{gap:5px}
+#gameScreen .topbar{position:relative;top:auto;margin-bottom:3px}
+#gameScreen .battleHud{border:1px solid #45596a;border-radius:3px;background:linear-gradient(180deg,#111e2af0,#09131ded);padding:5px 8px;box-shadow:inset 0 1px #cad9e01c,0 4px 13px #0007}
+.battleHudHeading{display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:16px;color:#e6e8e5;font-size:10px}
+.battleHudHeading .small{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.battleHudHeading .turn{font-size:10px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.battleHudMeta{font-size:9px;color:#aebac5;white-space:nowrap}
+.battleHudStats{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:9px;margin-top:3px}
+#gameScreen .life{display:inline-flex;align-items:center;justify-content:center;position:relative;width:43px;height:39px;color:#fff3e8;font:900 17px Arial,sans-serif;text-shadow:0 1px 3px #000,0 0 5px #000}
+#gameScreen .life img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+#gameScreen .life span{position:relative;z-index:1}
+.resourceHud{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
+.resourceHud b{flex:none;min-width:29px;color:#e7e9e4;font:800 11px Arial,sans-serif;text-align:right}
+.resourceTrack{position:relative;width:min(185px,53vw);aspect-ratio:1502/287;background:url("assets/ui/battle/resource_bar_10slots.png") center/100% 100% no-repeat;image-rendering:pixelated}
+.resourceSlots{position:absolute;inset:16% 6.1% 14%;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));align-items:center}
+.resourceSlot{min-width:0;display:grid;place-items:center}
+.resourceSlot img{width:100%;height:auto;max-height:100%;object-fit:contain}
+.resourceSlot.locked img{opacity:.24;filter:grayscale(1)}
+.resourceSlot.spent img{opacity:.85}
+#gameScreen .defenseWrap{padding:1px 0 2px}
+.defenseSlot{min-width:0;height:clamp(37px,10vw,52px);display:grid;place-items:center;overflow:hidden}
+.defenseSlot img{display:block;max-width:100%;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.battleReturn{border:0;background:transparent;color:#a8b9c5;font-size:9px;padding:2px 0;white-space:nowrap}
+#gameScreen .battleInfoRow{grid-template-columns:34px minmax(0,1fr);margin:3px 0 4px}
+#gameScreen .controls{position:relative;left:auto;right:auto;bottom:auto;transform:none;width:100%;z-index:5;padding:4px 0 0;background:none}
+#gameScreen .controlInner,#gameScreen .controlInner.hasSpecial{max-width:none;width:100%;display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);gap:5px}
+#gameScreen .controlInner.hasSpecial{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr)}
+#gameScreen .controlInner .ctrl{min-height:43px;border-radius:4px;font-size:11px}
+#gameScreen .graveAction{width:44px;height:43px;border-radius:4px}
+#gameScreen .hand{--hand-card-width:112px;margin:2px 0 0}
+#gameScreen .handCard{width:var(--hand-card-width)}
+@media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
+@media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
 <link rel="stylesheet" href="parchment.css?v=5">
 </head>
@@ -628,39 +664,35 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 
 <section id="gameScreen">
   <div class="eventBattleBadge" id="eventBattleBadge">SEASON 1</div>
-  <div class="topbar">
-    <div class="scoreRow">
-      <div><span class="small" id="enemyName">CPU</span> <span class="life enemy">♥ <span id="enemyLife">20</span></span></div>
-      <div class="turn" id="turnLabel">TURN 1</div>
-      <div><span class="life player">♥ <span id="playerLife">20</span></span> <span class="small" id="playerName">PLAYER 1</span></div>
-    </div>
-    <div class="scoreRow small" style="margin-top:4px">
-      <div>敵手札 <span id="enemyHandCount">5</span> / 山札 <span id="enemyDeckCount">25</span></div>
-      <div>資源 <b id="mana">1/1</b></div>
-      <div>山札 <span id="playerDeckCount">25</span> / 墓地 <span id="graveCount">0</span></div>
-    </div>
+  <div class="topbar battleHud" id="topBattleHud">
+    <div class="battleHudHeading"><span class="small" id="enemyName">CPU</span><span class="turn" id="turnLabel">TURN 1</span><span class="battleHudMeta">手札 <span id="enemyHandCount">5</span> · 山札 <span id="enemyDeckCount">25</span></span></div>
+    <div class="battleHudStats"><span class="life enemy"><img src="assets/ui/battle/life_heart.png" alt=""><span id="enemyLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="enemyResourceTrack"><div class="resourceSlots" id="enemyResourceSlots"></div></div><b id="enemyMana">1/1</b></div></div>
   </div>
 
+  <div class="boardWrap defenseWrap"><div class="board defenseBoard" id="enemyDefense" aria-label="相手の防衛線"></div></div>
   <div class="boardWrap landmarkWrap"><div class="board landmarkBoard" id="enemyLandmarks"></div></div>
   <div class="boardWrap"><div class="board" id="enemyBoard"></div></div>
   <div class="battleInfoRow" role="group" aria-label="対戦情報">
     <button class="battleToolBtn" onclick="openBattleHistory()" aria-label="バトルログを見る" title="バトルログ">≡</button>
     <div class="log" id="battleLog">ゲーム開始</div>
-    <button class="battleToolBtn" onclick="openGravePanel()" aria-label="墓地を見る" title="墓地">🪦<span class="battleToolCount" id="graveToolCount">0</span></button>
   </div>
   <div class="boardWrap"><div class="board" id="playerBoard"></div></div>
   <div class="boardWrap landmarkWrap"><div class="board landmarkBoard" id="playerLandmarks"></div></div>
+  <div class="boardWrap defenseWrap"><div class="board defenseBoard" id="playerDefense" aria-label="自分の防衛線"></div></div>
+  <div class="battleHud battleHudPlayer" id="bottomBattleHud">
+    <div class="battleHudHeading"><span class="small" id="playerName">PLAYER 1</span><span class="battleHudMeta">山札 <span id="playerDeckCount">25</span> · 墓地 <span id="graveCount">0</span></span><button class="battleReturn" id="backBattleBtn" onclick="returnToDecks()">デッキ選択</button></div>
+    <div class="battleHudStats"><span class="life player"><img src="assets/ui/battle/life_heart.png" alt=""><span id="playerLife">20</span></span><div class="resourceHud"><div class="resourceTrack" id="playerResourceTrack"><div class="resourceSlots" id="playerResourceSlots"></div></div><b id="mana">1/1</b></div></div>
+  </div>
+  <div class="controls" id="controls" style="display:none">
+    <div class="controlInner">
+      <button class="battleToolBtn graveAction" onclick="openGravePanel()" aria-label="墓地を見る" title="墓地">🪦<span class="battleToolCount" id="graveToolCount">0</span></button>
+      <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
+      <button class="ctrl" id="specialBtn" onclick="playSpecialCard()">特殊</button>
+      <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
+    </div>
+  </div>
   <div class="hand" id="playerHand"></div>
 </section>
-
-<div class="controls" id="controls" style="display:none">
-  <div class="controlInner">
-    <button class="ctrl" id="backBattleBtn" onclick="returnToDecks()">デッキ選択</button>
-    <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
-    <button class="ctrl" id="specialBtn" onclick="playSpecialCard()">特殊</button>
-    <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
-  </div>
-</div>
 
 <div class="targetPrompt" id="targetPrompt" role="status" aria-live="polite">対象のカードをタップしてください</div>
 
@@ -828,6 +860,7 @@ function setViewMode(mode){
   try{localStorage.setItem(VIEW_MODE_KEY,mode);}catch(e){}
   var choices=document.querySelectorAll('[data-view-choice]');
   for(var i=0;i<choices.length;i++)choices[i].classList.toggle('selected',choices[i].getAttribute('data-view-choice')===mode);
+  if(state&&$('gameScreen').style.display==='block')renderHand();
 }
 function openSettings(){setViewMode(document.documentElement.getAttribute('data-view-mode')||loadViewMode());$('settingsModal').classList.add('show');}
 function closeSettings(event){if(event&&event.target!==$('settingsModal'))return;$('settingsModal').classList.remove('show');}
@@ -1411,7 +1444,8 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
       enemyLife:gameOptions.enemyLife==null?20:Math.max(1,gameOptions.enemyLife),
       playerDeck:playerCards,enemyDeck:enemyCards,matchMode:mode,playerColor:color,enemyColor:opponentColor,
       playerHand:[],enemyHand:[],playerBoard:[null,null,null,null,null],
-      enemyBoard:[null,null,null,null,null],playerLandmarks:[null,null,null,null,null],enemyLandmarks:[null,null,null,null,null],grave:[],enemyGrave:[],
+      enemyBoard:[null,null,null,null,null],playerLandmarks:[null,null,null,null,null],enemyLandmarks:[null,null,null,null,null],
+      playerDefense:[0,0,0,0,0],enemyDefense:[0,0,0,0,0],grave:[],enemyGrave:[],
       selectedCard:-1,selectedSlot:-1,playerTurn:firstSide==='player',firstSide:firstSide,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,
       extraTurns:{player:0,enemy:0},battleHistory:[],
       eventMode:!!gameOptions.eventMode,eventStage:Number(gameOptions.eventStage)||0,
@@ -1462,6 +1496,8 @@ function isHumanSide(side){return side==='player' || state.matchMode==='local';}
 function sideLabel(side){return side==='player'?'プレイヤー1':state.matchMode==='local'?'プレイヤー2':(state.enemyLabel||'CPU');}
 function boardFor(side){ return side==='player'?state.playerBoard:state.enemyBoard; }
 function landmarkFor(side){return side==='player'?state.playerLandmarks:state.enemyLandmarks;}
+function defenseFor(side){return side==='player'?state.playerDefense:state.enemyDefense;}
+function combatLifeDamage(side,amount,lane){return amount>0?amount+(defenseFor(side)[lane]>=2?1:0):amount;}
 function placementBoard(side,card){return card.type==='ランドマーク'?landmarkFor(side):boardFor(side);}
 function graveFor(side){ return side==='player'?state.grave:state.enemyGrave; }
 function otherSide(side){ return side==='player'?'enemy':'player'; }
@@ -1592,18 +1628,13 @@ function render(){
   var prompt=$('targetPrompt');
   if(state.targetRequest){prompt.textContent=state.targetRequest.prompt;prompt.classList.add('show');}
   else prompt.classList.remove('show');
-  $('enemyLife').textContent=state.enemyLife;
-  $('playerLife').textContent=state.playerLife;
   var side=activeSide(),humanTurn=isHumanSide(side),bottomSide=state.matchMode==='local'?side:'player',topSide=otherSide(bottomSide);
+  renderBattleHud(topSide,bottomSide);
   $('enemyHandCount').textContent=handFor(topSide).length;
   $('enemyDeckCount').textContent=deckFor(topSide).length;
   $('playerDeckCount').textContent=deckFor(bottomSide).length;
   $('graveCount').textContent=graveFor(bottomSide).length;
   $('graveToolCount').textContent=graveFor(bottomSide).length;
-  $('mana').textContent=manaFor(side)+'/'+maxManaFor(side);
-  $('enemyName').textContent=state.matchMode==='local'?'PLAYER 2':(state.enemyLabel||'CPU');
-  $('playerName').textContent=playerProfile.name||'PLAYER 1';
-  $('turnLabel').textContent='TURN '+state.turn+' / '+sideLabel(side);
   $('backBattleBtn').textContent=state.eventMode?'イベント':'デッキ選択';
   var selected=state.selectedCard>=0?handFor(side)[state.selectedCard]:null;
   var special=selectedSpecial(), controls=$('controls').querySelector('.controlInner');
@@ -1613,11 +1644,49 @@ function render(){
   $('specialBtn').disabled=!special || !humanTurn || state.gameOver || state.animating || special.cost>manaFor(side) || !selected || (selected.type==='ユニット' && state.selectedSlot<0);
   $('playBtn').disabled=(!humanTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type!=='スペル' && (state.selectedSlot<0 || placementBoard(side,selected)[state.selectedSlot])));
   $('endBtn').disabled=(!humanTurn || state.gameOver || state.animating);
+  renderDefenseLine(topSide,'enemyDefense');
   renderLandmarks(topSide,'enemyLandmarks');
   renderBoard(topSide,'enemyBoard',true);
   renderBoard(bottomSide,'playerBoard',false);
   renderLandmarks(bottomSide,'playerLandmarks');
+  renderDefenseLine(bottomSide,'playerDefense');
   renderHand();
+}
+function renderResourceSlots(side,rootId,trackId){
+  var current=Math.max(0,Math.min(10,manaFor(side))),maximum=Math.max(0,Math.min(10,maxManaFor(side))),html='';
+  var root=$(rootId),track=$(trackId),signature=current+'/'+maximum;
+  track.setAttribute('aria-label','現在資源 '+current+'、最大資源 '+maximum);
+  if(root.getAttribute('data-resource-state')===signature)return;
+  for(var i=0;i<10;i++){
+    var status=i<current?'filled':i<maximum?'spent':'locked';
+    var asset=status==='filled'?'resource_coin_gold.png':'resource_empty_slot.png';
+    html+='<span class="resourceSlot '+status+'"><img src="assets/ui/battle/'+asset+'" alt=""></span>';
+  }
+  root.innerHTML=html;root.setAttribute('data-resource-state',signature);
+}
+function renderBattleHud(topSide,bottomSide){
+  $('topBattleHud').setAttribute('data-side',topSide);
+  $('bottomBattleHud').setAttribute('data-side',bottomSide);
+  $('enemyLife').textContent=state[topSide==='player'?'playerLife':'enemyLife'];
+  $('playerLife').textContent=state[bottomSide==='player'?'playerLife':'enemyLife'];
+  $('enemyMana').textContent=manaFor(topSide)+'/'+maxManaFor(topSide);
+  $('mana').textContent=manaFor(bottomSide)+'/'+maxManaFor(bottomSide);
+  $('enemyName').textContent=topSide==='player'?(playerProfile.name||'PLAYER 1'):(state.matchMode==='local'?'PLAYER 2':(state.enemyLabel||'CPU'));
+  $('playerName').textContent=bottomSide==='player'?(playerProfile.name||'PLAYER 1'):'PLAYER 2';
+  $('turnLabel').textContent='TURN '+state.turn+' / '+sideLabel(activeSide());
+  renderResourceSlots(topSide,'enemyResourceSlots','enemyResourceTrack');
+  renderResourceSlots(bottomSide,'playerResourceSlots','playerResourceTrack');
+}
+function renderDefenseLine(side,rootId){
+  var root=$(rootId),defense=defenseFor(side),images=['defense_wall_intact.png','defense_wall_cracked.png','defense_wall_breached.png'];
+  var labels=['無傷','ヒビ','突破済み'];root.innerHTML='';
+  for(var i=0;i<5;i++){
+    var stage=Math.min(2,defense[i]),slot=document.createElement('div');
+    slot.className='defenseSlot defenseStage'+stage;
+    slot.setAttribute('aria-label','左から'+(i+1)+'番目の防衛線：'+labels[stage]);
+    slot.innerHTML='<img src="assets/ui/battle/'+images[stage]+'" alt="">';
+    root.appendChild(slot);
+  }
 }
 function renderBoard(side,rootId,asOpponent){
   var root=$(rootId);
@@ -1682,6 +1751,11 @@ function showLandmarkCollapse(side,index){
 function renderHand(){
   var root=$('playerHand'); root.innerHTML='';
   var side=state.matchMode==='local'?activeSide():'player',hand=handFor(side),humanTurn=isHumanSide(activeSide()) && side===activeSide(),count=hand.length;
+  var cardWidth=112;
+  if(count&&typeof getComputedStyle==='function'){
+    var probe=document.createElement('div');probe.className='handCard';root.appendChild(probe);
+    cardWidth=probe.getBoundingClientRect().width||112;probe.remove();
+  }
   for(var i=0;i<hand.length;i++){
     (function(index){
       var c=hand[index], d=document.createElement('div');
@@ -1689,8 +1763,8 @@ function renderHand(){
       var disabled=lowestPlayableCost(c,side)>manaFor(side) || !humanTurn;
       var spread=count<=1?.5:index/(count-1);
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
-      d.style.left=(spread*100)+'%';
-      d.style.setProperty('--hand-shift',(-spread*100)+'%');
+      d.style.left='calc('+(spread*100)+'% + '+((.5-spread)*cardWidth)+'px)';
+      d.style.setProperty('--hand-shift','-50%');
       d.style.zIndex=String(index+1);
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
@@ -1704,6 +1778,7 @@ function renderHand(){
     })(i);
   }
 }
+window.addEventListener('resize',function(){if(state&&$('gameScreen').style.display==='block')renderHand();});
 function selectCard(i){
   var side=activeSide(),hand=handFor(side);
   if(!isHumanSide(side) || state.gameOver || state.animating) return;
@@ -1988,8 +2063,8 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     else if(a.type==='heal') await checkedBattle(changeLife(side,a.amount), battleGeneration);
     else if(a.type==='gainMana') changeMana(side,a.amount);
     else if(a.type==='gainMaxMana'){
-      if(side==='player') state.maxMana=Math.min(12,state.maxMana+a.amount);
-      else state.enemyMaxMana=Math.min(12,state.enemyMaxMana+a.amount);
+      if(side==='player') state.maxMana=Math.min(10,state.maxMana+a.amount);
+      else state.enemyMaxMana=Math.min(10,state.enemyMaxMana+a.amount);
     }
     else if(a.type==='damageLife') await checkedBattle(changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount))), battleGeneration);
     else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await checkedBattle(damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false), battleGeneration);
@@ -2112,8 +2187,8 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
   }
 }
 function changeMana(side,amount){
-  if(side==='player') state.mana=Math.max(0,state.mana+amount);
-  else state.enemyMana=Math.max(0,state.enemyMana+amount);
+  if(side==='player') state.mana=Math.max(0,Math.min(10,state.mana+amount));
+  else state.enemyMana=Math.max(0,Math.min(10,state.enemyMana+amount));
 }
 async function resolveSoulEcho(side,sourceSlot,card){
   const battleGeneration = state && state.generation;
@@ -2186,15 +2261,26 @@ function showDestroy(side,index){
 }
 async function changeLife(side,amount,source){
   const battleGeneration = state && state.generation;
+  var combat=amount<0&&source&&source.sourceType==='combat'&&Number.isInteger(source.laneIndex)&&source.laneIndex>=0&&source.laneIndex<5;
+  var defense=combat?defenseFor(side):null,stage=combat?defense[source.laneIndex]:0;
+  if(combat)amount=-combatLifeDamage(side,-amount,source.laneIndex);
   var key=side==='player'?'playerLife':'enemyLife',oldLife=state[key]; state[key]+=amount;
   var actualDamage=Math.max(0,oldLife-state[key]);
+  if(combat&&actualDamage>0){
+    defense[source.laneIndex]=Math.min(2,stage+1);
+    var rootId=state.matchMode==='local'?(side===activeSide()?'playerDefense':'enemyDefense'):side+'Defense';
+    renderDefenseLine(side,rootId);
+    var laneLabel='左から'+(source.laneIndex+1)+'番目の防衛線';
+    logMsg(stage===0?laneLabel+'にヒビが入った':stage===1?laneLabel+'が突破された':'突破済みの'+laneLabel+'からの攻撃：ダメージ+1');
+  }
   if(state.eventMode&&side==='player'){eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(0,state.playerLife));persistSeason1State();}
-  var el=document.querySelector('.life.'+(side==='player'?'player':'enemy'));
-  var number=$(side==='player'?'playerLife':'enemyLife'); if(number) number.textContent=state[key];
+  renderBattleHud(state.matchMode==='local'?otherSide(activeSide()):'enemy',state.matchMode==='local'?activeSide():'player');
+  var el=document.querySelector('.battleHud[data-side="'+side+'"] .life');
   floatAt(el,(amount>0?'+':'')+amount,amount>0?'heal':'damage');
   pulseClass(el,amount>0?'healed':'hit',amount>0?680:380);
   if(source && source.sourceType==='combat' && source.laneIndex!=null && actualDamage>0 && landmarkFor(side)[source.laneIndex])await checkedBattle(destroyLandmark(side,source.laneIndex), battleGeneration);
   if(amount<0) await checkedBattle(resolveRevenge(side,-amount), battleGeneration);
+  return actualDamage;
 }
 function revengeCards(side,damageAmount){
   var hand=side==='player'?state.playerHand:state.enemyHand;
@@ -2298,8 +2384,9 @@ async function attack(side,i){
     if(enemy[target]) await checkedBattle(triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a}), battleGeneration);
     logMsg(a.name+' → '+t.name);
   }else{
-    var directPower=a.power*damageMultiplierFor(side);await checkedBattle(changeLife(enemySide,-directPower,{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);
-    logMsg(a.name+' → 相手LIFE '+directPower+'ダメージ');
+    var directPower=a.power*damageMultiplierFor(side);
+    var dealt=await checkedBattle(changeLife(enemySide,-directPower,{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);
+    logMsg(a.name+' → 相手LIFE '+dealt+'ダメージ');
   }
   if(own[i]) own[i].canAttack=false;
   state.animating=false;
@@ -2339,8 +2426,8 @@ async function prepareNextTurn(nextSide){
   var startsNewRound=nextSide===state.firstSide;
   if(startsNewRound){
     state.turn++;
-    state.maxMana=Math.min(12,state.maxMana+1);
-    state.enemyMaxMana=Math.min(12,state.enemyMaxMana+1);
+    state.maxMana=Math.min(10,state.maxMana+1);
+    state.enemyMaxMana=Math.min(10,state.enemyMaxMana+1);
     state.mana=state.maxMana;
     state.enemyMana=state.enemyMaxMana;
     await checkedBattle(drawCard('player'), battleGeneration);await checkedBattle(drawCard('enemy'), battleGeneration);
@@ -2627,10 +2714,10 @@ function cpuDirectDamagePotential(side){
   for(var i=0;i<own.length;i++){
     var card=own[i];
     if(!card||!card.canAttack||card.type==='ランドマーク'||hasKeyword(card,'cannotAttack',side))continue;
-    if(hasKeyword(card,'unblockable',side)){total+=aiCardPower(card)*multiplier;continue;}
-    var lanes=rulesFor(card).moveOnAttack?attackMoveCandidates(side,i):[i],direct=false;
-    for(var j=0;j<lanes.length;j++)if(defenderIndex(enemySide,lanes[j])<0){direct=true;break;}
-    if(direct)total+=aiCardPower(card)*multiplier;
+    if(hasKeyword(card,'unblockable',side)){total+=combatLifeDamage(enemySide,aiCardPower(card)*multiplier,i);continue;}
+    var lanes=rulesFor(card).moveOnAttack?attackMoveCandidates(side,i):[i],best=0;
+    for(var j=0;j<lanes.length;j++)if(defenderIndex(enemySide,lanes[j])<0)best=Math.max(best,combatLifeDamage(enemySide,aiCardPower(card)*multiplier,lanes[j]));
+    total+=best;
   }
   return total;
 }
@@ -2705,9 +2792,10 @@ function evaluateAttackAction(attacker,lane,side,destination){
   var score=aiActionsScore(rulesFor(attacker).onAttack||[],side,attacker,destination),lethal=false,target=null;
   var killsTarget=false,attackerDies=false,direct=targetIndex<0;
   if(direct){
-    score+=attackPower*AI_WEIGHTS.directDamage;
+    var directDamage=combatLifeDamage(enemySide,attackPower,destination);
+    score+=directDamage*AI_WEIGHTS.directDamage;
     var totalDirect=cpuDirectDamagePotential(side);
-    lethal=attackPower>=aiLifeFor(enemySide)||totalDirect>=aiLifeFor(enemySide);
+    lethal=directDamage>=aiLifeFor(enemySide)||totalDirect>=aiLifeFor(enemySide);
     if(lethal)score+=AI_WEIGHTS.lethal;
   }else{
     target=enemy[targetIndex];
@@ -2720,7 +2808,7 @@ function evaluateAttackAction(attacker,lane,side,destination){
     if(!attackerDies)score+=AI_WEIGHTS.surviveTrade;
     else if(killsTarget)score+=(evaluateCard(target,enemySide)-evaluateCard(attacker,side))*.45;
     else score-=evaluateCard(attacker,side)*1.15+3;
-    if(hasKeyword(attacker,'pierce',side)&&attackPower>aiCardPower(target))score+=(attackPower-aiCardPower(target))*AI_WEIGHTS.pierceDamage;
+    if(hasKeyword(attacker,'pierce',side)&&attackPower>aiCardPower(target))score+=combatLifeDamage(enemySide,attackPower-aiCardPower(target),destination)*AI_WEIGHTS.pierceDamage;
     if(attackerDies)score+=aiBestReplacementValue(side)*AI_WEIGHTS.postAttackDeploy;
   }
   if(!lethal)score+=aiAttackPressure(side);
