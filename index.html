@@ -103,7 +103,7 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 .cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
 .cardType{font-size:8px;opacity:.8}.power{position:absolute;right:4px;bottom:4px;z-index:5;min-width:31px;padding:2px 4px;border:1px solid #d7bb8d88;border-radius:5px;background:#0a0e12e6;color:#f2dcc0;font-size:12px;font-weight:900;line-height:1.15;text-align:right;box-shadow:0 2px 6px #0008}.power::before{content:'⚔ '}
 .effect{flex:1;min-height:0;font-size:8px;line-height:1.16;opacity:.9;overflow:hidden;word-break:break-word}
-.card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:block;line-height:0}.keywordIcon img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.unblockable{background:#51426f}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
 .log{background:#0c1014d9;border:1px solid #4c4339;border-radius:8px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#ded4c6;text-align:center}
 .battleInfoRow{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:5px;align-items:center;margin:5px 0 7px}.battleInfoRow .log{min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.battleTools{display:flex;gap:5px}.battleToolBtn{position:relative;width:34px;height:34px;padding:0;border:1px solid #5d5245;border-radius:50%;background:#141a20;color:#dfd2c0;font-size:17px;font-weight:900;display:grid;place-items:center}.battleToolBtn:active{filter:brightness(1.25);transform:scale(.95)}.battleToolCount{position:absolute;right:-3px;top:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:9px;background:#d8b783;color:#1b140d;font-size:9px;line-height:16px;text-align:center}
@@ -437,7 +437,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=13">
+<link rel="stylesheet" href="parchment.css?v=14">
 </head>
 <body>
 
@@ -1549,21 +1549,15 @@ function hasKeyword(card,keyword,side){
   return false;
 }
 function keywordBadges(card,side){
-  var rules=rulesFor(card),text=card.text||'',definitions=[
-    ['guard','守護','guardian.png',hasKeyword(card,'guard',side)],
-    ['lethal','殺傷','lethal.png',hasKeyword(card,'lethal',side)],
-    ['haste','猛襲','rush.png',hasKeyword(card,'haste',side)],
-    ['pierce','貫通','piercing.png',hasKeyword(card,'pierce',side)],
-    ['dive','潜水','dive.png',rules.dive!=null],
-    ['soul','魂響','soul-echo.png',/魂響/.test(text)],
-    ['revenge','報復','retaliation.png',rules.revenge!=null],
-    ['explore','探査','explore.png',/探査(?:[：:]\s*\d+)?/.test(text)],
-    ['discover','発見','discover.png',(rules.onDiscover||[]).length>0],
-    ['faith','信仰','faith.png',/信仰(?:[：:]\s*\d+)?/.test(text)],
-    ['unblockable','防衛されない','unblockable.png',hasKeyword(card,'unblockable',side)],
-    ['cannotAttack','攻撃不可','cannot-attack.png',hasKeyword(card,'cannotAttack',side)]
+  var definitions=[
+    ['guard','守護','<path d="M12 2 21 6v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="M12 6v11"/>'],
+    ['lethal','殺傷','<path d="M6 17C0 10 5 3 12 3s12 7 6 14v4H6Z"/><circle cx="8" cy="11" r="2"/><circle cx="16" cy="11" r="2"/><path d="m10 16 2-3 2 3M10 18v3m4-3v3"/>'],
+    ['pierce','貫通','<path d="M3 21 21 3m-8 0h8v8M4 7h8v13H4Z"/>'],
+    ['haste','猛襲','<path d="m14 2-10 12h7l-1 8L21 9h-8Z"/>'],
+    ['unblockable','防衛されない','<path d="M3 19C4 7 12 5 21 3c-1 5-3 8-7 9l4 1-5 3H8l3 2-8 3M3 21 15 9"/>'],
+    ['cannotAttack','攻撃不可','<circle cx="12" cy="12" r="10"/><path d="m5 5 14 14M8 16l8-8m-2 0h2v2"/>']
   ],html='';
-  for(var i=0;i<definitions.length;i++) if(definitions[i][3]) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][1]+'"><img src="assets/icons/keywords/'+definitions[i][2]+'" width="32" height="32" alt="'+definitions[i][1]+'"></span>';
+  for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" role="img" title="'+definitions[i][1]+'" aria-label="'+definitions[i][1]+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+definitions[i][2]+'</svg></span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
 }
 function formatCardText(text){
