@@ -103,7 +103,7 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 .cardName{font-size:10px;font-weight:900;line-height:1.12;word-break:break-word}
 .cardType{font-size:8px;opacity:.8}.power{position:absolute;right:4px;bottom:4px;z-index:5;min-width:31px;padding:2px 4px;border:1px solid #d7bb8d88;border-radius:5px;background:#0a0e12e6;color:#f2dcc0;font-size:12px;font-weight:900;line-height:1.15;text-align:right;box-shadow:0 2px 6px #0008}.power::before{content:'⚔ '}
 .effect{flex:1;min-height:0;font-size:8px;line-height:1.16;opacity:.9;overflow:hidden;word-break:break-word}
-.card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:grid;place-items:center;border:1px solid #ead5b5;border-radius:5px;background:#171b20e8;color:#f5e5ce;font-size:9px;font-weight:900;line-height:1;box-shadow:0 2px 6px #0009}.keywordIcon.guard{background:#36536c}.keywordIcon.lethal{background:#6b2830}.keywordIcon.pierce{background:#674f24}.keywordIcon.haste{background:#793e24}.keywordIcon.unblockable{background:#51426f}.keywordIcon.cannotAttack{background:#484b50;color:#d5d7da}
+.card:has(.keywordRow){padding-bottom:43px}.keywordRow{position:absolute;left:4px;right:4px;bottom:24px;display:flex;flex-wrap:nowrap;max-width:none;gap:2px;overflow:hidden;z-index:5}.keywordIcon{flex:0 0 17px;width:17px;height:17px;display:block;line-height:0}.keywordIcon img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:5px 2px;color:#b7aa99;font-family:Georgia,"Yu Mincho",serif;font-size:12px;letter-spacing:.08em}
 .log{background:#0c1014d9;border:1px solid #4c4339;border-radius:8px;padding:8px 10px;font-size:12px;min-height:34px;margin:5px 0 7px;color:#ded4c6;text-align:center}
 .battleInfoRow{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:5px;align-items:center;margin:5px 0 7px}.battleInfoRow .log{min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.battleTools{display:flex;gap:5px}.battleToolBtn{position:relative;width:34px;height:34px;padding:0;border:1px solid #5d5245;border-radius:50%;background:#141a20;color:#dfd2c0;font-size:17px;font-weight:900;display:grid;place-items:center}.battleToolBtn:active{filter:brightness(1.25);transform:scale(.95)}.battleToolCount{position:absolute;right:-3px;top:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:9px;background:#d8b783;color:#1b140d;font-size:9px;line-height:16px;text-align:center}
@@ -437,7 +437,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=12">
+<link rel="stylesheet" href="parchment.css?v=13">
 </head>
 <body>
 
@@ -1549,21 +1549,22 @@ function hasKeyword(card,keyword,side){
   return false;
 }
 function keywordBadges(card,side){
-  var definitions=[
-    ['unblockable','防衛されない','<path d="M3 19C4 7 12 5 21 3c-1 5-3 8-7 9l4 1-5 3H8l3 2-8 3M3 21 15 9"/>'],
-    ['cannotAttack','攻撃不可','<circle cx="12" cy="12" r="10"/><path d="m5 5 14 14M8 16l8-8m-2 0h2v2"/>']
+  var rules=rulesFor(card),text=card.text||'',definitions=[
+    ['guard','守護','guardian.png',hasKeyword(card,'guard',side)],
+    ['lethal','殺傷','lethal.png',hasKeyword(card,'lethal',side)],
+    ['haste','猛襲','rush.png',hasKeyword(card,'haste',side)],
+    ['pierce','貫通','piercing.png',hasKeyword(card,'pierce',side)],
+    ['dive','潜水','dive.png',rules.dive!=null],
+    ['soul','魂響','soul-echo.png',/魂響/.test(text)],
+    ['revenge','報復','retaliation.png',rules.revenge!=null],
+    ['explore','探査','explore.png',/探査(?:[：:]\s*\d+)?/.test(text)],
+    ['discover','発見','discover.png',(rules.onDiscover||[]).length>0],
+    ['faith','信仰','faith.png',/信仰(?:[：:]\s*\d+)?/.test(text)],
+    ['unblockable','防衛されない','unblockable.png',hasKeyword(card,'unblockable',side)],
+    ['cannotAttack','攻撃不可','cannot-attack.png',hasKeyword(card,'cannotAttack',side)]
   ],html='';
-  for(var i=0;i<definitions.length;i++) if(hasKeyword(card,definitions[i][0],side)) html+='<span class="keywordIcon '+definitions[i][0]+'" role="img" title="'+definitions[i][1]+'" aria-label="'+definitions[i][1]+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+definitions[i][2]+'</svg></span>';
+  for(var i=0;i<definitions.length;i++) if(definitions[i][3]) html+='<span class="keywordIcon '+definitions[i][0]+'" title="'+definitions[i][1]+'"><img src="assets/icons/keywords/'+definitions[i][2]+'" width="32" height="32" alt="'+definitions[i][1]+'"></span>';
   return html?'<div class="keywordRow">'+html+'</div>':'';
-}
-function battlefieldKeywordEffects(card,side){
-  var html='';
-  if(hasKeyword(card,'guard',side)) html+='<span class="keywordAura keywordAuraGuard"></span><span class="keywordMoment keywordMomentGuard"></span>';
-  if(hasKeyword(card,'lethal',side)) html+='<span class="keywordAura keywordAuraLethal"></span><span class="keywordMoment keywordMomentLethal"></span>';
-  if(hasKeyword(card,'haste',side)) html+='<span class="keywordMoment keywordMomentHaste"></span>';
-  if(hasKeyword(card,'pierce',side)) html+='<span class="keywordMoment keywordMomentPierce"></span>';
-  if(rulesFor(card).dive!=null) html+='<span class="keywordMoment keywordMomentDive"></span>';
-  return html?'<span class="battlefieldKeywordFx" aria-hidden="true">'+html+'</span>':'';
 }
 function formatCardText(text){
   var classes={'守護':'guard','殺傷':'lethal','猛襲':'haste','貫通':'pierce','潜水':'dive','報復':'revenge','探査':'explore','発見':'discover','信仰':'faith','魂響':'soul','攻撃不可':'disabled'};
@@ -1748,7 +1749,7 @@ function renderBoard(side,rootId,asOpponent){
         card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
         card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml((u.legendary?'伝説 ／ ':'')+(u.species||u.color||''))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
           +'<div class="effect">'+formatCardText(u.text)+'</div>'
-          +battlefieldKeywordEffects(u,side)+keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
+          +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
         if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
         else attachCardHold(card,u,side===acting && humanTurn?function(){attack(side,index);}:null);
         slot.appendChild(card);
@@ -1862,7 +1863,7 @@ async function playSelectedCard(mode){
   }else{
     c.canAttack=c.type==='ユニット' && hasKeyword(c,'haste',side);
     placementBoard(side,c)[slot]=c;
-    logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render(); if(c.type==='ランドマーク')animateLandmark(side,slot,'appear');else animatePlacement(side,slot,c,mode); await checkedBattle(wait(240), battleGeneration);
+    logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render(); if(c.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot); await checkedBattle(wait(240), battleGeneration);
     await checkedBattle(triggerCard(c,'onPlay',side,slot,{}), battleGeneration);
     if(mode==='normal')await checkedBattle(triggerCard(c,'onHandPlay',side,slot,{}), battleGeneration);
     if(mode==='dive'){
@@ -2082,7 +2083,7 @@ async function deployFromZone(side,zone,action){
   var slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'を配置するレーンを選択',card.type==='ランドマーク'?'landmark':null,card), battleGeneration);
   if(slot==null) return null;
   var own=placementBoard(side,card),index=zone.indexOf(card);if(index<0 || own[slot]) return null;
-  zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animatePlacement(side,slot,card,'normal');await checkedBattle(wait(220), battleGeneration);
+  zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
   await checkedBattle(triggerCard(card,'onPlay',side,slot,{}), battleGeneration);
   return card;
 }
@@ -2189,11 +2190,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
     }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
       var discoveryBoard=placementBoard(side,sourceCard),discoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
-      if(discoverySlot!=null&&!discoveryBoard[discoverySlot]){discoveryBoard[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,discoverySlot,'appear');else animatePlacement(side,discoverySlot,sourceCard,'normal');await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,discoverySlot,{}), battleGeneration);}
+      if(discoverySlot!=null&&!discoveryBoard[discoverySlot]){discoveryBoard[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,discoverySlot,'appear');else animateSummon(side,discoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,discoverySlot,{}), battleGeneration);}
     }else if(a.type==='deployDiscoveredForCost' && context.discoveredCard===sourceCard){
       if(manaFor(side)>=a.cost){
         var paidDiscoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
-        if(paidDiscoverySlot!=null){spendMana(side,a.cost);placementBoard(side,sourceCard)[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=sourceCard.type==='ユニット'&&hasKeyword(sourceCard,'haste',side);context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,paidDiscoverySlot,'appear');else animatePlacement(side,paidDiscoverySlot,sourceCard,'normal');await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{}), battleGeneration);}
+        if(paidDiscoverySlot!=null){spendMana(side,a.cost);placementBoard(side,sourceCard)[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=sourceCard.type==='ユニット'&&hasKeyword(sourceCard,'haste',side);context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,paidDiscoverySlot,'appear');else animateSummon(side,paidDiscoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{}), battleGeneration);}
       }
     }else if(a.type==='deployDiveFromBottom'){
       var ownDeck=side==='player'?state.playerDeck:state.enemyDeck,start=Math.max(0,ownDeck.length-a.amount),bottomCards=ownDeck.splice(start),diveGrave=graveFor(side);
@@ -2300,12 +2301,6 @@ function boardCard(side,index){
 }
 function animateCard(side,index){var el=boardCard(side,index);pulseClass(el,'attacking',340);}
 function animateSummon(side,index){var el=boardCard(side,index);pulseClass(el,'summoning',el&&el.classList.contains('legendary')?680:380);}
-function animateKeywordEffect(side,index,keyword,duration){pulseClass(boardCard(side,index),'keywordFx'+keyword,duration);}
-function animatePlacement(side,index,card,mode){
-  animateSummon(side,index);
-  if(card&&card.canAttack&&hasKeyword(card,'haste',side))animateKeywordEffect(side,index,'Haste',440);
-  if(mode==='dive')animateKeywordEffect(side,index,'Dive',520);
-}
 function showDestroy(side,index){
   var el=boardCard(side,index); if(!el) return;
   var r=el.getBoundingClientRect(), ghost=el.cloneNode(true);
@@ -2373,7 +2368,7 @@ async function useRevengeCard(side,card){
     await checkedBattle(triggerCard(card,'onPlay',side,-1,{revenge:true}), battleGeneration);graveFor(side).push(card);
   }else{
     card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);placementBoard(side,card)[slot]=card;
-    logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animatePlacement(side,slot,card,'normal');await checkedBattle(wait(220), battleGeneration);
+    logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,slot,{revenge:true}), battleGeneration);
   }
   checkGame();render();
@@ -2433,13 +2428,10 @@ async function attack(side,i){
     var t=enemy[target];
     var aPower=a.power*damageMultiplierFor(side), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor(enemySide);
     var lethalA=hasKeyword(a,'lethal',side),lethalT=hasKeyword(t,'lethal',enemySide);
-    if(hasKeyword(t,'guard',enemySide))animateKeywordEffect(enemySide,target,'Guard',440);
-    if(lethalA&&Math.max(0,aPower-(rulesFor(t).damageReduction||0))>0)animateKeywordEffect(side,i,'Lethal',420);
-    if(lethalT&&Math.max(0,tPower-(rulesFor(a).damageReduction||0))>0)animateKeywordEffect(enemySide,target,'Lethal',420);
     await checkedBattle(damage(enemy,target,aPower,enemySide,lethalA), battleGeneration);
     if(own[i]) await checkedBattle(damage(own,i,tPower,side,lethalT), battleGeneration);
     var pierceDealt=null;
-    if(hasKeyword(a,'pierce',side) && aPower>tBasePower){animateKeywordEffect(side,i,'Pierce',520);pierceDealt=await checkedBattle(changeLife(enemySide,-(aPower-tBasePower),{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);}
+    if(hasKeyword(a,'pierce',side) && aPower>tBasePower){pierceDealt=await checkedBattle(changeLife(enemySide,-(aPower-tBasePower),{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);}
     if(enemy[target]) await checkedBattle(triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a}), battleGeneration);
     logMsg(a.name+' → '+t.name+(pierceDealt===0?' ／ 城壁が貫通攻撃を防いだ':''));
   }else{
@@ -3117,7 +3109,7 @@ async function executePlayAction(action){
   }else{
     card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);placementBoard(side,card)[action.lane]=card;
     logMsg(sideLabel(side)+'が'+card.name+(action.mode==='dive'?'を潜水配置':'をスロット'+(action.lane+1)+'に配置'));
-    render();if(card.type==='ランドマーク')animateLandmark(side,action.lane,'appear');else animatePlacement(side,action.lane,card,action.mode);await checkedBattle(wait(220), battleGeneration);
+    render();if(card.type==='ランドマーク')animateLandmark(side,action.lane,'appear');else animateSummon(side,action.lane);await checkedBattle(wait(220), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,action.lane,{}), battleGeneration);
     if(action.mode==='normal')await checkedBattle(triggerCard(card,'onHandPlay',side,action.lane,{}), battleGeneration);
     if(action.mode==='dive'){
@@ -3143,12 +3135,9 @@ async function executeAttackAction(action){
   if(targetIndex>=0&&enemy[targetIndex]){
     var target=enemy[targetIndex],attackPower=attacker.power*damageMultiplierFor(side),targetBasePower=target.power,targetPower=targetBasePower*damageMultiplierFor(enemySide);
     var attackerLethal=hasKeyword(attacker,'lethal',side),targetLethal=hasKeyword(target,'lethal',enemySide);
-    if(hasKeyword(target,'guard',enemySide))animateKeywordEffect(enemySide,targetIndex,'Guard',440);
-    if(attackerLethal&&Math.max(0,attackPower-(rulesFor(target).damageReduction||0))>0)animateKeywordEffect(side,lane,'Lethal',420);
-    if(targetLethal&&Math.max(0,targetPower-(rulesFor(attacker).damageReduction||0))>0)animateKeywordEffect(enemySide,targetIndex,'Lethal',420);
     await checkedBattle(damage(enemy,targetIndex,attackPower,enemySide,attackerLethal), battleGeneration);
     if(own[lane]===attacker)await checkedBattle(damage(own,lane,targetPower,side,targetLethal), battleGeneration);
-    if(hasKeyword(attacker,'pierce',side)&&attackPower>targetBasePower){animateKeywordEffect(side,lane,'Pierce',520);await checkedBattle(changeLife(enemySide,-(attackPower-targetBasePower),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id}), battleGeneration);}
+    if(hasKeyword(attacker,'pierce',side)&&attackPower>targetBasePower){await checkedBattle(changeLife(enemySide,-(attackPower-targetBasePower),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id}), battleGeneration);}
     if(enemy[targetIndex])await checkedBattle(triggerCard(enemy[targetIndex],'onDefended',enemySide,targetIndex,{attacker:attacker}), battleGeneration);
   }else{
     await checkedBattle(changeLife(enemySide,-(attacker.power*damageMultiplierFor(side)),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id}), battleGeneration);
