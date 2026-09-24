@@ -54,9 +54,34 @@
 :is(.power,.handPower,.catalogCardPower,.detailPower):not(.spellMark){font-family:Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif!important;display:grid;place-items:center;align-self:flex-end;flex-shrink:0;width:24px;height:24px;min-width:0;padding:0;border:1.5px solid #494035;border-radius:50%;line-height:1;text-align:center;font-variant-numeric:tabular-nums}
 :is(.power,.handPower):not(.spellMark)::before{content:none}
 .card .power{width:20px;height:20px;font-size:11px;bottom:2px;right:3px}
+.card .cardType,.card .cardName,.card .effect{position:relative;z-index:2}
+.battlefieldKeywordFx,.keywordAura,.keywordMoment{position:absolute;inset:0;display:block;pointer-events:none;overflow:hidden;border-radius:inherit}
+.battlefieldKeywordFx{z-index:1;contain:paint}
+.keywordAuraGuard{inset:4% 9% 5%;border:1px solid #c9faff99;border-radius:50%;opacity:.46;background:radial-gradient(ellipse at center,#dffcff0a 0 50%,#8cecff1c 68%,#dffcff42 82%,transparent 84%);box-shadow:inset 0 0 7px #a7f4ff55,0 0 4px #72dff077}
+.keywordAuraGuard::after{content:"";position:absolute;inset:8% 13%;border-radius:50%;border-left:1px solid #e8feff80;border-right:1px solid #7de7f255;opacity:.7}
+.keywordAuraLethal{inset:auto 2% 1%;height:46%;opacity:.48;background:radial-gradient(ellipse at 18% 100%,#130007 0 20%,transparent 52%),radial-gradient(ellipse at 72% 110%,#4b0015aa 0 14%,transparent 48%),linear-gradient(168deg,transparent 0 42%,#c3243b55 44% 46%,transparent 49%),linear-gradient(12deg,transparent 0 58%,#56101f55 61%,transparent 68%);box-shadow:inset 0 -8px 10px #120006aa}
+.keywordAuraLethal::after{content:"";position:absolute;left:10%;right:9%;bottom:7%;height:38%;background:radial-gradient(ellipse at center,#e1394d77 0 8%,#5e071b44 35%,transparent 72%);filter:blur(1px)}
+.keywordMoment{opacity:0}
+.card.keywordFxGuard .keywordMomentGuard{animation:keywordGuardReact .42s ease-out}
+.card.keywordFxLethal .keywordMomentLethal{animation:keywordLethalReact .4s ease-out}
+.card.keywordFxHaste .keywordMomentHaste{animation:keywordHasteFlash .42s ease-out}
+.card.keywordFxPierce .keywordMomentPierce{animation:keywordPierceImpact .5s ease-out}
+.card.keywordFxDive .keywordMomentDive{animation:keywordDiveArrival .5s ease-out}
+.keywordMomentGuard{inset:3% 8%;border:2px solid #efffff;border-radius:50%;background:radial-gradient(ellipse,#ffffff0d 35%,#9ff4ff99 72%,transparent 75%);box-shadow:inset 0 0 10px #bff9ff,0 0 8px #7de9f5}
+.keywordMomentLethal{background:linear-gradient(115deg,transparent 0 38%,#250008aa 39% 43%,#fff0f0 44%,#e0283d 46% 49%,transparent 50%),radial-gradient(ellipse at 50% 85%,#b3002d99,transparent 56%)}
+.keywordMomentHaste{background:linear-gradient(118deg,transparent 0 35%,#b9001e88 38%,#ff3148 43%,#fff 46%,#ff273f 49%,#7c0015aa 53%,transparent 57%)}
+.keywordMomentPierce{inset:9% 4%;background:radial-gradient(ellipse at 50% 52%,#fff3b4dd 0 7%,#9c6f2baa 18%,#3f2b15aa 37%,transparent 66%),repeating-linear-gradient(76deg,transparent 0 9%,#d1a24b55 10% 11%,transparent 12% 20%);box-shadow:inset 0 0 13px #2e1d0ddd}
+.keywordMomentPierce::after{content:"";position:absolute;left:8%;right:8%;bottom:8%;height:34%;background:radial-gradient(ellipse at center,#a9844d77 0 18%,transparent 68%);filter:blur(2px)}
+.keywordMomentDive{inset:35% 0 0;background:radial-gradient(circle at 22% 72%,transparent 0 3%,#c9ffffaa 4% 6%,transparent 7%),radial-gradient(circle at 76% 55%,transparent 0 4%,#baffff99 5% 7%,transparent 8%),repeating-radial-gradient(ellipse at 50% 100%,transparent 0 9%,#83f1ea66 11% 13%,transparent 15% 22%),linear-gradient(180deg,transparent,#159ea155 34%,#064f7399);backdrop-filter:blur(1px) hue-rotate(8deg)}
+@keyframes keywordGuardReact{0%{opacity:0;transform:scale(.76)}28%{opacity:1;transform:scale(1.03)}58%{opacity:.72;transform:scale(.97)}100%{opacity:0;transform:scale(1.08)}}
+@keyframes keywordLethalReact{0%{opacity:0;transform:scale(.88)}30%{opacity:.95;transform:scale(1)}64%{opacity:.66}100%{opacity:0;transform:scale(1.05)}}
+@keyframes keywordHasteFlash{0%{opacity:0;transform:translate(-18%,16%) scale(.8)}24%{opacity:1}62%{opacity:.78;transform:translate(7%,-7%) scale(1.07)}100%{opacity:0;transform:translate(16%,-16%) scale(1.12)}}
+@keyframes keywordPierceImpact{0%{opacity:0;transform:scale(.62)}25%{opacity:.95;transform:scale(1.08)}48%{opacity:.76;transform:scale(.96)}100%{opacity:0;transform:scale(1.15)}}
+@keyframes keywordDiveArrival{0%{opacity:0;transform:translateY(34%)}24%{opacity:.9}65%{opacity:.72;transform:translateY(-4%)}100%{opacity:0;transform:translateY(-12%)}}
 .detailPower:not(.spellMark){width:38px;height:38px;font-size:22px}
 .spellCastOverlay.leave{opacity:0;transition:opacity .15s ease-out}
 @media(prefers-reduced-motion:reduce){.spellCastOverlay.leave{transition:none}}
+@media(prefers-reduced-motion:reduce){.card.keywordFxGuard .keywordMomentGuard,.card.keywordFxLethal .keywordMomentLethal,.card.keywordFxHaste .keywordMomentHaste,.card.keywordFxPierce .keywordMomentPierce,.card.keywordFxDive .keywordMomentDive{animation-duration:.01ms}}
 
 @media (min-width:760px){
   html[data-view-mode="full"] .cardName{font-size:clamp(11px,.9vw,17px)}
