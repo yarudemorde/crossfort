@@ -1557,13 +1557,13 @@ function keywordBadges(card,side){
   return html?'<div class="keywordRow">'+html+'</div>':'';
 }
 function battlefieldKeywordEffects(card,side){
-  var html='<span class="battlefieldKeywordFx" aria-hidden="true">';
+  var html='';
   if(hasKeyword(card,'guard',side)) html+='<span class="keywordAura keywordAuraGuard"></span><span class="keywordMoment keywordMomentGuard"></span>';
   if(hasKeyword(card,'lethal',side)) html+='<span class="keywordAura keywordAuraLethal"></span><span class="keywordMoment keywordMomentLethal"></span>';
   if(hasKeyword(card,'haste',side)) html+='<span class="keywordMoment keywordMomentHaste"></span>';
   if(hasKeyword(card,'pierce',side)) html+='<span class="keywordMoment keywordMomentPierce"></span>';
   if(rulesFor(card).dive!=null) html+='<span class="keywordMoment keywordMomentDive"></span>';
-  return html+'</span>';
+  return html?'<span class="battlefieldKeywordFx" aria-hidden="true">'+html+'</span>':'';
 }
 function formatCardText(text){
   var classes={'守護':'guard','殺傷':'lethal','猛襲':'haste','貫通':'pierce','潜水':'dive','報復':'revenge','探査':'explore','発見':'discover','信仰':'faith','魂響':'soul','攻撃不可':'disabled'};

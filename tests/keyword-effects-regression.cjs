@@ -34,6 +34,7 @@ run("render=function(){};renderPicker=function(){};wait=async function(){};anima
   const combo={name:'複合キーワード検証',cost:1,power:2,type:'ユニット',text:'魂響',color:'黒',canAttack:true};
   const comboFx=ctx.battlefieldKeywordEffects(combo,'player');
   check(['keywordAuraGuard','keywordAuraLethal','keywordMomentHaste','keywordMomentPierce'].every(name=>comboFx.includes(name))&&!comboFx.includes('Soul'),'multiple keywords coexist while soul echo adds no visual layer');
+  check(ctx.battlefieldKeywordEffects({name:'通常ユニット',type:'ユニット',power:1,text:'',color:'白'},'player')==='','cards without visual keywords add no empty effect DOM');
   check((html.match(/battlefieldKeywordEffects\(/g)||[]).length===2,'battlefield effects are created only by their helper and renderBoard');
   const handSource=html.slice(html.indexOf('function renderHand'),html.indexOf("window.addEventListener('resize'"));
   const catalogSource=html.slice(html.indexOf('function renderCatalog'),html.indexOf('function showComingSoon'));
