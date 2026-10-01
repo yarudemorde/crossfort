@@ -2098,7 +2098,7 @@ async function returnDivedCard(side,slot,card){
   pulseClass(boardCard(side,slot),'divingOut',360);await checkedBattle(wait(330), battleGeneration);
   if(board[slot]===card){board[slot]=null;(side==='player'?state.playerDeck:state.enemyDeck).push(card);logMsg(card.name+'が山札の下へ潜水');render();}
 }
-async function conditionalEffectMatches(definition,side,slot){
+function conditionalEffectMatches(definition,side,slot){
   if(definition.relics!=null&&relicCount(side)<definition.relics)return false;
   if(definition.opposingLaneStatus&&!(slot>=0&&hasLaneStatus(otherSide(side),slot,definition.opposingLaneStatus)))return false;
   if(definition.ownDefenseState!=null&&!(slot>=0&&defenseFor(side)[slot]===definition.ownDefenseState))return false;
