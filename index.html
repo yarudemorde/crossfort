@@ -1532,7 +1532,7 @@ function laneStatesFor(side){
   while(state[key].length<5)state[key].push({});
   return state[key];
 }
-function applyLaneStatus(side,lane,status){
+function setLaneStatus(side,lane,status){
   if(lane<0||lane>=5||!status)return false;
   var laneState=laneStatesFor(side)[lane]||(laneStatesFor(side)[lane]={});
   if(!laneState.statuses)laneState.statuses={};
@@ -1548,7 +1548,33 @@ function clearLaneStatus(side,lane,status){
   if(!laneState||!laneState.statuses||!laneState.statuses[status])return false;
   delete laneState.statuses[status];return true;
 }
-// TODO(要確認): 炎上そのもののゲーム効果・解除条件。現時点では付与と参照だけを行う。
+async function applyBurning(side,lane){
+  const battleGeneration = state && state.generation;
+  if(lane<0||lane>=5)return false;
+  var unit=boardFor(side)[lane];
+  if(unit&&unit.type==='ユニット'){
+    clearLaneStatus(side,lane,'burning');
+    await checkedBattle(damage(boardFor(side),lane,1,side,false), battleGeneration);
+    return true;
+  }
+  return setLaneStatus(side,lane,'burning');
+}
+async function applyLaneStatus(side,lane,status){
+  if(status==='burning')return applyBurning(side,lane);
+  return setLaneStatus(side,lane,status);
+}
+async function resolveUnitEnteredSlot(side,lane,unit){
+  const battleGeneration = state && state.generation;
+  if(!unit||unit.type!=='ユニット'||boardFor(side)[lane]!==unit||!hasLaneStatus(side,lane,'burning'))return false;
+  clearLaneStatus(side,lane,'burning');
+  // TODO(要確認): 炎上ダメージと「配置」効果の解決順。暫定的に配置完了後、配置効果の前に炎上を解決する。
+  await checkedBattle(damage(boardFor(side),lane,1,side,false), battleGeneration);
+  return true;
+}
+async function resolveCardEnteredSlot(side,lane,card){
+  if(!card||card.type!=='ユニット')return false;
+  return resolveUnitEnteredSlot(side,lane,card);
+}
 function isDefenseBroken(side,lane){return lane>=0&&lane<5&&defenseFor(side)[lane]===2;}
 function countBrokenDefense(side){return defenseFor(side).filter(function(stage){return stage===2;}).length;}
 // TODO(要確認): シート上の「崩壊」は既存防衛線state=2（UI表記「突破」）と同義か。
@@ -1778,7 +1804,7 @@ function renderBoard(side,rootId,asOpponent){
       var isSelected=(side===acting && selectedCard && selectedCard.type==='ユニット' && state.selectedSlot===index);
       var targetable=!!(state.targetRequest && state.targetRequest.zone!=='landmark' && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
       var activeHand=handFor(acting),canSelect=(side===acting && humanTurn && !board[index] && state.selectedCard>=0 && activeHand[state.selectedCard] && activeHand[state.selectedCard].type==='ユニット');
-      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(hasLaneStatus(side,index,'burning')?' burningLane':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
+      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(!board[index]&&hasLaneStatus(side,index,'burning')?' burningLane':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
       var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
       if(targetable) slot.onclick=function(){ resolveTarget(side,index); };
       else if(canSelect) slot.onclick=function(){ selectSlot(index); };
@@ -1904,6 +1930,7 @@ async function playSelectedCard(mode){
     c.canAttack=c.type==='ユニット' && hasKeyword(c,'haste',side);
     placementBoard(side,c)[slot]=c;
     logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render(); if(c.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot); await checkedBattle(wait(240), battleGeneration);
+    await checkedBattle(resolveCardEnteredSlot(side,slot,c), battleGeneration);
     await checkedBattle(triggerCard(c,'onPlay',side,slot,{}), battleGeneration);
     if(mode==='normal')await checkedBattle(triggerCard(c,'onHandPlay',side,slot,{}), battleGeneration);
     if(mode==='dive'){
@@ -2130,6 +2157,7 @@ async function deployFromZone(side,zone,action){
   if(slot==null) return null;
   var own=placementBoard(side,card),index=zone.indexOf(card);if(index<0 || own[slot]) return null;
   zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
+  await checkedBattle(resolveCardEnteredSlot(side,slot,card), battleGeneration);
   await checkedBattle(triggerCard(card,'onPlay',side,slot,{}), battleGeneration);
   return card;
 }
@@ -2206,12 +2234,12 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
           if(pickedLane==null)break;laneTargets.push(pickedLane);
         }
       }
-      for(j=0;j<laneTargets.length;j++)applyLaneStatus(laneTargetSide,laneTargets[j],a.status);
+      for(j=0;j<laneTargets.length;j++)await checkedBattle(applyLaneStatus(laneTargetSide,laneTargets[j],a.status),battleGeneration);
       if(laneTargets.length)logMsg(laneTargets.map(function(lane){return '相手レーン'+(lane+1);}).join('・')+'に炎上を付与');
     }
     else if(a.type==='applyAdjacentLaneStatus'){
       var statusSide=context.destroyedSide,origin=context.destroyedLane;
-      if(statusSide&&(origin||origin===0))for(j=Math.max(0,origin-1);j<=Math.min(4,origin+1);j++)if(j!==origin)applyLaneStatus(statusSide,j,a.status);
+      if(statusSide&&(origin||origin===0))for(j=Math.max(0,origin-1);j<=Math.min(4,origin+1);j++)if(j!==origin)await checkedBattle(applyLaneStatus(statusSide,j,a.status),battleGeneration);
     }
     else if(a.type==='applyTemporaryRestriction'){
       var restrictionTargets=[];
@@ -2235,11 +2263,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     }
     else if(a.type==='createTokens'){
       var tokenColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor);
-      if(a.fillAll){for(j=0;j<own.length;j++) if(!own[j]){own[j]=makeToken(a.power,tokenColor);render();animateSummon(side,j);}}
+      if(a.fillAll){for(j=0;j<own.length;j++) if(!own[j]){var filledToken=makeToken(a.power,tokenColor);own[j]=filledToken;render();animateSummon(side,j);await checkedBattle(resolveCardEnteredSlot(side,j,filledToken),battleGeneration);}}
       else for(j=0;j<a.amount;j++){
         var tokenSlot=await checkedBattle(chooseOpenSlot(side,side,'トークンを配置する空きスロットをタップ'), battleGeneration);
         if(tokenSlot==null) break;
-        own[tokenSlot]=makeToken(a.power,tokenColor);render();animateSummon(side,tokenSlot);await checkedBattle(wait(180), battleGeneration);
+        var createdToken=makeToken(a.power,tokenColor);own[tokenSlot]=createdToken;render();animateSummon(side,tokenSlot);await checkedBattle(wait(180), battleGeneration);await checkedBattle(resolveCardEnteredSlot(side,tokenSlot,createdToken),battleGeneration);
       }
     }else if(a.type==='createTokenCardsInHand'){
       var generatedHand=handFor(side),generatedColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor),generatedCount=0;
@@ -2258,16 +2286,16 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(returnedSlots.length){context.returned=true;context.returnedSlots=returnedSlots;context.returnedCards=picked;logMsg(returnedSlots.length+'体を手札へ戻した');}
     }else if(a.type==='createTokensAtReturnedSlots'){
       var returnedTokenColor=sourceCard.color||(side==='player'?state.playerColor:state.enemyColor),slots=context.returnedSlots||[];
-      for(j=0;j<slots.length;j++) if(!own[slots[j]]){own[slots[j]]=makeToken(a.power,returnedTokenColor);render();animateSummon(side,slots[j]);await checkedBattle(wait(180), battleGeneration);}
+      for(j=0;j<slots.length;j++) if(!own[slots[j]]){var returnedToken=makeToken(a.power,returnedTokenColor);own[slots[j]]=returnedToken;render();animateSummon(side,slots[j]);await checkedBattle(wait(180), battleGeneration);await checkedBattle(resolveCardEnteredSlot(side,slots[j],returnedToken),battleGeneration);}
     }else if(a.type==='destroyRelicForToken'){
       var relicSlot=await checkedBattle(chooseRelicSlot(side,sourceCard,'破壊する聖遺物を選択'), battleGeneration);
       // TODO(要確認): 対応するユニット枠が埋まっている場合、空き枠へトークンを置く。全枠満杯なら生成しない。
-      if(relicSlot!=null){await checkedBattle(destroyLandmark(side,relicSlot), battleGeneration);var tokenSlot=own[relicSlot]?await checkedBattle(chooseOpenSlot(side,side,'トークンの配置先を選択'), battleGeneration):relicSlot;if(tokenSlot!=null&&!own[tokenSlot]){own[tokenSlot]=makeToken(a.power,sourceCard.color);render();animateSummon(side,tokenSlot);}}
+      if(relicSlot!=null){await checkedBattle(destroyLandmark(side,relicSlot), battleGeneration);var tokenSlot=own[relicSlot]?await checkedBattle(chooseOpenSlot(side,side,'トークンの配置先を選択'), battleGeneration):relicSlot;if(tokenSlot!=null&&!own[tokenSlot]){var relicToken=makeToken(a.power,sourceCard.color);own[tokenSlot]=relicToken;render();animateSummon(side,tokenSlot);await checkedBattle(resolveCardEnteredSlot(side,tokenSlot,relicToken),battleGeneration);}}
     }else if(a.type==='destroyAllRelicsForTokens'){
       // TODO(要確認): ユニット枠が埋まっているレーンの生成先は、空きユニット枠を先頭から探す。
       var relicSlots=[];for(j=0;j<5;j++) if(landmarkFor(side)[j] && (rulesFor(landmarkFor(side)[j]).tags||[]).indexOf('relic')>=0) relicSlots.push(j);
       for(j=0;j<relicSlots.length;j++) await checkedBattle(destroyLandmark(side,relicSlots[j]), battleGeneration);
-      for(j=0;j<relicSlots.length;j++){var relicSlot=relicSlots[j],tokenSlot=own[relicSlot]?firstEmpty(own):relicSlot;if(tokenSlot>=0&&!own[tokenSlot]){own[tokenSlot]=makeToken(a.power,sourceCard.color);render();animateSummon(side,tokenSlot);}}
+      for(j=0;j<relicSlots.length;j++){var relicSlot=relicSlots[j],tokenSlot=own[relicSlot]?firstEmpty(own):relicSlot;if(tokenSlot>=0&&!own[tokenSlot]){var allRelicToken=makeToken(a.power,sourceCard.color);own[tokenSlot]=allRelicToken;render();animateSummon(side,tokenSlot);await checkedBattle(resolveCardEnteredSlot(side,tokenSlot,allRelicToken),battleGeneration);}}
     }else if(a.type==='deployFromHand') await checkedBattle(deployFromZone(side,handFor(side),a), battleGeneration);
     else if(a.type==='deployFromDeck'){await checkedBattle(deployFromZone(side,deckFor(side),a), battleGeneration);shuffle(deckFor(side));}
     else if(a.type==='handToBottom'){
@@ -2296,11 +2324,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(claimHand.length<8){claimHand.push(sourceCard);context.claimed=true;}
     }else if(a.type==='deploySelf' && context.discoveredCard===sourceCard){
       var discoveryBoard=placementBoard(side,sourceCard),discoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
-      if(discoverySlot!=null&&!discoveryBoard[discoverySlot]){discoveryBoard[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,discoverySlot,'appear');else animateSummon(side,discoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,discoverySlot,{}), battleGeneration);}
+      if(discoverySlot!=null&&!discoveryBoard[discoverySlot]){discoveryBoard[discoverySlot]=sourceCard;sourceCard.canAttack=false;context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,discoverySlot,'appear');else animateSummon(side,discoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(resolveCardEnteredSlot(side,discoverySlot,sourceCard),battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,discoverySlot,{}), battleGeneration);}
     }else if(a.type==='deployDiscoveredForCost' && context.discoveredCard===sourceCard){
       if(manaFor(side)>=a.cost){
         var paidDiscoverySlot=await checkedBattle(chooseOpenSlot(side,side,'発見：配置する空きスロットをタップ',sourceCard.type==='ランドマーク'?'landmark':null,sourceCard), battleGeneration);
-        if(paidDiscoverySlot!=null){spendMana(side,a.cost);placementBoard(side,sourceCard)[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=sourceCard.type==='ユニット'&&hasKeyword(sourceCard,'haste',side);context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,paidDiscoverySlot,'appear');else animateSummon(side,paidDiscoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{}), battleGeneration);}
+        if(paidDiscoverySlot!=null){spendMana(side,a.cost);placementBoard(side,sourceCard)[paidDiscoverySlot]=sourceCard;sourceCard.canAttack=sourceCard.type==='ユニット'&&hasKeyword(sourceCard,'haste',side);context.claimed=true;render();if(sourceCard.type==='ランドマーク')animateLandmark(side,paidDiscoverySlot,'appear');else animateSummon(side,paidDiscoverySlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(resolveCardEnteredSlot(side,paidDiscoverySlot,sourceCard),battleGeneration);await checkedBattle(triggerCard(sourceCard,'onPlay',side,paidDiscoverySlot,{}), battleGeneration);}
       }
     }else if(a.type==='deployDiveFromBottom'){
       var ownDeck=side==='player'?state.playerDeck:state.enemyDeck,start=Math.max(0,ownDeck.length-a.amount),bottomCards=ownDeck.splice(start),diveGrave=graveFor(side);
@@ -2312,7 +2340,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
           var diveSlot=await checkedBattle(chooseOpenSlot(side,side,diveCard.name+'の配置先を選択'), battleGeneration);
           var diveGraveIndex=diveGrave.lastIndexOf(diveCard);
           if(diveSlot!=null&&!own[diveSlot]&&diveGraveIndex>=0){
-            diveGrave.splice(diveGraveIndex,1);own[diveSlot]=diveCard;diveCard.canAttack=false;render();animateSummon(side,diveSlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(triggerCard(diveCard,'onPlay',side,diveSlot,{}), battleGeneration);
+            diveGrave.splice(diveGraveIndex,1);own[diveSlot]=diveCard;diveCard.canAttack=false;render();animateSummon(side,diveSlot);await checkedBattle(wait(220), battleGeneration);await checkedBattle(resolveCardEnteredSlot(side,diveSlot,diveCard),battleGeneration);await checkedBattle(triggerCard(diveCard,'onPlay',side,diveSlot,{}), battleGeneration);
           }
         }
       }
@@ -2340,7 +2368,7 @@ async function resolveSoulEcho(side,sourceSlot,card){
   if(target==null) return;
   await checkedBattle(destroyLandmark(side,target), battleGeneration);
   var grave=graveFor(side), graveIndex=grave.lastIndexOf(card),board=placementBoard(side,card), slot=board[sourceSlot]?firstEmpty(board):sourceSlot;
-  if(slot>=0 && graveIndex>=0){grave.splice(graveIndex,1);board[slot]=card;card.canAttack=false;if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);}
+  if(slot>=0 && graveIndex>=0){grave.splice(graveIndex,1);board[slot]=card;card.canAttack=false;if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(resolveCardEnteredSlot(side,slot,card),battleGeneration);}
 }
 function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});}
 
@@ -2476,6 +2504,7 @@ async function useRevengeCard(side,card){
   }else{
     card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);placementBoard(side,card)[slot]=card;
     logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
+    await checkedBattle(resolveCardEnteredSlot(side,slot,card), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,slot,{revenge:true}), battleGeneration);
   }
   checkGame();render();
@@ -3228,6 +3257,7 @@ async function executePlayAction(action){
     card.canAttack=card.type==='ユニット'&&hasKeyword(card,'haste',side);placementBoard(side,card)[action.lane]=card;
     logMsg(sideLabel(side)+'が'+card.name+(action.mode==='dive'?'を潜水配置':'をスロット'+(action.lane+1)+'に配置'));
     render();if(card.type==='ランドマーク')animateLandmark(side,action.lane,'appear');else animateSummon(side,action.lane);await checkedBattle(wait(220), battleGeneration);
+    await checkedBattle(resolveCardEnteredSlot(side,action.lane,card), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,action.lane,{}), battleGeneration);
     if(action.mode==='normal')await checkedBattle(triggerCard(card,'onHandPlay',side,action.lane,{}), battleGeneration);
     if(action.mode==='dive'){
