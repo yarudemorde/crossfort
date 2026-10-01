@@ -133,7 +133,8 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   ctx.state.enemyBoard[2].power=10;await ctx.triggerCard(ctx.state.enemyBoard[2],'onTurnEnd','enemy',2,{});check(ctx.state.enemyBoard[2].power===7,'hero sets power to 7 instead of adding 7');
 
   reset();await ctx.applyLaneStatus('enemy',2,'burning');const burningSlots=[];node('enemyBoard').appendChild=slot=>burningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(burningSlots[2].className.includes('burningLane')&&!burningSlots[1].className.includes('burningLane'),'burning is visible on an empty slot without adding a new board row');
-  ctx.state.enemyBoard[2]=unit();const occupiedBurningSlots=[];node('enemyBoard').appendChild=slot=>occupiedBurningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(!occupiedBurningSlots[2].className.includes('burningLane'),'occupied slots never render a persistent burning marker');
+  reset();ctx.state.enemyBoard[2]=unit();await ctx.applyLaneStatus('enemy',2,'burning');const occupiedBurningSlots=[];node('enemyBoard').appendChild=slot=>occupiedBurningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(!occupiedBurningSlots[2].className.includes('burningLane'),'occupied slot damage clears burning before rendering');
+  check(html.includes("burningOverlay.className='burningSlotOverlay'")&&html.includes('assets/ui/battle/burning_slot.png')&&fs.existsSync(dir+'/assets/ui/battle/burning_slot.png'),'burning lane renderer uses the transparent slot overlay asset');
   check(html.includes('// TODO(要確認): 炎上ダメージと「配置」効果の解決順')&&html.includes('// TODO(要確認): シート上の「崩壊」'),'remaining undefined third-set ordering and naming rules stay explicit TODOs');
 
   console.log(`${count} phase2 and landmark regression assertions passed`);
