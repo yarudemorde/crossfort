@@ -11,7 +11,7 @@ vm.runInContext(script.slice(0,script.lastIndexOf('// Fit names to each existing
 const originalRender=ctx.render;
 function run(expr){return vm.runInContext(expr,ctx)}
 run('render=function(){};renderPicker=function(){};animateSummon=function(){};animateLandmark=function(){};showDestroy=function(){};showPowerGain=function(){};pulseClass=function(){};floatAt=function(){};logMsg=function(){};wait=async function(){};window.collapses=[];showLandmarkCollapse=function(side,index){window.collapses.push([side,index]);};');
-function reset(){run("state={generation:++battleGenerationCounter,playerBoard:Array(5).fill(null),enemyBoard:Array(5).fill(null),playerLandmarks:Array(5).fill(null),enemyLandmarks:Array(5).fill(null),playerDefense:Array(5).fill(0),enemyDefense:Array(5).fill(0),playerHand:[],enemyHand:[],playerDeck:[],enemyDeck:[],grave:[],enemyGrave:[],playerLife:20,enemyLife:20,mana:12,enemyMana:12,maxMana:12,enemyMaxMana:12,playerTurn:true,matchMode:'cpu',gameOver:false,animating:false,targetRequest:null,choiceRequest:null,turn:1};")}
+function reset(){run("state={generation:++battleGenerationCounter,playerBoard:Array(5).fill(null),enemyBoard:Array(5).fill(null),playerLandmarks:Array(5).fill(null),enemyLandmarks:Array(5).fill(null),playerDefense:Array(5).fill(0),enemyDefense:Array(5).fill(0),playerLaneStates:Array.from({length:5},()=>({})),enemyLaneStates:Array.from({length:5},()=>({})),playerHand:[],enemyHand:[],playerDeck:[],enemyDeck:[],grave:[],enemyGrave:[],playerLife:20,enemyLife:20,mana:12,enemyMana:12,maxMana:12,enemyMaxMana:12,playerTurn:true,firstSide:'player',matchMode:'cpu',gameOver:false,animating:false,targetRequest:null,choiceRequest:null,turn:1};")}
 function card(name){return run(`(function(){var t=cardTemplateByName(${JSON.stringify(name)});return cloneCard(t.row,t.color)})()`)}
 const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフォート城');
 (async()=>{
@@ -58,7 +58,7 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   check(html.includes('assets/landmark-collapse.png')&&fs.existsSync(dir+'/assets/landmark-collapse.png'),'transparent rubble art integrated');
   reset();ctx.state.animating=true;ctx.reportRuntimeError(new Error('sync test'));check(ctx.state.animating===false&&notices.at(-1).includes('sync test'),'synchronous exception unlocks and notifies');ctx.state.animating=true;handlers.unhandledrejection({reason:new Error('async test')});check(ctx.state.animating===false&&notices.at(-1).includes('async test'),'promise rejection unlocks and notifies');
   reset();node('gameScreen').style.display='none';node('startScreen').style.display='flex';node('startError').textContent='';const noticeCount=notices.length;ctx.window.onerror('Script error.','',0,0,null);check(node('startError').textContent===''&&notices.length===noticeCount,'opaque script error is not attributed to battle startup');ctx.window.onerror('real game error','https://yarudemorde.github.io/crossfort/',800,1,new Error('real game error'));check(node('startError').textContent.includes('real game error'),'same-origin game error still reports its location');
-  check(html.includes('data/cards.js?v=5')&&html.includes('data/card-rules.js?v=4'),'battle loads matching current card definitions and rules instead of stale cached files');
+  check(html.includes('data/cards.js?v=6')&&html.includes('data/card-rules.js?v=5'),'battle loads matching current card definitions and rules instead of stale cached files');
   ctx.startGame('緑','赤','cpu','','','player');await Promise.resolve();check(ctx.state.playerHand.length===5&&ctx.state.enemyHand.length===5&&node('gameScreen').style.display==='grid'&&node('startError').textContent.indexOf('開始エラー:')<0,'battle start opens a playable board and deals both starting hands');ctx.render=originalRender;ctx.render();check(node('playerLife').textContent===20&&node('enemyLife').textContent===20,'the real battle renderer completes after startup');ctx.render=()=>{};
   reset();ctx.state.matchMode='local';ctx.state.playerBoard[2]=unit();ctx.state.selectedCard=-1;await ctx.endTurn();check(ctx.state.playerTurn===false&&!ctx.state.animating,'local match advances to player two');
   reset();ctx.state.eventMode=true;ctx.state.playerHand.push(unit());ctx.state.selectedCard=0;ctx.state.selectedSlot=1;await ctx.playSelectedCard();await ctx.endTurn();check(ctx.state.playerBoard[1]?.type==='ユニット'&&ctx.state.playerTurn===false,'event battle can place a unit and end turn');
@@ -73,5 +73,53 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   check(ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'ユニット','C002')&&!ctx.matchesCardFilters(card('戦術的撤退'),'スペル','C001'),'editor filters use type and printed set ID');
   const liveSets=ctx.CARD_SETS;ctx.CARD_SETS=undefined;ctx.window.scrollTo=()=>{};ctx.showDeckEditor();check(node('deckEditorScreen').style.display==='block'&&node('editorSetFilter').innerHTML.includes('C001'),'new deck opens when an older cached cards.js lacks set metadata');
   found.length=0;run("catalogColor='青'");ctx.showCatalog();check(run("catalogColor==='緑'")&&found.length===ctx.CARD_POOLS['緑'].length&&html.includes('class="colorTab green selected"'),'first catalog opening starts with green cards visible despite stale card metadata');ctx.CARD_SETS=liveSets;
+
+  const registeredCards=Object.keys(ctx.CARD_POOLS).reduce((sum,color)=>sum+ctx.CARD_POOLS[color].length,0);
+  const thirdIds=Object.values(ctx.CARD_IDS).filter(id=>/^C003-/.test(id));
+  const thirdCards=Object.keys(ctx.CARD_POOLS).flatMap(color=>ctx.CARD_POOLS[color].map(row=>({color,row}))).filter(item=>/^C003-/.test(ctx.CARD_IDS[item.row[0]]||''));
+  check(registeredCards===111&&thirdIds.length===16&&ctx.CARD_SETS.C003==='第三弾 サントラーヴ蜂起','third set registers 16 cards and raises source total to 111');
+  check(thirdCards.filter(item=>item.color==='赤').length===8&&thirdCards.filter(item=>item.color==='白').length===8,'third set contains red 8 and white 8');
+  for(let n=1;n<=16;n++)check(thirdIds.includes('C003-'+String(n).padStart(3,'0')),'third set id '+n+' exists');
+
+  reset();check(ctx.applyLaneStatus('enemy',2,'burning')&&ctx.hasLaneStatus('enemy',2,'burning'),'burning can be applied to and read from an empty lane');
+  check(ctx.clearLaneStatus('enemy',2,'burning')&&!ctx.hasLaneStatus('enemy',2,'burning'),'lane status can be cleared without adding a burning side effect');
+  ctx.applyLaneStatus('enemy',0,'burning');check(!ctx.hasLaneStatus('enemy',4,'burning'),'lane statuses remain lane-local');
+
+  reset();ctx.state.playerLandmarks[2]=card('サントラーヴ・ベイ');await ctx.destroyLandmark('player',2);check(ctx.hasLaneStatus('enemy',2,'burning'),'Santorave Bay soul echo burns its opposing lane when destroyed');
+  reset();ctx.state.playerBoard[3]=card('革命の火付け役');await ctx.triggerCard(ctx.state.playerBoard[3],'onAttack','player',3,{});check(ctx.hasLaneStatus('enemy',3,'burning'),'firestarter attack burns its opposing lane');
+  reset();ctx.state.playerBoard[2]=card('火渡りの伝令');await ctx.triggerCard(ctx.state.playerBoard[2],'onPlay','player',2,{});check(!ctx.hasKeyword(ctx.state.playerBoard[2],'haste','player'),'messenger has no haste when opposing lane is not burning');
+  reset();ctx.applyLaneStatus('enemy',2,'burning');ctx.state.playerBoard[2]=card('火渡りの伝令');await ctx.triggerCard(ctx.state.playerBoard[2],'onPlay','player',2,{});check(ctx.hasKeyword(ctx.state.playerBoard[2],'haste','player')&&ctx.state.playerBoard[2].canAttack,'messenger gains immediate haste only from opposing burning');
+  reset();await ctx.triggerCard(card('「王旗を焼け」'),'onPlay','enemy',-1,{});check(ctx.state.playerLaneStates.filter((_,lane)=>ctx.hasLaneStatus('player',lane,'burning')).length===2,'Burn the Royal Standard burns two distinct lanes');
+
+  reset();ctx.state.playerBoard[2]=card('革命の炎アフマル');ctx.state.enemyBoard[2]=unit();await ctx.destroy('enemy',2);check(ctx.hasLaneStatus('enemy',1,'burning')&&ctx.hasLaneStatus('enemy',3,'burning')&&!ctx.hasLaneStatus('enemy',2,'burning'),'Afmar burns only adjacent enemy lanes on enemy unit destruction');
+  reset();ctx.state.playerBoard[2]=card('革命の炎アフマル');ctx.state.playerBoard[1]=unit();await ctx.destroy('player',1);check(!ctx.state.enemyLaneStates.some((_,lane)=>ctx.hasLaneStatus('enemy',lane,'burning')),'Afmar does not trigger from a friendly unit destruction');
+  reset();ctx.state.playerBoard[2]=card('革命の炎アフマル');ctx.state.enemyBoard[0]=unit();await ctx.destroy('enemy',0);check(ctx.hasLaneStatus('enemy',1,'burning')&&!ctx.hasLaneStatus('enemy',4,'burning'),'Afmar clamps adjacent lanes at the left edge');
+
+  reset();ctx.state.playerBoard[1]=card('サントラーヴ港の暴徒');await ctx.triggerCard(ctx.state.playerBoard[1],'onPlay','player',1,{});check(ctx.state.playerBoard[1].power===5,'mob keeps printed power without opposing burning');
+  ctx.applyLaneStatus('enemy',1,'burning');check(ctx.state.playerBoard[1].power===5,'mob does not gain power when burning is applied after placement');
+  reset();ctx.applyLaneStatus('enemy',1,'burning');ctx.state.playerBoard[1]=card('サントラーヴ港の暴徒');await ctx.triggerCard(ctx.state.playerBoard[1],'onPlay','player',1,{});check(ctx.state.playerBoard[1].power===8,'mob gains +3 only when placed opposite burning');
+
+  reset();ctx.state.playerBoard[2]=unit();ctx.state.playerLandmarks[2]=card('ヴァレリア宮殿');await ctx.triggerCard(ctx.state.playerLandmarks[2],'onPlay','player',2,{});check(ctx.state.playerBoard[2].power===3,'palace buffs the current same-lane unit on placement');
+  ctx.state.playerBoard[2]=card('宮殿の騎士');await ctx.triggerCard(ctx.state.playerLandmarks[2],'onTurnStart','player',2,{});check(ctx.state.playerBoard[2].power===3,'palace turn-start buff re-reads the current same-lane unit');
+  const otherLanePower=(ctx.state.playerBoard[1]=unit()).power;await ctx.triggerCard(ctx.state.playerLandmarks[2],'onTurnStart','player',2,{});check(ctx.state.playerBoard[1].power===otherLanePower,'palace never buffs another lane');
+
+  reset();ctx.state.playerDefense[1]=2;ctx.state.playerBoard[1]=card('宮殿の騎士');await ctx.triggerCard(ctx.state.playerBoard[1],'onPlay','player',1,{});check(ctx.state.playerBoard[1].power===4,'palace knight reads broken state only in its own lane on placement');
+  reset();ctx.state.playerDefense=[2,0,2,1,2];ctx.state.playerBoard[4]=card('国境砦の護衛');await ctx.triggerCard(ctx.state.playerBoard[4],'onPlay','player',4,{});check(ctx.state.playerBoard[4].power===6&&ctx.countBrokenDefense('player')===3,'border guard gains power equal to broken defense count');
+
+  reset();ctx.state.enemyBoard[0]=card('辺境伯ラスムッセン');ctx.state.playerBoard[3]=unit();await ctx.triggerCard(ctx.state.enemyBoard[0],'onPlay','enemy',0,{});check(ctx.hasKeyword(ctx.state.playerBoard[3],'cannotAttack','player')&&ctx.hasKeyword(ctx.state.playerBoard[3],'cannotDefend','player'),'Rasmussen applies both temporary restrictions');
+  await ctx.processTurnEvent('player','onTurnEnd');check(!ctx.hasKeyword(ctx.state.playerBoard[3],'cannotAttack','player')&&!ctx.hasKeyword(ctx.state.playerBoard[3],'cannotDefend','player'),'temporary restrictions expire at affected owner turn end');
+  reset();ctx.state.playerBoard[0]=card('辺境伯ラスムッセン');ctx.state.playerDefense[2]=1;await ctx.changeLife('player',-3,{sourceType:'combat',laneIndex:2});check(ctx.state.playerBoard[0].power===5,'Rasmussen gains +1 when a defense newly reaches broken state');
+  await ctx.changeLife('player',-3,{sourceType:'combat',laneIndex:2});check(ctx.state.playerBoard[0].power===5,'Rasmussen does not retrigger on an already broken lane');
+
+  reset();ctx.state.playerBoard[2]=card('オルセントの亡命貴族');ctx.state.enemyBoard[2]=unit();await ctx.triggerCard(ctx.state.playerBoard[2],'onPlay','player',2,{});check(ctx.hasKeyword(ctx.state.enemyBoard[2],'cannotAttack','enemy')&&!ctx.hasKeyword(ctx.state.enemyBoard[2],'cannotDefend','enemy'),'exiled noble prevents only opposing attack');
+  reset();ctx.state.enemyBoard[0]=card('境界国家の執行官');ctx.state.playerBoard[1]=unit();ctx.state.playerBoard[3]=unit();await ctx.triggerCard(ctx.state.enemyBoard[0],'onPlay','enemy',0,{});check([1,3].every(lane=>ctx.hasKeyword(ctx.state.playerBoard[lane],'cannotAttack','player')&&ctx.hasKeyword(ctx.state.playerBoard[lane],'cannotDefend','player')),'executor restricts two distinct enemy units');
+
+  reset();ctx.state.enemyBoard[2]=card('レーバンカブの英雄');ctx.state.playerBoard[4]=unit();await ctx.triggerCard(ctx.state.enemyBoard[2],'onAttack','enemy',2,{});check(ctx.state.playerBoard[2]&&ctx.state.playerBoard[4]===null,'hero moves a legal enemy to its opposing lane');
+  reset();ctx.state.enemyBoard[2]=card('レーバンカブの英雄');ctx.state.playerBoard[2]=unit();ctx.state.playerBoard[4]=unit();await ctx.triggerCard(ctx.state.enemyBoard[2],'onAttack','enemy',2,{});check(ctx.state.playerBoard[2]&&ctx.state.playerBoard[4],'hero does not overwrite an occupied destination');
+  ctx.state.enemyBoard[2].power=10;await ctx.triggerCard(ctx.state.enemyBoard[2],'onTurnEnd','enemy',2,{});check(ctx.state.enemyBoard[2].power===7,'hero sets power to 7 instead of adding 7');
+
+  reset();ctx.applyLaneStatus('enemy',2,'burning');const burningSlots=[];node('enemyBoard').appendChild=slot=>burningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(burningSlots[2].className.includes('burningLane')&&!burningSlots[1].className.includes('burningLane'),'burning is visible without adding a new board row');
+  check(html.includes('// TODO(要確認): 炎上そのもののゲーム効果・解除条件')&&html.includes('// TODO(要確認): シート上の「崩壊」'),'undefined third-set rules remain explicit TODOs');
+
   console.log(`${count} phase2 and landmark regression assertions passed`);
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -93,5 +93,21 @@ var CARD_RULES={
   'アウロニアの重装神官':{conditionalKeywords:[{keyword:'guard',relics:2}],conditionalOnPlay:[{relics:3,actions:[{type:'buffSelf',amount:2}]}]},
   'アウロニアの巫女':{onPlay:[{type:'deployFromGrave',landmarkOnly:true,maxCost:2,tag:'relic'}]},
   '女教皇アウローン':{conditionalKeywords:[{keyword:'unblockable',relics:3}],onDestroyed:[{type:'soulEcho'}]},
-  '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]}
+  '黄金文明の再興':{onPlay:[{type:'destroyAllRelicsForTokens',power:5}]},
+  'サントラーヴ・ベイ':{onDestroyed:[{type:'applyLaneStatus',target:'enemyFront',status:'burning'}]},
+  '革命の火付け役':{onAttack:[{type:'applyLaneStatus',target:'enemyFront',status:'burning'}]},
+  '火渡りの伝令':{conditionalOnPlay:[{opposingLaneStatus:'burning',actions:[{type:'grantKeyword',keyword:'haste'}]}]},
+  'ルーカイムの蜂起兵':{onPlay:[{type:'applyLaneStatus',target:'enemyLanes',status:'burning',amount:1}]},
+  '「王旗を焼け」':{onPlay:[{type:'applyLaneStatus',target:'enemyLanes',status:'burning',amount:2}]},
+  '革命の炎アフマル':{onPlay:[{type:'applyLaneStatus',target:'enemyLanes',status:'burning',amount:1}],onEnemyDestroyed:[{type:'applyAdjacentLaneStatus',target:'destroyedSide',status:'burning'}]},
+  'サントラーヴ港の暴徒':{keywords:['pierce'],conditionalOnPlay:[{opposingLaneStatus:'burning',actions:[{type:'buffSelf',amount:3}]}]},
+  'リュゼナールの破城戦車':{keywords:['haste']},
+  'ヴァレリア宮殿':{onPlay:[{type:'buffSameLaneUnit',amount:1}],onTurnStart:[{type:'buffSameLaneUnit',amount:1}]},
+  '宮殿の騎士':{conditionalOnPlay:[{ownDefenseState:2,actions:[{type:'buffSelf',amount:2}]}]},
+  '辺境伯ラスムッセン':{onPlay:[{type:'applyTemporaryRestriction',target:'enemyUnits',amount:1,cannotAttack:true,cannotDefend:true,expiresOn:'onTurnEnd'}],onDefenseBroken:[{type:'buffSelf',amount:1}]},
+  'ヴァレリアの衛兵':{conditionalOnPlay:[{ownDefenseState:2,actions:[{type:'buffSelf',amount:2}]}]},
+  'オルセントの亡命貴族':{onPlay:[{type:'applyTemporaryRestriction',target:'opposing',amount:1,cannotAttack:true,expiresOn:'onTurnEnd'}]},
+  '国境砦の護衛':{keywords:['guard'],onPlay:[{type:'buffSelfPerBrokenDefense',amount:1}]},
+  '境界国家の執行官':{onPlay:[{type:'applyTemporaryRestriction',target:'enemyUnits',amount:2,cannotAttack:true,cannotDefend:true,expiresOn:'onTurnEnd'}]},
+  'レーバンカブの英雄':{onAttack:[{type:'moveEnemyUnitToLane',target:'movableEnemyUnit'}],onTurnEnd:[{type:'setSelfPower',amount:7}]}
 };

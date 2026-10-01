@@ -58,5 +58,5 @@ const detailSource=html.slice(html.indexOf('function showCardDetail'),html.index
 check(boardSource.includes('keywordBadges(u,side)'),'battlefield cards use the restored icon renderer');
 check(!handSource.includes('keywordBadges')&&!catalogSource.includes('keywordBadges')&&!detailSource.includes('keywordBadges'),'hand, catalog, deck editor, and enlarged detail preserve their existing text-only presentation');
 check(html.includes('parchment.css?v=14'),'clients receive the restored icon stylesheet without stale cache reuse');
-check(!/(炎上|burning\.png|burn-icon)/.test(html+css),'unimplemented third-set keywords were not added');
+check(!/(burning\.png|burn-icon)/.test(html+css)&&html.includes('burningLane'),'third-set burning uses the compact lane-state marker without adding a keyword image asset');
 console.log(`${checks} restored HTML/CSS keyword-icon assertions passed`);
