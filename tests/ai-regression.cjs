@@ -72,8 +72,10 @@ check(leaderChosenFirst&&leaderCombo>leaderBase+ctx.AI_WEIGHTS.comboOrder,'Shatu
 
 reset();
 const vanbietta=card('龍皇帝ヴァンビエッタⅢ'),dragon=card('起源の龍モルディヤルデ');ctx.state.enemyHand=[vanbietta,dragon];ctx.state.enemyMana=6;
+check(!ctx.getPlayableActions('enemy').some(action=>action.card===vanbietta),'Vanbietta is no longer playable with six resources');
+ctx.state.enemyMana=vanbietta.cost;
 const vanbiettaCombo=ctx.getPlayableActions('enemy').find(action=>action.card===vanbietta&&action.lane===0).score;
-reset();const vanbiettaSolo=card('龍皇帝ヴァンビエッタⅢ');ctx.state.enemyHand=[vanbiettaSolo];ctx.state.enemyMana=6;
+reset();const vanbiettaSolo=card('龍皇帝ヴァンビエッタⅢ');ctx.state.enemyHand=[vanbiettaSolo];ctx.state.enemyMana=vanbiettaSolo.cost;
 const vanbiettaBase=ctx.getPlayableActions('enemy').find(action=>action.card===vanbiettaSolo&&action.lane===0).score;
 check(vanbiettaCombo>vanbiettaBase+10,'Vanbietta values a free high-value dragon deployment');
 
