@@ -15,6 +15,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100%;}
 button{font:inherit;touch-action:manipulation}
+/* Battle cards are app controls: prevent iOS/Android long-press text selection/callout. */
+#gameScreen,.detailOverlay{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #startScreen{min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px 34px;display:none;align-items:flex-start;justify-content:center;background:radial-gradient(circle at 50% 15%,#293039 0,transparent 34%),linear-gradient(180deg,#11161c,#080b0f 72%)}
 .startCard{width:min(680px,100%);margin:auto 0;background:linear-gradient(165deg,#171c22ee,#0b0e12f5);border:1px solid #75644f;border-radius:15px;padding:18px;box-shadow:inset 0 1px #ffffff0b,0 24px 70px #000a;position:relative}.startCard::before{content:"";position:absolute;inset:6px;border:1px solid #d7b88625;border-radius:10px;pointer-events:none}
 .logo{font-family:Georgia,"Yu Mincho",serif;font-size:31px;font-weight:700;letter-spacing:.12em;color:var(--gold2);text-align:center;text-shadow:0 2px 16px #d7aa6550}
@@ -1914,7 +1916,7 @@ function renderHand(){
       d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardFaceMeta(c))+'</div>'
         +'<div class="handText">'+formatCardText(c.text)+'</div>'
         +'<div class="handPower'+(c.type!=='ユニット'?' spellMark':'')+'" aria-label="'+(c.type==='ユニット'?'パワー '+c.power:c.type)+'">'+(c.type==='ユニット'?c.power:'✦')+'</div>';
-      d.onclick=function(){ selectCard(index); };
+      attachCardHold(d,c,function(){ selectCard(index); });
       d.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){e.preventDefault();selectCard(index);} };
       root.appendChild(d);
     })(i);
