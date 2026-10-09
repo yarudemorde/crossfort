@@ -2,8 +2,8 @@
 // Load after cards.js and before the game script. See data/README.md.
 var CARD_RULES={
   '【生と死の月】へヴィスロム':{exclusiveSpecies:'月神',onPlay:[{type:'destroyAndRedeployOther'}]},
-  '【闘争の月】ムイダス':{exclusiveSpecies:'月神',combatDamageImmune:true,maxAttacksPerTurn:2},
-  '【豊穣の月】アベルティマ':{exclusiveSpecies:'月神',onFriendlyDestroyed:[{type:'buffDeckUnitsPermanently',amount:1,otherUnitDestroyed:true}]},
+  '【闘争の月】ムレブス':{exclusiveSpecies:'月神',combatDamageImmune:true,maxAttacksPerTurn:2},
+  '【豊穣の月】アヴリス':{exclusiveSpecies:'月神',onFriendlyDestroyed:[{type:'buffDeckUnitsPermanently',amount:1,otherUnitDestroyed:true}]},
   '原始的な投槍':{revenge:1,onPlay:[{type:'damageUnit',target:'enemyUnit',amount:1}]},
   '群れ呼び蜥蜴':{onPlay:[{type:'createTokens',amount:1,power:1}]},
   '沼潜みの射手':{onPlay:[{type:'damageUnit',target:'opposing',amount:1}]},

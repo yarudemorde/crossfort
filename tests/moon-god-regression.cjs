@@ -26,9 +26,16 @@ function run(code){return vm.runInContext(code,ctx)}
 function unit(name='クロスフォート兵'){return run(`(function(){var t=cardTemplateByName(${JSON.stringify(name)});return cloneCard(t.row,t.color)})()`)}
 function reset(){run("state={generation:++battleGenerationCounter,turn:1,firstSide:'player',playerTurn:true,matchMode:'cpu',playerLife:20,enemyLife:20,mana:10,enemyMana:10,maxMana:10,enemyMaxMana:10,playerBoard:Array(5).fill(null),enemyBoard:Array(5).fill(null),playerLandmarks:Array(5).fill(null),enemyLandmarks:Array(5).fill(null),playerDefense:Array(5).fill(0),enemyDefense:Array(5).fill(0),playerHand:[],enemyHand:[],playerDeck:[],enemyDeck:[],grave:[],enemyGrave:[],battleHistory:[],selectedCard:-1,selectedSlot:-1,gameOver:false,animating:false,targetRequest:null,choiceRequest:null,extraTurns:{player:0,enemy:0}}")}
 run('render=function(){};renderPicker=function(){};wait=async function(){};animateCard=function(){};animateSummon=function(){};animateLandmark=function(){};pulseClass=function(){};floatAt=function(){};showDestroy=function(){};showLandmarkCollapse=function(){}');
-const H='【生と死の月】へヴィスロム',M='【闘争の月】ムイダス',A='【豊穣の月】アベルティマ';
+const H='【生と死の月】へヴィスロム',M='【闘争の月】ムレブス',A='【豊穣の月】アヴリス';
 (async()=>{
   let checks=0;function check(value,label){assert.ok(value,label);checks++}
+  for(const [oldName,newName] of [['【闘争の月】ムイダス',M],['【豊穣の月】アベルティマ',A]]){
+    check(unit(oldName).name===newName,'legacy saved deck name resolves '+oldName);
+    const legacy={name:'Legacy Moon Gods',colors:['黒'],cards:{[oldName]:4,'白龍エルレハイヌ':4,'終末の亀裂 ダルディエク':4,'亜龍イザルクリューネ':4,'起源の龍モルディヤルデ':4}};
+    const payload=JSON.parse(ctx.deckCodeDecodeText(ctx.createDeckCode(legacy).slice(5)));
+    check(payload.d.some(([id,count])=>id===unit(newName).id&&count===4),'legacy deck export retains stable moon god ID');
+  }
+  check(unit('強襲の指揮官').power===2,'commander power follows Cards sheet');
   for(const [i,name] of [H,M,A].entries()){
     const c=unit(name);check(c.id==='C002-0'+(41+i)&&c.species==='月神'&&c.color==='黒'&&!c.legendary,'exact moon god metadata '+name);
     check(c.cost===[5,7,6][i]&&c.power===[3,5,4][i]&&ctx.cardTypeLine(c).includes('月神'),'printed values and UI species '+name);
