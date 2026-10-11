@@ -1717,7 +1717,7 @@ var KEYWORD_GUIDE=[
   {name:'探査',pattern:/探査(?:[：:]\s*\d+)?/,description:'山札の下から表記枚数を確認し、発見できるカードを選びます。'},
   {name:'発見',pattern:/発見/,description:'探査で公開された時に選択して使用できる効果です。'},
   {name:'信仰',pattern:/信仰(?:[：:]\s*\d+)?/,description:'自分の聖遺物が表記枚数以上ある時に有効になります。'},
-  {name:'魂響',pattern:/魂響/,description:'破壊された時、聖遺物を破壊して墓地から復帰します。'}
+  {name:'魂響',pattern:/魂響/,description:'このカードが破壊された時に発動する効果です。具体的な効果はカードの効果文に従います。'}
 ];
 function cardKeywordGuide(card,badges){
   var source=(card.text||'')+' '+(badges||[]).join(' '),html='';
