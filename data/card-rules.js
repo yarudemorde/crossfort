@@ -1,6 +1,15 @@
 // Declarative per-card effects. Shared effect execution stays in index.html.
 // Load after cards.js and before the game script. See data/README.md.
 var CARD_RULES={
+  '禁書の一頁':{onPlay:[{type:'draw',amount:1}]},
+  '世界書庫の研究者':{onFriendlySpell:[{type:'buffSelf',amount:1}]},
+  '艦砲斉射':{onHandFriendlySpell:[{type:'increaseSpellDamage',amount:1}],onPlay:[{type:'damageUnit',target:'enemyUnit',amount:2}]},
+  'フィエンデン世界書庫':{onTurnStart:[{type:'recoverGrave',spellOnly:true}]},
+  '港湾都市の夜警':{onPlay:[{type:'selectSpellFromDeckTop',amount:3}]},
+  '万旗の提督オストロイ':{onFriendlySpell:[{type:'draw',amount:1,spellOrdinal:1},{type:'buffSelf',amount:1,spellOrdinal:2},{type:'damageAllEnemies',amount:1,spellOrdinal:3},{type:'damageLife',target:'enemy',amount:1,spellOrdinal:3}]},
+  '禁書【第四章】':{onPlay:[{type:'buffUnitByGraveSpells',target:'allyUnit'},{type:'shuffleGraveSpellsIntoDeck'}]},
+  '航路の開拓':{onHandFriendlySpell:[{type:'reduceHandCost',amount:1}],onPlay:[{type:'draw',amount:2}]},
+  '【狩猟の月】オイタネヴ':{exclusiveSpecies:'月神',exclusiveIncludesLandmarks:true,keywords:['haste'],onHandFriendlyAttack:[{type:'buffHandPower',amount:1}]},
   '【生と死の月】へヴィスロム':{exclusiveSpecies:'月神',onPlay:[{type:'destroyAndRedeployOther'}]},
   '【闘争の月】ムレブス':{exclusiveSpecies:'月神',combatDamageImmune:true,maxAttacksPerTurn:2},
   '【豊穣の月】アヴリス':{exclusiveSpecies:'月神',onFriendlyDestroyed:[{type:'buffDeckUnitsPermanently',amount:1,otherUnitDestroyed:true}]},
@@ -114,3 +123,4 @@ var CARD_RULES={
   '境界国家の執行官':{onPlay:[{type:'applyTemporaryRestriction',target:'enemyUnits',amount:2,cannotAttack:true,cannotDefend:true,expiresOn:'onTurnEnd'}]},
   'レーバンカブの英雄':{onAttack:[{type:'moveEnemyUnitToLane',target:'movableEnemyUnit'}],onTurnEnd:[{type:'setSelfPower',amount:7}]}
 };
+
