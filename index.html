@@ -1677,9 +1677,17 @@ function formatCardText(text){
   return escapeHtml(text||'').replace(/\r\n?/g,'\n').replace(/\n/g,'<br>').replace(/潜水(?:[：:]\s*\d+)?|報復(?:[：:]\s*\d+)?|探査(?:[：:]\s*\d+)?|信仰(?:[：:]\s*\d+)?|守護|殺傷|猛襲|貫通|発見|魂響|攻撃不可/g,function(keyword){var base=keyword.replace(/[：:].*$/,'');return '<span class="keywordText keyword-'+classes[base]+'">'+keyword+'</span>';});
 }
 function cardEffectText(card){
-  var text=card.text||'';
-  if(card.spellDamageBonus)text+='\n現在：与えるダメージ +'+card.spellDamageBonus;
-  if(card.handCostReduction)text+='\n現在：コスト -'+card.handCostReduction;
+  var text=card.text||'',rules=rulesFor(card),handActions=[];
+  Object.keys(rules).forEach(function(event){
+    if(/^onHand/.test(event)&&Array.isArray(rules[event]))handActions=handActions.concat(rules[event]);
+  });
+  var inHand=!!(state && (handFor('player').indexOf(card)>=0 || handFor('enemy').indexOf(card)>=0));
+  if(handActions.some(function(a){return a.type==='increaseSpellDamage';}) && (inHand || card.spellDamageBonus)){
+    var damageAction=(rules.onPlay||[]).find(function(a){return a.type==='damageUnit'||a.type==='damageLife'||a.type==='damageAllEnemies';});
+    if(damageAction)text+='\n現在'+((Number(damageAction.amount)||0)+(card.spellDamageBonus||0))+'ダメージ';
+  }
+  if(inHand && handActions.some(function(a){return a.type==='reduceHandCost';}))text+='\n現在のコスト：'+Math.max(0,card.cost-(card.handCostReduction||0));
+  if(inHand && handActions.some(function(a){return a.type==='buffHandPower';}))text+='\n現在のパワー：'+card.power;
   return text;
 }
 function damageMultiplierFor(side){
