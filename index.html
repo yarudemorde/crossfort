@@ -442,6 +442,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
 <link rel="stylesheet" href="parchment.css?v=14">
+<link rel="stylesheet" href="season-result.css">
 </head>
 <body>
 
@@ -522,19 +523,19 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
   </div>
 </section>
 
-<section class="eventScreen" id="seasonOutcomeScreen">
-  <div class="eventShell">
-    <div class="eventOutcome" id="eventOutcomePanel">
-      <div class="outcomeCopy">
-        <div class="outcomeKicker" id="eventOutcomeKicker">SEASON 1 CLEAR</div>
-        <h1 class="outcomeTitle" id="eventOutcomeTitle">暁の要塞</h1>
-        <p class="outcomeText" id="eventOutcomeText"></p>
-        <button class="eventPrimary" id="eventOutcomePrimary" onclick="beginSeason1()">再挑戦</button>
-        <button class="eventSecondary" onclick="showHome()">ホームへ戻る</button>
-      </div>
-    </div>
+<section class="eventScreen" id="seasonOutcomeScreen" aria-label="シーズン戦績">
+  <div class="eventOutcome" id="eventOutcomePanel">
+    <header class="resultHeader">CROSSFORT<small>SEASON 01 — 暁の要塞</small><h1 id="eventOutcomeKicker"></h1></header>
+    <div class="resultScore"><small>TOTAL SCORE</small><strong id="seasonTotalScore">0</strong><small>PTS</small></div>
+    <div id="seasonRank" class="resultRank"></div>
+    <div id="seasonBattleScores" class="resultBattles"></div>
+    <div class="resultFire" aria-hidden="true"><div class="fireGlow"></div><div class="fireLogs"></div><div class="fireFlame"></div><i></i><i></i></div>
+    <p id="eventOutcomeText" class="resultMessage"></p>
+    <small id="seasonBestScore" class="resultBest"></small>
+    <nav class="resultActions"><button onclick="openSeasonDetails(0)">戦績詳細</button><button id="eventOutcomePrimary" onclick="beginSeason1()">もう一度挑戦</button><button onclick="showHome()">ホームへ戻る</button></nav>
   </div>
 </section>
+<dialog id="seasonDetails" class="seasonDetails" aria-label="戦績詳細"><button class="detailsClose" onclick="closeSeasonDetails()">閉じる ×</button><h2>戦績詳細</h2><div id="seasonDetailTabs" role="tablist"></div><div id="seasonDetailContent"></div></dialog>
 
 <section id="deckLibraryScreen">
   <div class="deckManagerShell">
@@ -812,6 +813,49 @@ var PLAYER_TITLES=[
 ];
 var SEASON1_KEY='crossfort_season1_v1';
 var eventSeason1=loadSeason1State(),eventDeckDraft='';
+// Score measurement is observational: never mutate combat values or card identity.
+var SEASON1_SCORE_KEY='crossfort_season1_scores_v1';
+var SEASON1_SCORE_RULES={victory:1000,speedBase:1200,speedPerTurn:100,speedCap:1000,lifeCap:20,lifeRate:30,damageCap:500,damageRate:10,tacticalCap:500,kill:40,landmark:60,breach:50,survivor:20,perfect:300,clear:2000};
+var SEASON1_RANKS=[{rank:'S',min:11000,title:'暁の英雄'},{rank:'A',min:9000,title:'王都の守護者'},{rank:'B',min:7000,title:'歴戦の騎士'},{rank:'C',min:4500,title:'生還者'},{rank:'D',min:0,title:'駆け出しの兵士'}];
+var seasonScores=loadSeasonScores(),seasonCountFrame=0,seasonAnimatedRuns=new Set();
+function loadSeasonScores(){
+  var fallback={version:1,attempts:0,clears:0,best:null,last:null,run:null,history:[]};
+  try{var raw=JSON.parse(localStorage.getItem(SEASON1_SCORE_KEY)||'null');if(raw&&raw.version===1){Object.keys(fallback).forEach(function(k){if(raw[k]!=null)fallback[k]=raw[k];});}}catch(e){}
+  if(!Array.isArray(fallback.history))fallback.history=[];
+  return fallback;
+}
+function persistSeasonScores(){try{localStorage.setItem(SEASON1_SCORE_KEY,JSON.stringify(seasonScores));return true;}catch(e){return false;}}
+function newBattleStats(life,first){return {playerTurns:first?1:0,startLife:life,remainingLife:life,unitDamage:0,enemyUnitKills:0,enemyLandmarkKills:0,breachedLanes:[],lifeDamageTaken:0,survivingUnits:0,perfectVictory:false,killedUnits:new WeakSet(),killedLandmarks:new WeakSet(),finalized:false};}
+function activeBattleStats(){return state&&state.eventMode&&state.battleStats&&!state.battleStats.finalized;}
+function isPlayerUnitSource(source){return source&&source.sourceSide==='player'&&source.sourceCard&&source.sourceCard.type==='ユニット';}
+function recordSeasonDestruction(side,card,kind){
+  if(side!=='enemy'||!activeBattleStats())return;
+  var stats=state.battleStats,set=kind==='unit'?stats.killedUnits:stats.killedLandmarks;
+  if(set.has(card))return;set.add(card);
+  if(kind==='unit'&&card.type==='ユニット')stats.enemyUnitKills++;else if(kind==='landmark')stats.enemyLandmarkKills++;
+}
+function calculateSeasonBattle(stats,win){
+  var r=SEASON1_SCORE_RULES,n=function(v){return Math.max(0,Number(v)||0);};
+  var parts={victory:win?r.victory:0,speed:win?Math.max(0,Math.min(r.speedCap,r.speedBase-n(stats.playerTurns)*r.speedPerTurn)):0,life:win?Math.min(r.lifeCap,n(stats.remainingLife))*r.lifeRate:0,damage:Math.min(r.damageCap,n(stats.unitDamage)*r.damageRate),tactical:Math.min(r.tacticalCap,n(stats.enemyUnitKills)*r.kill+n(stats.enemyLandmarkKills)*r.landmark+new Set(stats.breachedLanes||[]).size*r.breach+(win?n(stats.survivingUnits)*r.survivor:0)),perfect:win&&n(stats.lifeDamageTaken)===0?r.perfect:0};
+  return {parts:parts,total:Object.values(parts).reduce(function(a,b){return a+b;},0)};
+}
+function recordSeasonBattle(win,stage){
+  if(!activeBattleStats())return;
+  var stats=state.battleStats;stats.remainingLife=Math.max(0,state.playerLife);stats.survivingUnits=state.playerBoard.filter(function(c){return c&&c.type==='ユニット';}).length;stats.perfectVictory=win&&stats.lifeDamageTaken===0;stats.finalized=true;
+  var saved={};Object.keys(stats).forEach(function(k){if(k!=='killedUnits'&&k!=='killedLandmarks')saved[k]=stats[k];});
+  if(!seasonScores.run){seasonScores.run={id:Date.now()+'-legacy',battles:[],deck:getSavedDeck(eventSeason1.selectedDeckId)||null,complete:false,legacy:true};seasonScores.attempts++;}
+  seasonScores.run.battles[stage-1]={stage:stage,win:win,stats:saved,score:calculateSeasonBattle(saved,win)};seasonScores.run.total=seasonScores.run.battles.reduce(function(sum,b){return sum+(b?b.score.total:0);},0);persistSeasonScores();
+}
+function finalizeSeasonScore(clear){
+  var run=seasonScores.run;if(!run||run.complete)return;
+  run.complete=true;run.clear=clear;run.clearBonus=clear?SEASON1_SCORE_RULES.clear:0;run.total=run.battles.reduce(function(sum,b){return sum+(b?b.score.total:0);},run.clearBonus);run.rank=clear?SEASON1_RANKS.find(function(r){return run.total>=r.min;}):null;run.finishedAt=new Date().toISOString();
+  // A legacy in-progress save has no retroactive statistics; show only measured battles.
+  run.legacy=run.legacy||run.battles.filter(Boolean).length<(clear?3:eventSeason1.currentStage);
+  seasonScores.last=JSON.parse(JSON.stringify(run));seasonScores.history.push(seasonScores.last);
+  if(clear){seasonScores.clears++;if(!seasonScores.best||run.total>seasonScores.best.total)seasonScores.best=JSON.parse(JSON.stringify(run));}
+  persistSeasonScores();
+}
+
 var currentSeasonStory='',currentSeasonStoryPage=0;
 var SEASON1_STAGES={
   1:{name:'山賊',label:'一戦目「山賊」',colors:['赤','緑'],enemyLife:16,deckSize:30,maxCost:3},
@@ -900,6 +944,7 @@ function loadSeason1State(){
 }
 function persistSeason1State(){try{localStorage.setItem(SEASON1_KEY,JSON.stringify(eventSeason1));return true;}catch(e){return false;}}
 function hideSeasonScreens(){
+  closeSeasonDetails();cancelSeasonCount();
   var ids=['season1Screen','seasonDeckScreen','seasonStoryScreen','seasonOutcomeScreen'];
   for(var i=0;i<ids.length;i++)if($(ids[i]))$(ids[i]).style.display='none';
 }
@@ -943,6 +988,7 @@ function showSeason1Hub(){
 }
 function beginSeason1(){
   eventSeason1={started:true,cleared:eventSeason1.cleared,currentStage:0,selectedDeckId:'',currentHp:20,maxHp:20,pendingScene:'prologue'};
+  seasonScores.run={id:Date.now()+'-'+Math.random(),battles:[],deck:null,complete:false};seasonScores.attempts++;persistSeasonScores();
   eventDeckDraft='';persistSeason1State();renderSeason1Banner();openSeasonStory('prologue');
 }
 function resetSeason1WithConfirm(){
@@ -998,6 +1044,7 @@ function selectSeason1Deck(id){if(!getSavedDeck(id))return;eventDeckDraft=id;ren
 function confirmSeason1Deck(){
   var deck=getSavedDeck(eventDeckDraft);
   if(!deck||totalDeckCards(deck.cards||{})!==40){$('seasonDeckError').textContent='40枚の登録デッキを選択してください';return;}
+  if(seasonScores.run)seasonScores.run.deck=JSON.parse(JSON.stringify(deck));persistSeasonScores();
   eventSeason1.started=true;eventSeason1.currentStage=1;eventSeason1.selectedDeckId=deck.id;eventSeason1.currentHp=20;eventSeason1.pendingScene='battle1';
   persistSeason1State();renderSeason1Banner();openSeasonStory('battle1');
 }
@@ -1016,6 +1063,7 @@ function eventEnemyDeck(stageNumber){
   return shuffle(deck);
 }
 function startSeason1Battle(stageNumber){
+  if(!seasonScores.run||seasonScores.run.complete){seasonScores.run={id:Date.now()+'-legacy',battles:[],deck:getSavedDeck(eventSeason1.selectedDeckId)||null,complete:false,legacy:true};seasonScores.attempts++;persistSeasonScores();}
   var config=SEASON1_STAGES[stageNumber],deck=getSavedDeck(eventSeason1.selectedDeckId);
   if(!config||!deck){showSeason1Hub();$('seasonHubHint').textContent='イベントデータまたは遠征デッキを確認できません';return;}
   eventSeason1.started=true;eventSeason1.currentStage=stageNumber;eventSeason1.pendingScene='';persistSeason1State();
@@ -1026,6 +1074,7 @@ function startSeason1Battle(stageNumber){
 }
 function handleSeason1BattleEnd(win,text){
   var stage=state.eventStage||eventSeason1.currentStage;
+  recordSeasonBattle(win,stage);
   if(win){
     eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(1,state.playerLife));
     if(stage===1){eventSeason1.currentStage=2;eventSeason1.pendingScene='after1';}
@@ -1034,22 +1083,40 @@ function handleSeason1BattleEnd(win,text){
     persistSeason1State();renderSeason1Banner();
     var nextScene=eventSeason1.pendingScene;setTimeout(function(){openSeasonStory(nextScene);},420);
   }else{
+    finalizeSeasonScore(false);
     eventSeason1.started=false;eventSeason1.currentStage=stage;eventSeason1.currentHp=0;eventSeason1.pendingScene='';
     persistSeason1State();renderSeason1Banner();setTimeout(function(){showSeason1Outcome('failed');},420);
   }
 }
 function completeSeason1(){
+  if(!seasonScores.run){seasonScores.run={id:Date.now()+'-legacy',battles:[],deck:getSavedDeck(eventSeason1.selectedDeckId)||null,complete:false,legacy:true};seasonScores.attempts++;}
+  finalizeSeasonScore(true);
   eventSeason1.started=false;eventSeason1.cleared=true;eventSeason1.currentStage=3;eventSeason1.pendingScene='';
   persistSeason1State();renderSeason1Banner();showSeason1Outcome('clear');
 }
+function cancelSeasonCount(){if(seasonCountFrame&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(seasonCountFrame);seasonCountFrame=0;}
+function closeSeasonDetails(){var d=$('seasonDetails');if(d&&d.open)d.close();}
 function showSeason1Outcome(type){
   hideCoreScreens();hideSeasonScreens();clearSeasonBattleTheme();
-  var failed=type==='failed',panel=$('eventOutcomePanel');panel.classList.toggle('failed',failed);
+  var failed=type==='failed',panel=$('eventOutcomePanel'),run=seasonScores.last||{total:0,battles:[],clearBonus:0};panel.classList.toggle('failed',failed);
   $('seasonOutcomeScreen').style.display='block';
-  $('eventOutcomeKicker').textContent=failed?'MISSION FAILED':'SEASON 1 CLEAR';
-  $('eventOutcomeTitle').textContent=failed?'王都へ報告せよ。':'暁の要塞';
-  $('eventOutcomeText').textContent=failed?'剣が手から落ちる。\n\n身体が動かない。\n王都までは、あと少しだった。\n\n要塞のことも。敵兵のことも。龍のことも。\n伝えなければならなかった。\n\n東の空が明るくなっていく。\nでも俺は、もう立ち上がれなかった。':'黒龍はダルディエクの方角へ飛び去った。\n\n東の空が明るくなる。\nその先には王都が見えていた。';
-  $('eventOutcomePrimary').textContent='再挑戦';$('eventOutcomePrimary').onclick=beginSeason1;window.scrollTo(0,0);
+  $('eventOutcomeKicker').textContent=failed?'MISSION FAILED':'SEASON CLEAR';
+  $('eventOutcomeText').textContent=failed?'火は消えかけている。王都は、まだ遠い。':'夜はまだ明けない。それでも、歩みは止まらない。';
+  $('seasonRank').textContent=failed?'FAILED ／ 第'+eventSeason1.currentStage+'戦':run.rank?'RANK '+run.rank.rank+' — '+run.rank.title:'戦績未計測';
+  $('seasonRank').classList.toggle('rankS',!failed&&run.rank&&run.rank.rank==='S');
+  $('seasonBattleScores').innerHTML=[1,2,3].map(function(stage){var b=run.battles[stage-1];return '<div><span>'+SEASON1_STAGES[stage].name+(b&&!b.win?' · LOSE':'')+'</span><span>'+(b?b.score.total.toLocaleString()+' PTS':'—')+'</span></div>';}).join('')+'<div class="clearBonus"><span>完全制覇ボーナス</span><span>+'+run.clearBonus.toLocaleString()+'</span></div>'+(run.legacy?'<small>旧セーブからの続行：未計測の戦闘は加算されません</small>':'');
+  $('seasonBestScore').textContent='BEST CLEAR '+(seasonScores.best?seasonScores.best.total.toLocaleString()+' PTS':'—')+' ／ 挑戦 '+seasonScores.attempts+' · CLEAR '+seasonScores.clears;
+  var total=$('seasonTotalScore'),value=run.total;total.textContent=value.toLocaleString();
+  if(!seasonAnimatedRuns.has(run.id)&&typeof matchMedia==='function'&&!matchMedia('(prefers-reduced-motion: reduce)').matches){seasonAnimatedRuns.add(run.id);var start=null;total.textContent='0';var tick=function(now){if(start===null)start=now;var progress=Math.min(1,(now-start)/700);total.textContent=Math.floor(value*(1-Math.pow(1-progress,3))).toLocaleString();seasonCountFrame=progress<1?requestAnimationFrame(tick):0;};seasonCountFrame=requestAnimationFrame(tick);}
+  window.scrollTo(0,0);
+}
+function openSeasonDetails(index){
+  var run=seasonScores.last;if(!run)return;
+  var available=run.battles.map(function(b,i){return b?i:null;}).filter(function(i){return i!==null;});if(!run.battles[index])index=available[0];
+  $('seasonDetailTabs').innerHTML=available.map(function(i){return '<button role="tab" aria-selected="'+(i===index)+'" onclick="openSeasonDetails('+i+')">'+SEASON1_STAGES[i+1].name+'</button>';}).join('');
+  var battle=run.battles[index],html='<p>計測された戦闘はありません。</p>';
+  if(battle){var s=battle.stats,p=battle.score.parts;var rows=[['戦闘結果',battle.win?'WIN':'LOSE'],['ターン',s.playerTurns],['最終LIFE',s.remainingLife+' / 20'],['ユニット与ダメージ',s.unitDamage],['敵撃破',s.enemyUnitKills],['LM破壊',s.enemyLandmarkKills],['防衛線突破',s.breachedLanes.length],['自軍生存',s.survivingUnits],['無傷勝利',s.perfectVictory?'達成':'未達成'],['勝利ボーナス',p.victory],['スピード',p.speed],['LIFE',p.life],['与ダメージ',p.damage],['戦術',p.tactical],['無傷勝利ボーナス',p.perfect],['戦闘スコア',battle.score.total+' PTS']];html='<dl>'+rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>';}).join('')+'</dl>';}
+  $('seasonDetailContent').innerHTML=html;var d=$('seasonDetails');if(!d.open)d.showModal();
 }
 
 function loadPlayerStats(){
@@ -1505,6 +1572,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
       eventMode:!!gameOptions.eventMode,eventStage:Number(gameOptions.eventStage)||0,
       enemyLabel:gameOptions.enemyLabel||'CPU',eventBoss:!!gameOptions.boss,eventBossPulseRound:0,aiStallTurns:0
     };
+    if(state.eventMode)state.battleStats=newBattleStats(state.playerLife,firstSide==='player');
     for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
     hideSeasonScreens();
     $('startScreen').style.display='none';$('homeScreen').style.display='none';$('homeNav').style.display='none';
@@ -2260,6 +2328,7 @@ async function chooseUnitTargets(actingSide,targetSide,count,prompt,filter,hint)
   return selected.map(function(index){return {side:targetSide,index:index};});
 }
 async function executeActions(actions,side,sourceSlot,sourceCard,context){
+  var scoreSource={sourceType:'ability',sourceSide:side,sourceCard:sourceCard};
   const battleGeneration = state && state.generation;
   for(var i=0;i<actions.length;i++){
     var a=actions[i], own=boardFor(side), enemySide=otherSide(side), enemy=boardFor(enemySide), target=null, j;
@@ -2294,8 +2363,8 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(side==='player') state.maxMana=Math.min(10,state.maxMana+a.amount);
       else state.enemyMaxMana=Math.min(10,state.enemyMaxMana+a.amount);
     }
-    else if(a.type==='damageLife') await checkedBattle(changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount))), battleGeneration);
-    else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await checkedBattle(damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false), battleGeneration);
+    else if(a.type==='damageLife') await checkedBattle(changeLife(a.target==='self'?side:enemySide,-(a.target==='self'?a.amount:effectDamageAmount(sourceCard,side,a.amount)),scoreSource), battleGeneration);
+    else if(a.type==='damageUnit' && target && boardFor(target.side)[target.index] && boardFor(target.side)[target.index].type==='ユニット') await checkedBattle(damage(boardFor(target.side),target.index,effectDamageAmount(sourceCard,side,a.amount),target.side,false,scoreSource), battleGeneration);
     else if(a.type==='destroyUnit' && target) await checkedBattle(destroy(target.side,target.index), battleGeneration);
     else if(a.type==='increaseSpellDamage')sourceCard.spellDamageBonus=(sourceCard.spellDamageBonus||0)+a.amount;
     else if(a.type==='reduceHandCost')sourceCard.handCostReduction=(sourceCard.handCostReduction||0)+a.amount;
@@ -2366,7 +2435,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       // TODO(要確認): 移動先スロットにユニットが存在する場合の処理。暫定的に効果を不発とする。
       if(enemy[target.index]){enemy[sourceSlot]=enemy[target.index];enemy[target.index]=null;logMsg(enemy[sourceSlot].name+'がレーン'+(sourceSlot+1)+'へ移動');}
     }
-    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j] && enemy[j].type==='ユニット') await checkedBattle(damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false), battleGeneration);}
+    else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j] && enemy[j].type==='ユニット') await checkedBattle(damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false,scoreSource), battleGeneration);}
     else if(a.type==='addTurn'){
       if(!state.extraTurns)state.extraTurns={player:0,enemy:0};state.extraTurns[side]+=(a.amount||1);logMsg(sideLabel(side)+'が追加ターンを獲得');
     }else if(a.type==='opponentDiscard'){
@@ -2561,9 +2630,14 @@ async function changeLife(side,amount,source){
   if(combat)amount=-combatLifeDamage(side,-amount,source.laneIndex);
   var key=side==='player'?'playerLife':'enemyLife',oldLife=state[key]; state[key]+=amount;
   var actualDamage=Math.max(0,oldLife-state[key]);
+  if(activeBattleStats()){
+    if(side==='player')state.battleStats.lifeDamageTaken+=actualDamage;
+    else if(isPlayerUnitSource(source))state.battleStats.unitDamage+=Math.min(Math.max(0,oldLife),actualDamage);
+  }
   var wallAbsorbed=combat&&rawCombatDamage>0&&stage===0;
   if(combat&&rawCombatDamage>0&&(wallAbsorbed||actualDamage>0)){
     defense[source.laneIndex]=Math.min(2,stage+1);
+    if(side==='enemy'&&stage===1&&activeBattleStats()&&state.battleStats.breachedLanes.indexOf(source.laneIndex)<0)state.battleStats.breachedLanes.push(source.laneIndex);
     var rootId=state.matchMode==='local'?(side===activeSide()?'playerDefense':'enemyDefense'):side+'Defense';
     renderDefenseLine(side,rootId);
     var laneLabel='左から'+(source.laneIndex+1)+'番目の防衛線';
@@ -2628,6 +2702,7 @@ async function damage(board,index,amount,side,lethal,context){
   var dmg=amount;
   dmg=Math.max(0,dmg-(rulesFor(u).damageReduction||0));
   if(dmg>0){floatAt(boardCard(side,index),'-'+dmg,'damage');pulseClass(boardCard(side,index),'hit',380);}
+  if(side==='enemy'&&activeBattleStats()&&isPlayerUnitSource(context))state.battleStats.unitDamage+=Math.min(Math.max(0,u.power),lethal&&dmg>0?Math.max(0,u.power):Math.max(0,dmg));
   if(lethal && dmg>0) u.power=0;
   else u.power-=dmg;
   if(u.power<=0) await checkedBattle(destroy(side,index), battleGeneration);
@@ -2636,6 +2711,7 @@ async function destroy(side,index){
   const battleGeneration = state && state.generation;
   var board=boardFor(side), grave=graveFor(side), destroyed=board[index];
   if(!destroyed) return;
+  recordSeasonDestruction(side,destroyed,'unit');
   showDestroy(side,index);
   board[index]=null;if(!destroyed.isToken){resetCardAfterGrave(destroyed);grave.push(destroyed);}
   var survivors=board.slice(),landmarkSurvivors=landmarkFor(side).slice();
@@ -2647,6 +2723,7 @@ async function destroy(side,index){
 async function destroyLandmark(side,index){
   const battleGeneration = state && state.generation;
   var landmarks=landmarkFor(side),destroyed=landmarks[index];if(!destroyed)return;
+  recordSeasonDestruction(side,destroyed,'landmark');
   showLandmarkCollapse(side,index);landmarks[index]=null;
   if(!destroyed.isToken)graveFor(side).push(destroyed);
   logMsg('レーン'+(index+1)+'の'+destroyed.name+'が破壊された');render();
@@ -2679,15 +2756,15 @@ async function attack(side,i){
     var t=enemy[target];
     var aPower=a.power*damageMultiplierFor(side), tBasePower=t.power, tPower=tBasePower*damageMultiplierFor(enemySide);
     var lethalA=hasKeyword(a,'lethal',side),lethalT=hasKeyword(t,'lethal',enemySide);
-    await checkedBattle(damage(enemy,target,aPower,enemySide,lethalA,{sourceType:'combat'}), battleGeneration);
-    if(own[i]) await checkedBattle(damage(own,i,tPower,side,lethalT,{sourceType:'combat'}), battleGeneration);
+    await checkedBattle(damage(enemy,target,aPower,enemySide,lethalA,{sourceType:'combat',sourceSide:side,sourceCard:a}), battleGeneration);
+    if(own[i]) await checkedBattle(damage(own,i,tPower,side,lethalT,{sourceType:'combat',sourceSide:enemySide,sourceCard:t}), battleGeneration);
     var pierceDealt=null;
-    if(hasKeyword(a,'pierce',side) && aPower>tBasePower){pierceDealt=await checkedBattle(changeLife(enemySide,-(aPower-tBasePower),{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);}
+    if(hasKeyword(a,'pierce',side) && aPower>tBasePower){pierceDealt=await checkedBattle(changeLife(enemySide,-(aPower-tBasePower),{sourceType:'combat',laneIndex:i,sourceCardId:a.id,sourceSide:side,sourceCard:a}), battleGeneration);}
     if(enemy[target]) await checkedBattle(triggerCard(enemy[target],'onDefended',enemySide,target,{attacker:a}), battleGeneration);
     logMsg(a.name+' → '+t.name+(pierceDealt===0?' ／ 城壁が貫通攻撃を防いだ':''));
   }else{
     var directPower=a.power*damageMultiplierFor(side);
-    var dealt=await checkedBattle(changeLife(enemySide,-directPower,{sourceType:'combat',laneIndex:i,sourceCardId:a.id}), battleGeneration);
+    var dealt=await checkedBattle(changeLife(enemySide,-directPower,{sourceType:'combat',laneIndex:i,sourceCardId:a.id,sourceSide:side,sourceCard:a}), battleGeneration);
     logMsg(dealt===0?a.name+'の攻撃を城壁が防いだ':a.name+' → 相手LIFE '+dealt+'ダメージ');
   }
   if(own[i]===a)consumeAttack(a);
@@ -2705,6 +2782,7 @@ async function processTurnEvent(side,event){
 async function beginExtraTurn(side){
   const battleGeneration = state && state.generation;
   if(!state.extraTurns || !state.extraTurns[side]) return false;
+  if(side==='player'&&activeBattleStats())state.battleStats.playerTurns++;
   state.extraTurns[side]--;state.playerTurn=side==='player';
   if(side==='player')state.mana=state.maxMana;else state.enemyMana=state.enemyMaxMana;
   await checkedBattle(drawCard(side), battleGeneration);
@@ -2727,6 +2805,7 @@ async function endTurn(){
 }
 async function prepareNextTurn(nextSide){
   const battleGeneration = state && state.generation;
+  if(nextSide==='player'&&activeBattleStats())state.battleStats.playerTurns++;
   var startsNewRound=nextSide===state.firstSide;
   if(startsNewRound){
     state.turn++;
@@ -3424,12 +3503,12 @@ async function executeAttackAction(action){
   if(targetIndex>=0&&enemy[targetIndex]){
     var target=enemy[targetIndex],attackPower=attacker.power*damageMultiplierFor(side),targetBasePower=target.power,targetPower=targetBasePower*damageMultiplierFor(enemySide);
     var attackerLethal=hasKeyword(attacker,'lethal',side),targetLethal=hasKeyword(target,'lethal',enemySide);
-    await checkedBattle(damage(enemy,targetIndex,attackPower,enemySide,attackerLethal,{sourceType:'combat'}), battleGeneration);
-    if(own[lane]===attacker)await checkedBattle(damage(own,lane,targetPower,side,targetLethal,{sourceType:'combat'}), battleGeneration);
-    if(hasKeyword(attacker,'pierce',side)&&attackPower>targetBasePower){await checkedBattle(changeLife(enemySide,-(attackPower-targetBasePower),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id}), battleGeneration);}
+    await checkedBattle(damage(enemy,targetIndex,attackPower,enemySide,attackerLethal,{sourceType:'combat',sourceSide:side,sourceCard:attacker}), battleGeneration);
+    if(own[lane]===attacker)await checkedBattle(damage(own,lane,targetPower,side,targetLethal,{sourceType:'combat',sourceSide:enemySide,sourceCard:target}), battleGeneration);
+    if(hasKeyword(attacker,'pierce',side)&&attackPower>targetBasePower){await checkedBattle(changeLife(enemySide,-(attackPower-targetBasePower),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id,sourceSide:side,sourceCard:attacker}), battleGeneration);}
     if(enemy[targetIndex])await checkedBattle(triggerCard(enemy[targetIndex],'onDefended',enemySide,targetIndex,{attacker:attacker}), battleGeneration);
   }else{
-    await checkedBattle(changeLife(enemySide,-(attacker.power*damageMultiplierFor(side)),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id}), battleGeneration);
+    await checkedBattle(changeLife(enemySide,-(attacker.power*damageMultiplierFor(side)),{sourceType:'combat',laneIndex:lane,sourceCardId:attacker.id,sourceSide:side,sourceCard:attacker}), battleGeneration);
   }
   if(own[lane]===attacker)consumeAttack(attacker);
   render();await checkedBattle(wait(420), battleGeneration);return true;
