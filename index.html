@@ -444,7 +444,6 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 <link rel="stylesheet" href="parchment.css?v=14">
 <link rel="stylesheet" href="season-result.css">
 <link rel="stylesheet" href="hand-draw.css">
-<link rel="stylesheet" href="card-illustrations.css?v=1">
 </head>
 <body>
 
@@ -1441,7 +1440,7 @@ function renderCatalog(){
       var button=document.createElement('button'),rules=rulesFor(card),keywords=[];
       if(rules.revenge) keywords.push('報復：'+rules.revenge);
       if(rules.dive!=null) keywords.push('潜水：'+rules.dive);
-      button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'')+cardIllustrationClass(card);
+      button.type='button';button.className='catalogCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
       button.setAttribute('aria-label',card.name+'の詳細を表示');
       button.innerHTML='<span class="catalogCardCost">'+card.cost+'</span><span class="catalogCardName">'+escapeHtml(card.name)+'</span><span class="catalogCardType">'+escapeHtml(cardFaceMeta(card))+(keywords.length?' ／ '+formatCardText(keywords.join(' ／ ')):'')+'</span><span class="catalogCardText">'+formatCardText(card.text||'効果なし')+'</span><span class="catalogCardPower'+(card.type!=='ユニット'?' spellMark':'')+'" aria-label="'+(card.type==='ユニット'?'パワー '+card.power:card.type)+'">'+(card.type==='ユニット'?card.power:'✦')+'</span>';
       button.onclick=function(){showCardDetail(card);};root.appendChild(button);
@@ -1490,13 +1489,6 @@ async function checkedBattle(result,generation){
   var value=await result;
   if(!state||state.generation!==generation||state.gameOver)throw staleBattle;
   return value;
-}
-// Trial card art: keep the existing card layout and attach artwork by printed name.
-function cardIllustrationClass(card){
-  if(!card)return '';
-  if(card.name==='深海の大渦バルメデ')return ' illustratedCard artBalmede';
-  if(card.name==='鱗の頭領シャトゥルツカ')return ' illustratedCard artShaturtsuka';
-  return '';
 }
 function cardFaceMeta(card){return (card.color?card.color+' ／ ':'')+(card.legendary?'伝説 ／ ':'')+cardTypeLine(card);}
 function cardTypeLine(card){return card.type+(card.species?' ／ 種族：'+card.species:'');}
@@ -1829,7 +1821,7 @@ function showCardDetail(card){
   var rules=rulesFor(card), badges=[];
   if(rules.revenge) badges.push('報復：'+rules.revenge);
   if(rules.dive!=null) badges.push('潜水：'+rules.dive);
-  $('detailCard').className='detailCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'')+cardIllustrationClass(card);
+  $('detailCard').className='detailCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
   $('detailCard').innerHTML='<div class="detailCost">'+Math.max(0,card.cost-(card.handCostReduction||0))+'</div><div class="detailName">'+escapeHtml(card.name)+'</div><div class="detailType">'+escapeHtml(cardFaceMeta(card))+(badges.length?' ／ '+formatCardText(badges.join(' ／ ')):'')+'</div><div class="detailText">'+formatCardText(cardEffectText(card)||'効果なし')+'</div>'+cardKeywordGuide(card,badges)+'<div class="detailPower'+(card.type!=='ユニット'?' spellMark':'')+'" aria-label="'+(card.type==='ユニット'?'パワー '+card.power:card.type)+'">'+(card.type==='ユニット'?card.power:'✦')+'</div>';
   $('detailOverlay').classList.add('show'); $('detailOverlay').setAttribute('aria-hidden','false');
 }
@@ -1950,7 +1942,7 @@ function renderBoard(side,rootId,asOpponent){
       if(u){
         var card=document.createElement('div');
         var attackable=(side===acting && humanTurn && u.canAttack && u.type!=='ランドマーク' && !hasKeyword(u,'cannotAttack',side) && !state.animating);
-        card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'')+cardIllustrationClass(u);
+        card.className='card '+(COLOR_CLASS[u.color]||'')+(u.legendary?' legendary':'')+(attackable?' attackable':'');
         card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml((u.legendary?'伝説 ／ ':'')+(u.species||u.color||''))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
           +'<div class="effect">'+formatCardText(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
@@ -2048,7 +2040,7 @@ function renderHand(){
       var shownCost=effectiveCost(c,side);
       var disabled=lowestPlayableCost(c,side)>manaFor(side) || !humanTurn;
       var spread=count<=1?.5:displayIndex/(count-1);
-      d.className='handCard '+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'')+cardIllustrationClass(c);
+      d.className='handCard '+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left='calc('+(spread*100)+'% + '+((.5-spread)*cardWidth)+'px)';
       d.style.setProperty('--hand-shift','-50%');
       d.style.zIndex=handView.animations.has(d)&&handView.animations.get(d).incoming?'40':String(index+1);
@@ -2258,7 +2250,7 @@ function renderPicker(){
   for(var i=0;i<request.cards.length;i++){
     (function(index){
       var c=request.cards[index], button=document.createElement('button');
-      button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(request.kind==='multi' && request.selected.indexOf(index)>=0?'selected ':'')+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+cardIllustrationClass(c);
+      button.className='pickerCard '+(request.kind==='discover'?'preview ':'')+(request.kind==='multi' && request.selected.indexOf(index)>=0?'selected ':'')+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'');
       button.innerHTML='<strong>'+escapeHtml(c.name)+'</strong><span>'+formatCardText(c.text||c.type)+'</span>'+(request.kind==='explore'?'<span class="pickerState">山札の'+(request.destinations[index]==='top'?'上':'下')+'へ</span>':request.kind==='revenge'?'<span class="pickerState">'+formatCardText('報復：'+rulesFor(c).revenge)+' ／ 今すぐ使用</span>':request.kind==='multi'?'<span class="pickerState">'+(request.selected.indexOf(index)>=0?'選択中':'タップで選択')+'</span>':'');
       button.onclick=function(){
         if(request.kind==='single' || request.kind==='revenge') resolvePicker(index);
