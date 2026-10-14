@@ -443,6 +443,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 </style>
 <link rel="stylesheet" href="parchment.css?v=14">
 <link rel="stylesheet" href="season-result.css">
+<link rel="stylesheet" href="hand-draw.css">
 </head>
 <body>
 
@@ -949,6 +950,7 @@ function hideSeasonScreens(){
   for(var i=0;i<ids.length;i++)if($(ids[i]))$(ids[i]).style.display='none';
 }
 function hideCoreScreens(){
+  cancelHandDraw();
   document.body.classList.remove('battleActive');closeBattleMenu();
   $('homeScreen').style.display='none';$('homeNav').style.display='none';
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
@@ -1176,6 +1178,7 @@ function saveProfile(){
   renderHomeProfile();closeProfileEditor();
 }
 function showHome(){
+  cancelHandDraw();
   hideSeasonScreens();clearSeasonBattleTheme();
   renderHomeProfile();renderSeason1Banner();
   $('homeScreen').style.display='block'; $('homeNav').style.display='block';
@@ -1472,6 +1475,7 @@ function cloneCard(a,color){
 var battleGenerationCounter=0;
 var staleBattle=Object.freeze({staleBattle:true});
 function cancelBattleRequests(battle){
+  cancelHandDraw();
   if(!battle)return;
   var target=battle.targetRequest,choice=battle.choiceRequest;
   battle.targetRequest=null;battle.choiceRequest=null;
@@ -1573,7 +1577,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
       enemyLabel:gameOptions.enemyLabel||'CPU',eventBoss:!!gameOptions.boss,eventBossPulseRound:0,aiStallTurns:0
     };
     if(state.eventMode)state.battleStats=newBattleStats(state.playerLife,firstSide==='player');
-    for(var i=0;i<5;i++){ drawCard('player'); drawCard('enemy'); }
+    for(var i=0;i<5;i++){ drawCard('player',{animate:false}); drawCard('enemy',{animate:false}); }
     hideSeasonScreens();
     $('startScreen').style.display='none';$('homeScreen').style.display='none';$('homeNav').style.display='none';
     $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='none';$('catalogScreen').style.display='none';
@@ -1612,12 +1616,13 @@ function toggleBattleMenu(){
 function returnToLobby(){
   returnToDecks();showHome();window.scrollTo(0,0);
 }
-async function drawCard(side){
+async function drawCard(side,options){
   const battleGeneration = state && state.generation;
   var deck=side==='player'?state.playerDeck:state.enemyDeck;
   var hand=side==='player'?state.playerHand:state.enemyHand;
   if(deck.length && hand.length<8){
     var drawn=deck.shift();hand.push(drawn);
+    if(!options||options.animate!==false)queueHandDraw(drawn,side);
     await checkedBattle(emitBoardEvent(otherSide(side),'onOpponentDraw',{drawingSide:side,drawnCard:drawn}), battleGeneration);
     return drawn;
   }
@@ -1977,9 +1982,50 @@ function showLandmarkCollapse(side,index){
   var debris=document.createElement('div');debris.className='landmarkCollapseDebris';ghost.appendChild(debris);
   document.body.appendChild(ghost);setTimeout(function(){ghost.remove();},650);
 }
+// Presentation state stays outside battle state; queued cards are already in the real hand.
+var HAND_DRAW_TIMING={slide:260,reflow:210,stagger:90,maxDelay:420};
+var handView={generation:null,side:null,nodes:new Map(),pending:new Map(),animations:new Map(),nextStart:0};
+function handDrawNow(){return typeof performance!=='undefined'?performance.now():Date.now();}
+function handDrawBusy(){return handView.pending.size>0||handView.animations.size>0;}
+function syncHandDrawInput(){var root=$('playerHand');if(root){root.classList.toggle('handDrawActive',handDrawBusy());root.setAttribute('aria-busy',handDrawBusy()?'true':'false');}}
+function cancelHandDraw(){
+  handView.pending.forEach(function(entry){clearTimeout(entry.timer);});handView.pending.clear();
+  handView.animations.forEach(function(entry,node){entry.animation.onfinish=entry.animation.oncancel=null;entry.animation.cancel();node.style.zIndex=String((node._handIndex||0)+1);});handView.animations.clear();handView.nextStart=0;syncHandDrawInput();
+}
+function queueHandDraw(card,side){
+  var root=$('playerHand');
+  if(side!=='player'||!state||state.gameOver||!root||typeof root.animate!=='function'||$('gameScreen').style.display!=='grid'||(state.matchMode==='local'&&activeSide()!=='player')||(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;
+  var generation=state.generation,now=handDrawNow(),start=Math.min(now+HAND_DRAW_TIMING.maxDelay,Math.max(now,handView.nextStart));
+  handView.nextStart=start+(handView.pending.size>=3?45:HAND_DRAW_TIMING.stagger);
+  var entry={started:false,timer:null};handView.pending.set(card,entry);syncHandDrawInput();
+  entry.timer=setTimeout(function(){
+    if(!state||state.generation!==generation||state.gameOver||$('gameScreen').style.display!=='grid'||(state.matchMode==='local'&&activeSide()!=='player')){cancelHandDraw();return;}
+    if(!state.playerHand.includes(card)){handView.pending.delete(card);syncHandDrawInput();return;}
+    entry.started=true;renderHand();
+  },Math.max(0,start-now));
+}
+function animateHandPosition(node,delta,duration,incoming){
+  var previous=handView.animations.get(node),now=handDrawNow();
+  if(!delta||typeof node.animate!=='function'){if(previous){previous.animation.onfinish=previous.animation.oncancel=null;previous.animation.cancel();handView.animations.delete(node);node.style.zIndex=String(node._handIndex+1);syncHandDrawInput();}return;}
+  if(previous){duration=Math.max(60,previous.end-now);incoming=incoming||previous.incoming;previous.animation.onfinish=previous.animation.oncancel=null;previous.animation.cancel();}
+  var lift=node.classList.contains('selected')?(document.body.classList.contains('battleActive')?' translateY(-5px)':' translateY(-11px)'):'';
+  var animation=node.animate([{transform:'translateX(calc(-50% + '+delta+'px))'+lift},{transform:'translateX(-50%)'+lift}],{duration:duration,easing:'cubic-bezier(.22,.65,.3,1)',fill:'none'});
+  var entry={animation:animation,end:now+duration,incoming:incoming};handView.animations.set(node,entry);if(incoming)node.style.zIndex='40';
+  animation.onfinish=animation.oncancel=function(){if(handView.animations.get(node)!==entry)return;handView.animations.delete(node);node.style.zIndex=String(node._handIndex+1);syncHandDrawInput();};
+  syncHandDrawInput();
+}
 function renderHand(){
-  var root=$('playerHand'); root.innerHTML='';
-  var side=state.matchMode==='local'?activeSide():'player',hand=handFor(side),humanTurn=isHumanSide(activeSide()) && side===activeSide(),count=hand.length;
+  var root=$('playerHand');
+  var visibleSide=state.matchMode==='local'?activeSide():'player';
+  if(handView.generation!==state.generation||handView.side!==visibleSide){
+    // Pending entries may precede the first render of a newly started battle.
+    if(handView.generation!==null&&(handView.generation!==state.generation||handView.side!==visibleSide))cancelHandDraw();
+    handView.nodes.forEach(function(node){node.remove();});handView.nodes.clear();handView.generation=state.generation;handView.side=visibleSide;
+  }
+  var side=state.matchMode==='local'?activeSide():'player',hand=handFor(side),humanTurn=isHumanSide(activeSide()) && side===activeSide(),count=hand.filter(function(card){var entry=handView.pending.get(card);return !entry||entry.started;}).length;
+  handView.pending.forEach(function(entry,card){if(!hand.includes(card)){clearTimeout(entry.timer);handView.pending.delete(card);}});
+  handView.nodes.forEach(function(node,card){if(!hand.includes(card)){var entry=handView.animations.get(node);if(entry){entry.animation.onfinish=entry.animation.oncancel=null;entry.animation.cancel();handView.animations.delete(node);}node.remove();handView.nodes.delete(card);}});
+  var displayIndex=0;
   var cardWidth=112;
   if(count&&typeof getComputedStyle==='function'){
     var probe=document.createElement('div');probe.className='handCard';root.appendChild(probe);
@@ -1987,30 +2033,37 @@ function renderHand(){
   }
   for(var i=0;i<hand.length;i++){
     (function(index){
-      var c=hand[index], d=document.createElement('div');
+      var c=hand[index],pending=handView.pending.get(c);if(pending&&!pending.started)return;
+      var d=handView.nodes.get(c),fresh=!d,oldRect=d?d.getBoundingClientRect():null,oldLeft=d?d.style.left:'';
+      if(!d){d=document.createElement('div');handView.nodes.set(c,d);}
+      d._handIndex=index;
       var shownCost=effectiveCost(c,side);
       var disabled=lowestPlayableCost(c,side)>manaFor(side) || !humanTurn;
-      var spread=count<=1?.5:index/(count-1);
+      var spread=count<=1?.5:displayIndex/(count-1);
       d.className='handCard '+(COLOR_CLASS[c.color]||'')+(c.legendary?' legendary':'')+(state.selectedCard===index?' selected':'')+(disabled?' disabled':'');
       d.style.left='calc('+(spread*100)+'% + '+((.5-spread)*cardWidth)+'px)';
       d.style.setProperty('--hand-shift','-50%');
-      d.style.zIndex=String(index+1);
+      d.style.zIndex=handView.animations.has(d)&&handView.animations.get(d).incoming?'40':String(index+1);
       d.setAttribute('role','button'); d.setAttribute('tabindex','0');
       d.setAttribute('aria-pressed',state.selectedCard===index?'true':'false');
       d.setAttribute('aria-label',c.name+' コスト'+shownCost+(c.type==='スペル'?' スペル':c.type==='ランドマーク'?' ランドマーク':' パワー'+c.power));
       d.innerHTML='<div class="cost">'+shownCost+'</div><div class="handName">'+escapeHtml(c.name)+'</div><div class="handMeta">'+escapeHtml(cardFaceMeta(c))+'</div>'
         +'<div class="handText">'+formatCardText(cardEffectText(c))+'</div>'
         +'<div class="handPower'+(c.type!=='ユニット'?' spellMark':'')+'" aria-label="'+(c.type==='ユニット'?'パワー '+c.power:c.type)+'">'+(c.type==='ユニット'?c.power:'✦')+'</div>';
-      attachCardHold(d,c,function(){ selectCard(index); });
-      d.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){e.preventDefault();selectCard(index);} };
-      root.appendChild(d);
+      if(fresh)attachCardHold(d,c,function(){if(!handDrawBusy())selectCard(d._handIndex);});
+      d.onkeydown=function(e){ if(e.key==='Enter' || e.key===' '){e.preventDefault();if(!handDrawBusy())selectCard(d._handIndex);} };
+      if(fresh)root.appendChild(d);
+      if(pending&&pending.started){handView.pending.delete(c);var target=d.getBoundingClientRect();animateHandPosition(d,root.getBoundingClientRect().right+12-target.left,HAND_DRAW_TIMING.slide,true);}
+      else if(oldRect&&oldLeft!==d.style.left&&handDrawBusy()){var active=handView.animations.get(d);if(active){active.animation.onfinish=active.animation.oncancel=null;active.animation.cancel();}var target=d.getBoundingClientRect();animateHandPosition(d,oldRect.left-target.left,HAND_DRAW_TIMING.reflow,false);}
+      displayIndex++;
     })(i);
   }
+  syncHandDrawInput();
 }
 window.addEventListener('resize',function(){syncCompactBattleMode();if(state&&$('gameScreen').style.display!=='none')renderHand();});
 function selectCard(i){
   var side=activeSide(),hand=handFor(side);
-  if(!isHumanSide(side) || state.gameOver || state.animating) return;
+  if(!isHumanSide(side) || state.gameOver || state.animating || handDrawBusy()) return;
   var restriction=placementRestriction(side,hand[i]);if(restriction){logMsg(restriction);return;}
   if(lowestPlayableCost(hand[i],side)>manaFor(side)){ logMsg('資源が足りません'); return; }
   if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }

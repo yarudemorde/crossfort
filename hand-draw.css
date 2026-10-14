@@ -1,0 +1,3 @@
+/* Clip only horizontal entry motion; selected cards can still lift above the hand. */
+#gameScreen #playerHand.handDrawActive{overflow-x:clip;overflow-y:visible;pointer-events:none}
+@media(prefers-reduced-motion:reduce){#gameScreen #playerHand.handDrawActive{pointer-events:auto}}
