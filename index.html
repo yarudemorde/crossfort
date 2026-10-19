@@ -1117,7 +1117,7 @@ function openSeasonDetails(index){
   var available=run.battles.map(function(b,i){return b?i:null;}).filter(function(i){return i!==null;});if(!run.battles[index])index=available[0];
   $('seasonDetailTabs').innerHTML=available.map(function(i){return '<button role="tab" aria-selected="'+(i===index)+'" onclick="openSeasonDetails('+i+')">'+SEASON1_STAGES[i+1].name+'</button>';}).join('');
   var battle=run.battles[index],html='<p>計測された戦闘はありません。</p>';
-  if(battle){var s=battle.stats,p=battle.score.parts;var rows=[['戦闘結果',battle.win?'WIN':'LOSE'],['ターン',s.playerTurns],['最終LIFE',s.remainingLife+' / 20'],['ユニット与ダメージ',s.unitDamage],['敵撃破',s.enemyUnitKills],['LM破壊',s.enemyLandmarkKills],['防衛線突破',s.breachedLanes.length],['自軍生存',s.survivingUnits],['無傷勝利',s.perfectVictory?'達成':'未達成'],['勝利ボーナス',p.victory],['スピード',p.speed],['LIFE',p.life],['与ダメージ',p.damage],['戦術',p.tactical],['無傷勝利ボーナス',p.perfect],['戦闘スコア',battle.score.total+' PTS']];html='<dl>'+rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>';}).join('')+'</dl>';}
+  if(battle){var s=battle.stats,p=battle.score.parts;var rows=[['戦闘結果',battle.win?'WIN':'LOSE'],['ターン',s.playerTurns],['最終LIFE',s.remainingLife+' / 20'],['ユニット与ダメージ',s.unitDamage],['敵撃破',s.enemyUnitKills],['LM破壊',s.enemyLandmarkKills],['防衛線崩壊',s.breachedLanes.length],['自軍生存',s.survivingUnits],['無傷勝利',s.perfectVictory?'達成':'未達成'],['勝利ボーナス',p.victory],['スピード',p.speed],['LIFE',p.life],['与ダメージ',p.damage],['戦術',p.tactical],['無傷勝利ボーナス',p.perfect],['戦闘スコア',battle.score.total+' PTS']];html='<dl>'+rows.map(function(r){return '<div><dt>'+r[0]+'</dt><dd>'+r[1]+'</dd></div>';}).join('')+'</dl>';}
   $('seasonDetailContent').innerHTML=html;var d=$('seasonDetails');if(!d.open)d.showModal();
 }
 
@@ -1690,7 +1690,7 @@ async function resolveCardEnteredSlot(side,lane,card){
 }
 function isDefenseBroken(side,lane){return lane>=0&&lane<5&&defenseFor(side)[lane]===2;}
 function countBrokenDefense(side){return defenseFor(side).filter(function(stage){return stage===2;}).length;}
-// TODO(要確認): シート上の「崩壊」は既存防衛線state=2（UI表記「突破」）と同義か。
+// 防衛線state=2は「崩壊」。内部状態・戦闘計算は変更しない。
 function hasTemporaryRestriction(card,restriction){
   return !!(card&&card.temporaryEffects&&card.temporaryEffects.some(function(effect){return !!effect[restriction];}));
 }
@@ -1804,7 +1804,7 @@ var KEYWORD_GUIDE=[
   {name:'貫通',pattern:/貫通/,description:'防衛ユニットを上回ったダメージを相手LIFEへ与えます。'},
   {name:'報復',pattern:/報復(?:[：:]\s*\d+)?/,description:'表記以上のLIFEダメージを受けた時、手札から即時使用できます。'},
   {name:'潜水',pattern:/潜水(?:[：:]\s*\d+)?/,description:'表記された資源で配置効果を使い、その後山札の下へ戻ります。'},
-  {name:'探査',pattern:/探査(?:[：:]\s*\d+)?/,description:'山札の下から表記枚数を確認し、発見できるカードを選びます。'},
+  {name:'探査',pattern:/探査(?:[：:]\s*\d+)?/,description:'山札の上から表記枚数を公開し、発見を解決した後、残りを好きな順序で山札の上か下に置きます。'},
   {name:'発見',pattern:/発見/,description:'探査で公開された時に選択して使用できる効果です。'},
   {name:'信仰',pattern:/信仰(?:[：:]\s*\d+)?/,description:'自分の聖遺物が表記枚数以上ある時に有効になります。'},
   {name:'魂響',pattern:/魂響/,description:'このカードが破壊された時に発動する効果です。具体的な効果はカードの効果文に従います。'}
@@ -1911,7 +1911,7 @@ function renderBattleHud(topSide,bottomSide){
 }
 function renderDefenseLine(side,rootId){
   var root=$(rootId),defense=defenseFor(side),images=['defense_wall_intact.png','defense_wall_cracked.png','defense_wall_breached.png'];
-  var labels=['無傷','ヒビ','突破済み'];root.innerHTML='';
+  var labels=['無傷','ヒビ','崩壊'];root.innerHTML='';
   for(var i=0;i<5;i++){
     var stage=Math.min(2,defense[i]),slot=document.createElement('div');
     slot.className='defenseSlot defenseStage'+stage;
@@ -2694,7 +2694,7 @@ async function changeLife(side,amount,source){
     var rootId=state.matchMode==='local'?(side===activeSide()?'playerDefense':'enemyDefense'):side+'Defense';
     renderDefenseLine(side,rootId);
     var laneLabel='左から'+(source.laneIndex+1)+'番目の防衛線';
-    logMsg(stage===0?laneLabel+'が攻撃を防ぎ、ヒビが入った':stage===1?laneLabel+'が突破された':'突破済みの'+laneLabel+'から侵入：戦闘ダメージ+1');
+    logMsg(stage===0?laneLabel+'が攻撃を防ぎ、ヒビが入った':stage===1?laneLabel+'が崩壊した':'崩壊した'+laneLabel+'から侵入：戦闘ダメージ+1');
     if(stage===1)await checkedBattle(emitBoardEvent(side,'onDefenseBroken',{laneIndex:source.laneIndex,previousStage:stage,newStage:2}),battleGeneration);
   }
   if(state.eventMode&&side==='player'){eventSeason1.currentHp=Math.min(eventSeason1.maxHp,Math.max(0,state.playerLife));persistSeason1State();}
