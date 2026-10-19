@@ -1475,6 +1475,7 @@ function cloneCard(a,color){
 var battleGenerationCounter=0;
 var staleBattle=Object.freeze({staleBattle:true});
 function cancelBattleRequests(battle){
+  cancelPlacementMotion();
   cancelHandDraw();
   if(!battle)return;
   var target=battle.targetRequest,choice=battle.choiceRequest;
@@ -2099,6 +2100,7 @@ async function playSelectedCard(mode){
   if(c.type==='ユニット' && (slot<0 || board[slot])){logMsg('空いているスロットを選択してください');return;}
   if(c.type==='ランドマーク' && (slot<0 || landmarkFor(side)[slot])){logMsg('空いているランドマーク枠を選択してください');return;}
   if(c.type!=='スペル'&&!canPlaceCard(side,c,slot)){logMsg(placementRestriction(side,c)||'配置できません');return;}
+  var placementOrigin=c.type!=='スペル'?capturePlacementOrigin(side,c):null;
   state.animating=true;spendMana(side,cost);
   hand.splice(state.selectedCard,1);state.selectedCard=-1;state.selectedSlot=-1;
   if(c.type==='スペル'){
@@ -2106,9 +2108,12 @@ async function playSelectedCard(mode){
     await checkedBattle(showSpellCast(c,side,{cost:cost}), battleGeneration);
     await checkedBattle(resolveSpellUse(c,side,{}), battleGeneration);
   }else{
+    render();
+    await checkedBattle(animateHandPlacement(side,slot,c,placementOrigin),battleGeneration);
     initializePlacedAttacks(c,side);
     placementBoard(side,c)[slot]=c;
-    logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render(); if(c.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot); await checkedBattle(wait(240), battleGeneration);
+    logMsg(c.name+'をレーン'+(slot+1)+'に配置'); render();
+    await checkedBattle(animatePlacementLanding(side,slot,c),battleGeneration);
     await checkedBattle(resolveCardEnteredSlot(side,slot,c), battleGeneration);
     await checkedBattle(triggerCard(c,'onPlay',side,slot,{}), battleGeneration);
     if(mode==='normal')await checkedBattle(triggerCard(c,'onHandPlay',side,slot,{}), battleGeneration);
@@ -2353,7 +2358,12 @@ async function deployFromZone(side,zone,action){
   var slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'を配置するレーンを選択',card.type==='ランドマーク'?'landmark':null,card,action), battleGeneration);
   if(slot==null) return null;
   var own=placementBoard(side,card),index=zone.indexOf(card);if(index<0 || !canPlaceCard(side,card,slot,action)) return null;
-  zone.splice(index,1);if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;initializePlacedAttacks(card,side);render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
+  var fromHand=zone===handFor(side),placementOrigin=fromHand?capturePlacementOrigin(side,card):null;
+  zone.splice(index,1);
+  if(fromHand){render();await checkedBattle(animateHandPlacement(side,slot,card,placementOrigin),battleGeneration);}
+  if(zone===graveFor(side))resetCardAfterGrave(card);own[slot]=card;initializePlacedAttacks(card,side);render();
+  if(fromHand)await checkedBattle(animatePlacementLanding(side,slot,card),battleGeneration);
+  else{if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);}
   await checkedBattle(resolveCardEnteredSlot(side,slot,card), battleGeneration);
   await checkedBattle(triggerCard(card,'onPlay',side,slot,{}), battleGeneration);
   return card;
@@ -2669,6 +2679,69 @@ function boardCard(side,index){
 }
 function animateCard(side,index){var el=boardCard(side,index);pulseClass(el,'attacking',340);}
 function animateSummon(side,index){var el=boardCard(side,index);pulseClass(el,'summoning',el&&el.classList.contains('legendary')?680:380);}
+var placementMotions=new Set();
+function placementMotionReduced(){return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;}
+function cancelPlacementMotion(){placementMotions.forEach(function(entry){entry.finish();});placementMotions.clear();}
+function placementMotion(node,frames,options,remove){
+  if(!node||typeof node.animate!=='function'||placementMotionReduced()){if(remove&&node)node.remove();return Promise.resolve();}
+  return new Promise(function(resolve){
+    var animation,timer,done=false,entry={finish:function(){
+      if(done)return;done=true;clearTimeout(timer);placementMotions.delete(entry);
+      if(animation){animation.onfinish=animation.oncancel=null;animation.cancel();}
+      if(remove)node.remove();resolve();
+    }};
+    placementMotions.add(entry);
+    try{animation=node.animate(frames,options);animation.onfinish=animation.oncancel=entry.finish;timer=setTimeout(entry.finish,options.duration+100);}
+    catch(error){entry.finish();}
+  });
+}
+function capturePlacementOrigin(side,card){
+  if(placementMotionReduced())return null;
+  var visible=state.matchMode==='local'?activeSide():'player',node=side===visible?handView.nodes.get(card):null;
+  if(!node||typeof node.getBoundingClientRect!=='function')return null;
+  var rect=node.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+  var ghost=node.cloneNode(true);ghost.removeAttribute('id');ghost.removeAttribute('tabindex');ghost.setAttribute('aria-hidden','true');
+  ghost.classList.remove('selected','disabled');ghost.classList.add('placementFlight');
+  return {node:ghost,left:rect.left,top:rect.top,width:rect.width,height:rect.height};
+}
+function placementTarget(side,lane,card){
+  var visible=state&&state.matchMode==='local'?side===activeSide():side==='player';
+  var root=$((visible?'player':'enemy')+(card.type==='ランドマーク'?'Landmarks':'Board'));
+  var slot=root&&root.children&&root.children[lane];if(!slot||typeof slot.getBoundingClientRect!=='function')return null;
+  var rect=slot.getBoundingClientRect(),left=0,right=0,top=0,bottom=0;
+  if(card.type!=='ランドマーク'){
+    var style=typeof getComputedStyle==='function'?getComputedStyle(slot):null;
+    left=style?(parseFloat(style.paddingLeft)||0)+(parseFloat(style.borderLeftWidth)||0):5;
+    right=style?(parseFloat(style.paddingRight)||0)+(parseFloat(style.borderRightWidth)||0):5;
+    top=style?(parseFloat(style.paddingTop)||0)+(parseFloat(style.borderTopWidth)||0):5;
+    bottom=style?(parseFloat(style.paddingBottom)||0)+(parseFloat(style.borderBottomWidth)||0):5;
+  }
+  return {left:rect.left+left,top:rect.top+top,width:Math.max(1,rect.width-left-right),height:Math.max(1,rect.height-top-bottom)};
+}
+async function animateHandPlacement(side,lane,card,origin){
+  if(placementMotionReduced())return;
+  var target=placementTarget(side,lane,card);
+  // Hidden CPU hands have no visible source; preserve their existing placement timing.
+  if(!origin||!target||!target.width||!target.height)return;
+  var ghost=origin.node,dx=target.left-origin.left,dy=target.top-origin.top,sx=target.width/origin.width,sy=target.height/origin.height;
+  var lift=Math.min(52,Math.max(22,Math.abs(dx)*.12+Math.abs(dy)*.08)),tilt=dx<0?-5:5;
+  Object.assign(ghost.style,{position:'fixed',left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px',margin:'0',zIndex:'115',pointerEvents:'none',transform:'none',transformOrigin:'top left',transition:'none',filter:'none'});
+  ($('gameScreen')||document.body).appendChild(ghost);
+  await placementMotion(ghost,[
+    {offset:0,transform:'translate(0,0) scale(1,1) rotate(0deg)'},
+    {offset:.45,transform:'translate('+(dx*.48)+'px,'+(dy*.48-lift)+'px) scale('+(1+(sx-1)*.48)+','+(1+(sy-1)*.48)+') rotate('+tilt+'deg)'},
+    {offset:.8,transform:'translate('+(dx*.86)+'px,'+(dy*.86-lift*.35)+'px) scale('+(1+(sx-1)*.86)+','+(1+(sy-1)*.86)+') rotate('+(tilt*.35)+'deg)'},
+    {offset:1,transform:'translate('+dx+'px,'+dy+'px) scale('+sx+','+sy+') rotate(0deg)'}
+  ],{duration:300,easing:'cubic-bezier(.3,.05,.7,.95)',fill:'forwards'},true);
+}
+function animatePlacementLanding(side,lane,card){
+  var node=card.type==='ランドマーク'?landmarkCard(side,lane):boardCard(side,lane);
+  return placementMotion(node,[
+    {offset:0,transform:'translateY(-2px) scale(1,1)'},
+    {offset:.38,transform:'translateY(2px) scale(1.035,.94)'},
+    {offset:1,transform:'translateY(0) scale(1,1)'}
+  ],{duration:150,easing:'cubic-bezier(.2,.7,.3,1)'},false);
+}
 function showDestroy(side,index){
   var el=boardCard(side,index); if(!el) return;
   var r=el.getBoundingClientRect(), ghost=el.cloneNode(true);
@@ -2735,14 +2808,16 @@ async function useRevengeCard(side,card){
     slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'の報復配置レーンを選択',card.type==='ランドマーク'?'landmark':null,card), battleGeneration);
     if(slot==null||!canPlaceCard(side,card,slot)) return;
   }
+  var placementOrigin=card.type!=='スペル'?capturePlacementOrigin(side,card):null;
   hand.splice(index,1);
   if(card.type==='スペル'){
     logMsg(sideLabel(side)+'が'+card.name+'を報復使用');render();
     await checkedBattle(showSpellCast(card,side,{revenge:true,free:true}), battleGeneration);
     await checkedBattle(resolveSpellUse(card,side,{revenge:true}), battleGeneration);
   }else{
+    render();await checkedBattle(animateHandPlacement(side,slot,card,placementOrigin),battleGeneration);
     initializePlacedAttacks(card,side);placementBoard(side,card)[slot]=card;
-    logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();if(card.type==='ランドマーク')animateLandmark(side,slot,'appear');else animateSummon(side,slot);await checkedBattle(wait(220), battleGeneration);
+    logMsg(sideLabel(side)+'が'+card.name+'を報復配置');render();await checkedBattle(animatePlacementLanding(side,slot,card),battleGeneration);
     await checkedBattle(resolveCardEnteredSlot(side,slot,card), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,slot,{revenge:true}), battleGeneration);
   }
@@ -3520,15 +3595,17 @@ async function executePlayAction(action){
   const battleGeneration = state && state.generation;
   var side=action.side,hand=handFor(side),board=boardFor(side),card=hand[action.handIndex];
   if(card!==action.card||action.cost>manaFor(side)||(card.type!=='スペル'&&!canPlaceCard(side,card,action.lane)))return false;
+  var placementOrigin=card.type!=='スペル'?capturePlacementOrigin(side,card):null;
   spendMana(side,action.cost);hand.splice(action.handIndex,1);
   if(card.type==='スペル'){
     logMsg(sideLabel(side)+'が'+card.name+'を使用');render();
     await checkedBattle(showSpellCast(card,side,{cost:action.cost}), battleGeneration);
     await checkedBattle(resolveSpellUse(card,side,{}), battleGeneration);
   }else{
+    render();await checkedBattle(animateHandPlacement(side,action.lane,card,placementOrigin),battleGeneration);
     initializePlacedAttacks(card,side);placementBoard(side,card)[action.lane]=card;
     logMsg(sideLabel(side)+'が'+card.name+(action.mode==='dive'?'を潜水配置':'をスロット'+(action.lane+1)+'に配置'));
-    render();if(card.type==='ランドマーク')animateLandmark(side,action.lane,'appear');else animateSummon(side,action.lane);await checkedBattle(wait(220), battleGeneration);
+    render();await checkedBattle(animatePlacementLanding(side,action.lane,card),battleGeneration);
     await checkedBattle(resolveCardEnteredSlot(side,action.lane,card), battleGeneration);
     await checkedBattle(triggerCard(card,'onPlay',side,action.lane,{}), battleGeneration);
     if(action.mode==='normal')await checkedBattle(triggerCard(card,'onHandPlay',side,action.lane,{}), battleGeneration);
@@ -3721,4 +3798,5 @@ renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
 </html>
+
 
