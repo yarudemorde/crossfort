@@ -79,8 +79,8 @@ html[data-view-mode="pc"] .catalogGrid{grid-template-columns:repeat(4,minmax(0,1
 .catalogGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;padding-top:8px}.catalogCard{position:relative;min-height:224px;border:1px solid #8d795d;border-radius:13px;padding:13px 11px 11px;background:#26303a;color:#f3eadf;text-align:left;display:flex;flex-direction:column;overflow:hidden;box-shadow:inset 0 0 0 1px #0a0d10,0 8px 20px #0007}.catalogCard::after{content:"";position:absolute;inset:5px;border:1px solid #ffffff12;border-radius:9px;pointer-events:none}.catalogCard:active{transform:scale(.98);filter:brightness(1.14)}.catalogCard.green{background:linear-gradient(155deg,#355b43,#13261b)}.catalogCard.white{background:linear-gradient(155deg,#eee5d4,#a99c88);color:#211c17}.catalogCard.red{background:linear-gradient(155deg,#78403f,#321719)}.catalogCard.blue{background:linear-gradient(155deg,#365c7c,#172633)}.catalogCard.black{background:linear-gradient(155deg,#42394a,#18151c)}.catalogCard.yellow{background:linear-gradient(155deg,#78672d,#30270e)}.catalogCardCost{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#f2dcc0;border:1px solid #56432f;color:#17110c;font-size:14px;font-weight:900;box-shadow:0 2px 7px #0008}.catalogCardName{font-family:Georgia,"Yu Mincho",serif;font-size:15px;font-weight:900;line-height:1.25;margin:12px 0 4px;word-break:break-word}.catalogCardType{font-size:9px;opacity:.72}.catalogCardText{margin-top:auto;padding:11px 0 8px;border-top:1px solid #ffffff28;font-size:10px;line-height:1.45;word-break:break-word}.catalogCardPower{text-align:right;font-family:Georgia,"Yu Mincho",serif;font-size:15px;font-weight:900}.catalogEmpty{grid-column:1/-1;text-align:center;color:#aaa197;padding:60px 12px}
 
 #deckLibraryScreen,#deckEditorScreen{display:none;min-height:100vh;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 34px);background:radial-gradient(circle at 82% 7%,#29323b 0,transparent 27%),linear-gradient(180deg,#10151b,#080b0f 68%)}.deckManagerShell{width:min(720px,100%);margin:auto}.deckManagerHeader{display:grid;grid-template-columns:46px 1fr 46px;align-items:center;margin-bottom:15px}.deckManagerHeader h1{margin:0;text-align:center;font-family:Georgia,"Yu Mincho",serif;font-size:22px;letter-spacing:.06em}.deckManagerBack{width:42px;height:42px;border:1px solid #5e5244;border-radius:50%;background:#14191f;color:#eddbc0;font-size:21px}.deckCreateBtn,.deckSaveBtn{width:100%;min-height:54px;border:1px solid #f2dcc0;border-radius:12px;background:linear-gradient(135deg,#f0d8b5,#c49d68);color:#21170d;font-weight:900}.deckLibraryIntro{font-size:12px;line-height:1.6;color:#aaa197;margin:0 2px 13px}.savedDeckList{display:grid;gap:10px;margin-top:12px}.savedDeckCard{border:1px solid #625846;border-radius:12px;background:linear-gradient(145deg,#1c2228,#101419);padding:13px;box-shadow:inset 0 1px #ffffff0b}.savedDeckTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.savedDeckName{font-family:Georgia,"Yu Mincho",serif;font-size:16px;font-weight:900}.savedDeckMeta{font-size:10px;color:#a9a096;margin-top:5px}.savedDeckActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}.savedDeckActions button{min-height:42px;border:1px solid #665947;border-radius:9px;background:#1a2026;color:#e4d8c7;font-weight:800}.savedDeckActions .deleteDeckBtn{color:#efaaa5;border-color:#78474a}.noDecks{text-align:center;border:1px dashed #4b4640;border-radius:12px;padding:35px 15px;color:#918a82;font-size:12px}
-.deckNameInput{width:100%;height:48px;border:1px solid #665947;border-radius:10px;background:#10151a;color:#f3eadf;padding:0 13px;font-size:15px;outline:none}.deckNameInput:focus{border-color:#d9b981;box-shadow:0 0 0 3px #d9b98122}.editorSection{margin-top:15px}.editorLabel{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;color:#dfc9a8;font-family:Georgia,"Yu Mincho",serif;font-size:13px;font-weight:900}.editorLabel small{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#9f978e;font-size:9px}.editorColorGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.editorColorBtn{min-height:46px;border:1px solid #4f4b46;border-radius:10px;background:#151a20;color:#bcb4aa;font-weight:900}.editorColorBtn.selected{border:2px solid var(--gold2);background:#30281f;color:#fff4e4;box-shadow:0 0 13px #dfbd8d44}.editorColorBtn.green{color:#83c697}.editorColorBtn.white{color:#eee4d0}.editorColorBtn.red{color:#e7827b}.editorColorBtn.blue{color:#7ab5e2}.editorColorBtn.black{color:#b19bc7}.editorColorBtn.yellow{color:#ead16e}.deckProgress{position:sticky;top:7px;z-index:24;display:flex;align-items:center;justify-content:space-between;margin:14px 0 10px;padding:10px 13px;border:1px solid #76664f;border-radius:11px;background:#11171def;backdrop-filter:blur(12px);box-shadow:0 7px 20px #0008}.deckProgress strong{font-family:Georgia,"Yu Mincho",serif;font-size:18px;color:#f1d7ae}.deckProgress.complete{border-color:#77b58b;box-shadow:0 0 14px #65bc7c33}.deckEditList{display:grid;gap:8px}.deckEditCard{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;border:1px solid #625747;border-radius:11px;padding:11px;background:#20272e}.deckEditCard.green{background:linear-gradient(145deg,#274533,#15241b)}.deckEditCard.white{background:linear-gradient(145deg,#ddd4c3,#a79b89);color:#201b16}.deckEditCard.red{background:linear-gradient(145deg,#603333,#2d181a)}.deckEditCard.blue{background:linear-gradient(145deg,#294b67,#162631)}.deckEditCard.black{background:linear-gradient(145deg,#37303d,#18151c)}.deckEditCard.yellow{background:linear-gradient(145deg,#675823,#2c250e)}.deckEditInfo{min-width:0;padding:5px 2px;touch-action:pan-y;-webkit-touch-callout:none;user-select:none;cursor:help}.deckEditInfo:active{filter:brightness(1.22)}.deckEditInfo:focus-visible{outline:2px solid #f0d2a5;outline-offset:3px;border-radius:5px}.deckEditName{font-size:12px;font-weight:900;line-height:1.3}.deckEditMeta{font-size:9px;opacity:.72;margin-top:4px}.quantityControl{display:grid;grid-template-columns:38px 30px 38px;align-items:center}.quantityControl button{width:38px;height:38px;border:1px solid #8a7558;background:#12171d;color:#f0dcc0;font-size:20px;font-weight:900}.quantityControl button:first-child{border-radius:9px 0 0 9px}.quantityControl button:last-child{border-radius:0 9px 9px 0}.quantityControl button:disabled{opacity:.3}.quantityValue{text-align:center;font-size:15px;font-weight:900}.deckEditorEmpty{text-align:center;color:#918a82;border:1px dashed #4b4640;border-radius:12px;padding:38px 12px}.deckEditorFooter{margin-top:14px}.deckSaveBtn:disabled{filter:grayscale(1);opacity:.4}.deckEditorError{min-height:18px;margin:7px 2px 0;color:#ff9f9f;font-size:10px}.savedDeckSelect{width:100%;height:45px;margin-top:9px;border:1px solid #665947;border-radius:9px;background:#11171d;color:#e8dccb;padding:0 10px;font-weight:800}
-.deckEditCard.legendary{position:relative;overflow:hidden;border-color:#f4d99e;box-shadow:0 0 12px #e8bd6740}.deckEditCard.legendary::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 8%,#75e9ff1f 28%,#fff4ba55 42%,#f89cff2e 55%,transparent 74%);background-size:260% 100%;pointer-events:none;animation:holoShift 2.8s linear infinite}.deckEditorFooter{position:sticky;bottom:0;z-index:25;margin:14px -4px 0;padding:9px 4px calc(env(safe-area-inset-bottom) + 4px);background:linear-gradient(180deg,transparent,#090c10 20%)}
+.deckNameInput{width:100%;height:48px;border:1px solid #665947;border-radius:10px;background:#10151a;color:#f3eadf;padding:0 13px;font-size:15px;outline:none}.deckNameInput:focus{border-color:#d9b981;box-shadow:0 0 0 3px #d9b98122}.editorSection{margin-top:15px}.editorLabel{display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;color:#dfc9a8;font-family:Georgia,"Yu Mincho",serif;font-size:13px;font-weight:900}.editorLabel small{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#9f978e;font-size:9px}.editorColorGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.editorColorBtn{min-height:46px;border:1px solid #4f4b46;border-radius:10px;background:#151a20;color:#bcb4aa;font-weight:900}.editorColorBtn.selected{border:2px solid var(--gold2);background:#30281f;color:#fff4e4;box-shadow:0 0 13px #dfbd8d44}.editorColorBtn.green{color:#83c697}.editorColorBtn.white{color:#eee4d0}.editorColorBtn.red{color:#e7827b}.editorColorBtn.blue{color:#7ab5e2}.editorColorBtn.black{color:#b19bc7}.editorColorBtn.yellow{color:#ead16e}.deckEditorEmpty{text-align:center;color:#918a82;border:1px dashed #4b4640;border-radius:12px;padding:38px 12px}.deckSaveBtn:disabled{filter:grayscale(1);opacity:.4}.deckEditorError{min-height:18px;margin:7px 2px 0;color:#ff9f9f;font-size:10px}.savedDeckSelect{width:100%;height:45px;margin-top:9px;border:1px solid #665947;border-radius:9px;background:#11171d;color:#e8dccb;padding:0 10px;font-weight:800}
+.deckEditCard.legendary{border-color:#f4d99e}
 
 #gameScreen{display:none;min-height:100vh;padding:calc(env(safe-area-inset-top) + 8px) 8px calc(env(safe-area-inset-bottom) + 94px);background:radial-gradient(ellipse at 50% 38%,#2a2926 0,#11161b 42%,#080b0f 78%)}
 .topbar{position:sticky;top:0;z-index:10;background:rgba(12,16,20,.94);backdrop-filter:blur(12px);border:1px solid #685b4b;border-radius:10px;padding:9px 11px;margin-bottom:8px;box-shadow:inset 0 1px #ffffff0b,0 8px 24px #0008}
@@ -387,23 +387,61 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 .cardFilterBar label{display:flex;align-items:center;gap:5px;color:#dce4e9;font-size:11px;font-weight:800}
 .cardFilterBar select{min-height:36px;max-width:188px;min-width:112px;border:1px solid #647b8e;border-radius:7px;background:#14212d;color:#f4f0e6;padding:5px 9px;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .cardFilterBar select:focus-visible{outline:2px solid #a9c6d6;outline-offset:2px}
-.bookShelfSection{position:sticky;top:65px;z-index:23;margin:12px 0 15px;padding:9px 11px 0;border:1px solid #657c8c;border-radius:11px;background:linear-gradient(180deg,#1a2b38ee,#0c1721f6);box-shadow:0 10px 25px #000a;backdrop-filter:blur(12px)}
-.bookShelfHeading{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px;color:#f1efea;font:900 12px Georgia,"Yu Mincho",serif}
-.bookShelfHeading small{color:#aec3d1;font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.bookShelf{display:flex;align-items:flex-end;gap:3px;min-height:188px;padding:6px clamp(25px,6%,55px) 13px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#8298aa #132332;background-image:linear-gradient(180deg,#07111b1c,#07111b10),url("assets/deck-bookshelf.webp");background-size:100% 100%,100% 137%;background-position:center,center top;background-repeat:no-repeat;border:1px solid #597085;border-radius:5px 5px 1px 1px;image-rendering:pixelated;scroll-behavior:smooth}
-.bookShelf::after{content:"";flex:1 0 12px}
-.bookGroup{display:flex;align-items:flex-end;gap:1px;flex:none;border-right:1px solid #b9cbd326;padding-right:3px}
-.bookSpine{--spine:#314c62;--spine-light:#54738b;position:relative;flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;width:31px;height:160px;margin:0;padding:6px 2px 4px;border:2px solid #cbd9dc85;border-radius:3px 5px 2px 2px;background:linear-gradient(90deg,#080f18e0 0 12%,var(--spine) 18% 66%,var(--spine-light) 86%,#071019 100%);color:#f5f3e9;box-shadow:inset 1px 0 #ffffff65,inset -2px 0 #0009,2px 1px 3px #000e;font:800 10px Georgia,"Yu Mincho",serif;cursor:pointer}
-.bookSpine::before{content:"";position:absolute;inset:2px 3px;border-top:2px double #f5f0df95;border-bottom:2px double #f5f0df95;border-left:1px solid #f5f0df45;border-right:1px solid #f5f0df45;box-shadow:inset 0 2px #0006,inset 0 -2px #0006;pointer-events:none}
-.bookSpine:hover,.bookSpine:focus-visible{transform:translateY(-5px);outline:2px solid #eef4f5;outline-offset:1px}
-.bookSpine:nth-child(even){height:154px}
-.bookSpine.green{--spine:#275546;--spine-light:#5a997d}.bookSpine.white{--spine:#87919a;--spine-light:#b2bdc5}.bookSpine.red{--spine:#673e51;--spine-light:#a56673}.bookSpine.blue{--spine:#235279;--spine-light:#5e9dc3}.bookSpine.black{--spine:#383445;--spine-light:#726b87}.bookSpine.yellow{--spine:#6c6445;--spine-light:#a9a180}
-.bookSpineCost{flex:none;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;border:1px solid #f3f1df80;background:#0a1825a8;font:900 10px Arial,sans-serif}
-.bookSpineName{min-height:0;max-height:130px;writing-mode:vertical-rl;text-orientation:upright;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1;letter-spacing:-.06em;font-size:var(--book-font,10px);text-shadow:0 1px 2px #000}
-.bookSpine.first .bookSpineName{max-height:115px}
-.bookSpineCount{position:absolute;bottom:2px;left:1px;right:1px;border-top:1px solid #f7f0e76b;background:#0a1524ad;text-align:center;font:900 9px Arial,sans-serif}
-.bookShelfRail{height:8px;margin:0 -11px;border-top:2px solid #afc1cb;border-bottom:1px solid #546a78;border-radius:0 0 9px 9px;background:linear-gradient(#3e596c,#152632)}
-@media(max-width:600px){.bookShelfSection{top:61px;padding:7px 7px 0}.bookShelf{min-height:173px;padding:5px 25px 11px}.bookSpine{height:146px;width:29px}.bookSpine:nth-child(even){height:141px}.bookSpineName{max-height:112px;font-size:var(--book-font-mobile,9px)}.bookSpine.first .bookSpineName{max-height:96px}.bookShelfRail{margin:0 -7px}.cardFilterBar select{min-width:104px;max-width:158px}}
+@media(max-width:600px){.cardFilterBar select{min-width:104px;max-width:158px}}
+/* Deck editor uses the game's panels, faction colours and ivory controls. */
+#deckEditorScreen{padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
+.deckEditorHeader{position:sticky;top:0;z-index:25;grid-template-columns:44px minmax(0,1fr) 62px;gap:8px;padding:calc(env(safe-area-inset-top) + 6px) 0 8px;margin-top:calc(-1 * (env(safe-area-inset-top) + 12px));background:#10151bf5}
+.deckEditorHeader .deckNameInput{min-width:0;font-size:16px;height:44px}
+.deckEditorHeader .deckSaveBtn{min-height:44px;border-radius:10px}
+.deckEditorHeader .deckManagerBack{width:44px;height:44px}
+#deckEditorScreen .editorSection{margin-top:8px}
+#deckEditorScreen .editorColorGrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+#deckEditorScreen .editorColorBtn{min-height:44px}
+#deckEditorScreen .editorColorBtn:focus-visible,.editorViewTabs button:focus-visible,.quantityControl button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+#deckEditorScreen .deckEditorError:empty{display:none}
+#deckEditorScreen .deckStatsPanel{margin:12px 0;padding:0}
+.deckProgress{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:52px;padding:10px 12px;list-style:none;cursor:pointer;color:#c9c0b4;font-size:11px;border-radius:11px}
+.deckProgress::-webkit-details-marker{display:none}
+.deckProgress strong{font-family:Georgia,"Yu Mincho",serif;color:var(--gold2);font-size:17px;margin-left:4px}
+.deckProgress.complete strong{color:#83c697}
+.analysisChevron{font-size:19px;color:var(--gold)}
+.deckStatsPanel[open] .analysisChevron{transform:rotate(180deg)}
+.deckAnalysisBody{border-top:1px solid #45433e;padding:12px}
+.deckColorRatio{grid-template-columns:25px auto}
+.deckColorRatio b{font-size:11px}
+.deckTypeCounts{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;color:#c9c0b4;font-size:11px}
+.deckTypeCounts strong{color:var(--gold2);margin-left:4px}
+.deckAnalysisBody .deckAverage strong{font-size:16px}
+.editorViewTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0 8px}
+.editorViewTabs button{min-height:44px;border:1px solid #5e5244;border-radius:9px;background:#14191f;color:#bcb4aa;font-weight:800}
+.editorViewTabs button[aria-pressed="true"]{border-color:var(--gold2);background:#30281f;color:#fff4e4;box-shadow:inset 0 0 0 1px #dfbd8d40}
+.editorSearch{height:44px;font-size:16px;scroll-margin-top:80px}
+.editorFilters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:6px}
+.editorFilters label{display:grid;min-width:0;gap:4px;font-size:10px;color:#aaa197}
+.editorFilters select{width:100%;min-width:0!important;max-width:100%!important;min-height:44px;background:#14191f;border-color:#665947;color:#e8dccb;font-size:16px;padding:6px 4px;text-overflow:ellipsis}
+.deckEditList{display:grid;gap:8px;overflow-anchor:none}
+.deckEditCard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid #625747;border-left:4px solid var(--editor-accent);border-radius:10px;padding:8px;background:#20272e}
+.deckEditCard.green{--editor-accent:#83c697;background:linear-gradient(145deg,#274533,#15241b)}
+.deckEditCard.white{--editor-accent:#eee4d0;background:linear-gradient(145deg,#ddd4c3,#a79b89);color:#201b16}
+.deckEditCard.red{--editor-accent:#e7827b;background:linear-gradient(145deg,#603333,#2d181a)}
+.deckEditCard.blue{--editor-accent:#7ab5e2;background:linear-gradient(145deg,#294b67,#162631)}
+.deckEditCard.black{--editor-accent:#b19bc7;background:linear-gradient(145deg,#37303d,#18151c)}
+.deckEditCard.yellow{--editor-accent:#ead16e;background:linear-gradient(145deg,#675823,#2c250e)}
+.deckEditCard.included{box-shadow:inset 0 0 0 1px #dfbd8d40}
+.deckEditInfo{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:center;min-width:0;min-height:64px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;touch-action:pan-y;cursor:pointer}
+.deckEditInfo:focus-visible{outline:2px solid var(--gold2);outline-offset:2px;border-radius:4px}
+.deckEditCost{width:30px;height:34px;display:grid;place-items:center;border:1px solid var(--editor-accent);border-radius:50%;color:inherit;font:900 17px Georgia,serif}
+.deckEditName{display:block;font-family:Georgia,"Yu Mincho",serif;font-size:13px;font-weight:900;line-height:1.4;overflow-wrap:anywhere}
+.deckEditMeta,.deckEditSummary{display:block;font-size:10px;line-height:1.4;margin-top:3px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.deckEditMeta .deckColorIcon{width:10px;height:10px;margin-right:3px;border-width:1px;vertical-align:-1px;box-shadow:none}
+.quantityControl{display:grid;grid-template-columns:44px 24px 44px;align-items:center}
+.quantityControl button{width:44px;height:44px;border:1px solid #8a7558;background:#12171d;color:#f0dcc0;font-size:20px;font-weight:900;touch-action:manipulation}
+.quantityControl button:first-child{border-radius:9px 0 0 9px}
+.quantityControl button:last-child{border-radius:0 9px 9px 0}
+.quantityControl button:disabled{opacity:.3}
+.quantityValue{text-align:center;font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
+.deckListEmpty{padding:28px 12px;border:1px dashed #4b4640;border-radius:10px;text-align:center;color:#aaa197;font-size:12px}
+@media(max-width:350px){.deckEditCard{gap:5px;padding:7px 5px}.deckEditInfo{grid-template-columns:25px minmax(0,1fr);gap:5px}.deckEditCost{width:25px;height:31px;font-size:15px}.deckEditName{font-size:12px}}
 
 /* Battle rows share one five-column grid, including the non-card defense lines. */
 #gameScreen{padding-bottom:calc(env(safe-area-inset-bottom) + 20px);overflow-x:clip}
@@ -552,36 +590,44 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 
 <section id="deckEditorScreen">
   <div class="deckManagerShell">
-    <header class="deckManagerHeader"><button class="deckManagerBack" onclick="showDeckLibrary()" aria-label="デッキ一覧へ戻る">←</button><h1 id="deckEditorTitle">デッキ作成</h1><span></span></header>
-    <div class="editorLabel"><span>デッキ名</span><small>20文字まで</small></div>
-    <input class="deckNameInput" id="deckNameInput" maxlength="20" placeholder="デッキ名を入力">
+    <header class="deckManagerHeader deckEditorHeader">
+      <button class="deckManagerBack" onclick="showDeckLibrary()" aria-label="デッキ一覧へ戻る">←</button>
+      <h1 id="deckEditorTitle" class="visuallyHidden">デッキ作成</h1>
+      <input class="deckNameInput" id="deckNameInput" maxlength="20" aria-label="デッキ名（20文字まで）" placeholder="デッキ名">
+      <button class="deckSaveBtn" id="deckSaveBtn" onclick="saveEditedDeck()" disabled>保存</button>
+    </header>
+    <div class="deckEditorError" id="deckEditorError" role="status"></div>
     <div class="editorSection">
       <div class="editorLabel"><span>カラーを選択</span><small>最大2色</small></div>
       <div class="editorColorGrid" id="editorColorGrid">
         <button class="editorColorBtn green" data-editor-color="緑" onclick="toggleEditorColor('緑')" aria-label="緑" title="緑"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">緑</span></button><button class="editorColorBtn white" data-editor-color="白" onclick="toggleEditorColor('白')" aria-label="白" title="白"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">白</span></button><button class="editorColorBtn red" data-editor-color="赤" onclick="toggleEditorColor('赤')" aria-label="赤" title="赤"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">赤</span></button><button class="editorColorBtn blue" data-editor-color="青" onclick="toggleEditorColor('青')" aria-label="青" title="青"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">青</span></button><button class="editorColorBtn black" data-editor-color="黒" onclick="toggleEditorColor('黒')" aria-label="黒" title="黒"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">黒</span></button><button class="editorColorBtn yellow" data-editor-color="黄" onclick="toggleEditorColor('黄')" aria-label="黄" title="黄"><span class="editorColorSwatch" aria-hidden="true"></span><span class="visuallyHidden">黄</span></button>
       </div>
     </div>
-    <div class="deckProgress" id="deckProgress"><span>選択中のカード</span><strong id="deckTotalCount">0 / 40</strong></div>
-    <section class="bookShelfSection" aria-label="編成中のデッキ">
-      <div class="bookShelfHeading"><span>編成中のデッキ</span><small id="deckShelfSummary" aria-live="polite">0種類・0枚</small></div>
-      <div class="bookShelf" id="deckBookShelf"></div>
-      <div class="bookShelfRail" aria-hidden="true"></div>
-    </section>
-    <section class="deckStatsPanel" aria-label="デッキ統計">
+    <details class="deckStatsPanel" id="deckAnalysis">
+      <summary class="deckProgress" id="deckProgress"><span>採用 <strong id="deckTotalCount">0 / 40</strong></span><span>平均コスト <strong id="deckAverageCost">0.0</strong></span><span class="analysisChevron" aria-hidden="true">⌄</span></summary>
+      <div class="deckAnalysisBody">
       <div class="deckStatsHeader">
         <div><span class="deckStatsLabel">デッキカラー</span><div class="deckColorIcons" id="deckColorIcons" aria-label="未選択"><span class="deckColorEmpty">未選択</span></div></div>
-        <div class="deckAverage"><span class="deckStatsLabel">平均コスト</span><strong id="deckAverageCost">0.0</strong></div>
+        <div class="deckAverage"><span class="deckStatsLabel">採用カード</span><strong id="deckUniqueCount">0種類</strong></div>
       </div>
+      <div class="deckTypeCounts" id="deckTypeCounts"></div>
       <div class="costCurveTitle"><span>コスト分布</span><small>採用枚数</small></div>
       <div class="costCurve" id="deckCostCurve" role="img" aria-label="カードはまだ選択されていません"></div>
-    </section>
-    <div class="editorLabel"><span>カードを選択</span><small id="editorResultCount">カード名を長押しで詳細</small></div>
-    <div class="cardFilterBar" aria-label="デッキ用カードの絞り込み">
+      </div>
+    </details>
+    <div class="editorViewTabs" role="group" aria-label="採用状態">
+      <button type="button" data-editor-view="all" aria-pressed="true" onclick="setEditorFilter('view','all')">すべて</button>
+      <button type="button" data-editor-view="included" aria-pressed="false" onclick="setEditorFilter('view','included')">採用中</button>
+      <button type="button" data-editor-view="excluded" aria-pressed="false" onclick="setEditorFilter('view','excluded')">未採用</button>
+    </div>
+    <input id="editorSearch" class="deckNameInput editorSearch" type="search" aria-label="カード名・効果を検索" placeholder="カード名・効果" oninput="setEditorFilter('search',this.value)">
+    <div class="cardFilterBar editorFilters" aria-label="デッキ用カードの絞り込み">
       <label for="editorTypeFilter">カードタイプ<select id="editorTypeFilter" onchange="setEditorFilter('type',this.value)"><option value="all">すべて</option><option value="ユニット">ユニット</option><option value="スペル">スペル</option><option value="ランドマーク">ランドマーク</option></select></label>
+      <label for="editorKeywordFilter">キーワード・効果<select id="editorKeywordFilter" onchange="setEditorFilter('keyword',this.value)"><option value="all">すべて</option></select></label>
       <label for="editorSetFilter">収録弾<select id="editorSetFilter" onchange="setEditorFilter('set',this.value)"><option value="all">すべて</option></select></label>
     </div>
+    <div class="editorLabel"><span>カード一覧</span><small id="editorResultCount" role="status"></small></div>
     <div class="deckEditList" id="deckEditList"></div>
-    <div class="deckEditorFooter"><button class="deckSaveBtn" id="deckSaveBtn" onclick="saveEditedDeck()" disabled>この内容で登録</button><div class="deckEditorError" id="deckEditorError"></div></div>
   </div>
 </section>
 
@@ -801,6 +847,7 @@ var selectedColor='青',setupMode='cpu',setupFirstChoice='random',setupPlayerCol
 var setupPlayerDeckId='',setupEnemyDeckId='';
 var catalogColor='緑';
 var catalogTypeFilter='all',catalogSetFilter='all',editorTypeFilter='all',editorSetFilter='all';
+var editorViewFilter='all',editorKeywordFilter='all',editorSearch='',editorRows=new Map();
 var savedDecks=loadSavedDecks(),editingDeckId='',editorColors=[],editorCounts={};
 var PROFILE_KEY='crossfort_profile_v1',PROFILE_STATS_KEY='crossfort_profile_stats_v1';
 var playerStats=loadPlayerStats(),playerProfile=loadPlayerProfile(),editingProfileTitleId=playerProfile.titleId;
@@ -1292,7 +1339,8 @@ function importDeckCode(){
 function showDeckEditor(id){
   var deck=id?getSavedDeck(id):null;editingDeckId=deck?deck.id:'';editorColors=deck?(deck.colors||[]).slice(0,2):[];editorCounts={};
   if(deck)for(var name in deck.cards)if(deck.cards[name]>0){var resolvedName=CARD_NAME_ALIASES[name]||name;editorCounts[resolvedName]=Math.min(4,(editorCounts[resolvedName]||0)+deck.cards[name]);}
-  editorTypeFilter='all';editorSetFilter='all';$('editorTypeFilter').value='all';populateSetFilter('editorSetFilter','all');
+  editorTypeFilter='all';editorSetFilter='all';editorViewFilter='all';editorKeywordFilter='all';editorSearch='';editorRows.clear();$('deckEditList').innerHTML='';
+  $('editorSearch').value='';$('editorTypeFilter').value='all';$('deckAnalysis').open=false;populateSetFilter('editorSetFilter','all');populateEditorKeywordFilter();
   $('deckLibraryScreen').style.display='none';$('deckEditorScreen').style.display='block';$('deckEditorTitle').textContent=deck?'デッキ編集':'デッキ作成';$('deckNameInput').value=deck?deck.name:'デッキ'+(savedDecks.length+1);$('deckEditorError').textContent='';renderDeckEditor();window.scrollTo(0,0);
 }
 function populateSetFilter(id,selected){
@@ -1303,20 +1351,26 @@ function populateSetFilter(id,selected){
 }
 function matchesCardFilters(card,type,set){return (type==='all'||card.type===type)&&(set==='all'||card.id.split('-')[0]===set);}
 function cardCostOrder(a,b){return a.cost-b.cost||a.name.localeCompare(b.name,'ja');}
-function setEditorFilter(kind,value){if(kind==='type')editorTypeFilter=value;else editorSetFilter=value;renderDeckEditor();}
+function setEditorFilter(kind,value){
+  if(kind==='type')editorTypeFilter=value;else if(kind==='set')editorSetFilter=value;else if(kind==='view')editorViewFilter=value;else if(kind==='keyword')editorKeywordFilter=value;else if(kind==='search')editorSearch=value;
+  renderDeckEditor();
+}
 function setCatalogFilter(kind,value){if(kind==='type')catalogTypeFilter=value;else catalogSetFilter=value;renderCatalog();}
 function toggleEditorColor(color){
   var index=editorColors.indexOf(color);
   if(index>=0){editorColors.splice(index,1);var pool=CARD_POOLS[color]||[];for(var i=0;i<pool.length;i++)delete editorCounts[pool[i][0]];}
   else if(editorColors.length<2)editorColors.push(color);
   else{$('deckEditorError').textContent='カラーは最大2種類までです';return;}
-  $('deckEditorError').textContent='';renderDeckEditor();
+  $('deckEditorError').textContent='';populateEditorKeywordFilter();renderDeckEditor();
 }
 function adjustDeckCard(name,delta){
-  var current=editorCounts[name]||0,total=totalDeckCards(editorCounts),next=current+delta;
+  var template=cardTemplateByName(name);if(!template||editorColors.indexOf(template.color)<0||Math.abs(delta)!==1)return;
+  var current=editorCounts[name]||0,total=totalDeckCards(editorCounts),next=current+delta,scroll=window.scrollY;
   if(next<0 || next>4 || (delta>0 && total>=40))return;
   if(next===0)delete editorCounts[name];else editorCounts[name]=next;
-  renderDeckEditor();
+  $('deckEditorError').textContent='';renderDeckEditor();
+  // Keyed rows keep the active button and list position when counts change.
+  if(typeof scroll==='number')window.scrollTo(0,scroll);
 }
 function deckColorIconsHtml(colors){
   var html='';
@@ -1328,26 +1382,28 @@ function deckColorIconsHtml(colors){
 }
 function renderDeckEditorStats(total){
   var colorRoot=$('deckColorIcons'),colors=editorColors.slice();
-  var bins=[0,0,0,0,0,0,0,0],binColors=[],colorTotals={},weighted=0;
+  var bins=[0,0,0,0,0,0,0,0],binColors=[],colorTotals={},weighted=0,unique=0,typeTotals={'ユニット':0,'スペル':0,'ランドマーク':0};
   for(var b=0;b<8;b++)binColors.push({});
   for(var name in editorCounts)if(Object.prototype.hasOwnProperty.call(editorCounts,name)){
     var count=Number(editorCounts[name])||0,template=cardTemplateByName(name);
     if(!count||!template)continue;
     var card=cloneCard(template.row,template.color),cost=Math.max(0,Number(card.cost)||0),bucket=Math.min(7,Math.floor(cost));
-    bins[bucket]+=count;binColors[bucket][card.color]=(binColors[bucket][card.color]||0)+count;colorTotals[card.color]=(colorTotals[card.color]||0)+count;weighted+=cost*count;
+    bins[bucket]+=count;binColors[bucket][card.color]=(binColors[bucket][card.color]||0)+count;colorTotals[card.color]=(colorTotals[card.color]||0)+count;weighted+=cost*count;unique++;typeTotals[card.type]=(typeTotals[card.type]||0)+count;
   }
   if(colors.length){
     var colorHtml=[],colorLabels=[];
     for(var c=0;c<colors.length;c++){
       var color=colors[c],colorCount=colorTotals[color]||0,ratio=total?Math.round(colorCount/total*100):0,cls=COLOR_CLASS[color]||'';
-      colorHtml.push('<span class="deckColorRatio"><span class="deckColorIcon '+cls+'" title="'+escapeHtml(color)+'" aria-hidden="true"></span><b>'+ratio+'%</b></span>');
-      colorLabels.push(color+' '+ratio+'パーセント');
+      colorHtml.push('<span class="deckColorRatio"><span class="deckColorIcon '+cls+'" title="'+escapeHtml(color)+'" aria-hidden="true"></span><b>'+colorCount+'枚・'+ratio+'%</b></span>');
+      colorLabels.push(color+' '+colorCount+'枚 '+ratio+'パーセント');
     }
     colorRoot.innerHTML=colorHtml.join('');colorRoot.setAttribute('aria-label','選択中：'+colorLabels.join('、'));
   }else{
     colorRoot.innerHTML='<span class="deckColorEmpty">未選択</span>';colorRoot.setAttribute('aria-label','カラー未選択');
   }
   $('deckAverageCost').textContent=total?(weighted/total).toFixed(1):'0.0';
+  $('deckUniqueCount').textContent=unique+'種類';
+  $('deckTypeCounts').innerHTML=Object.keys(typeTotals).map(function(type){return '<span>'+type+'<strong>'+typeTotals[type]+'</strong></span>';}).join('');
   var maxCount=Math.max.apply(null,bins.concat([1])),html=[],labels=[];
   for(var i=0;i<bins.length;i++){
     var label=i===7?'7+':String(i),height=bins[i]?Math.max(8,Math.round(bins[i]/maxCount*100)):0,segments=[],parts=[];
@@ -1363,41 +1419,97 @@ function renderDeckEditorStats(total){
   }
   var curve=$('deckCostCurve');curve.innerHTML=html.join('');curve.setAttribute('aria-label',total?labels.join('、'):'カードはまだ選択されていません');
 }
-function renderDeckBookShelf(total){
-  var shelf=$('deckBookShelf'),previousScroll=shelf.scrollLeft,chosen=[];
-  for(var name in editorCounts)if(Object.prototype.hasOwnProperty.call(editorCounts,name)&&editorCounts[name]>0){
-    var template=cardTemplateByName(name);if(template)chosen.push({card:cloneCard(template.row,template.color),count:Number(editorCounts[name])});
+// Filter metadata is derived without evaluating battle-dependent rules.
+var EDITOR_EFFECTS=[
+  {id:'draw',label:'ドロー',types:/^(draw|selectSpellFromDeckTop)$/},
+  {id:'removal',label:'除去',types:/^(damageUnit|damageAllEnemies|destroyUnit|destroyAllUnits|sendUnitToBottom|sendUnitsToBottom|destroyAndRedeployOther)$/},
+  {id:'recover',label:'回収',types:/^(recoverGrave|deployFromGrave|deployDiveFromBottom|shuffleGraveSpellsIntoDeck)$/},
+  {id:'buff',label:'強化',types:/^(buff|grantKeyword|setPower|setSelfPower)/},
+  {id:'token',label:'トークン',types:/^(createToken|destroyRelicForToken|destroyAllRelicsForTokens)/},
+  {id:'return',label:'手札へ戻す',types:/^(returnUnitToHand|returnAnyAllies)$/},
+  {id:'heal',label:'回復',types:/^heal$/},
+  {id:'mana',label:'資源',types:/^(gainMana|gainMaxMana|reduceHandCost)$/},
+  {id:'deploy',label:'効果で配置',types:/^deploy/},
+  {id:'disrupt',label:'手札干渉',types:/^(opponentDiscard|enemyHandToBottom)$/},
+  {id:'move',label:'移動',types:/^move/}
+];
+function editorCardTags(card){
+  var rules=rulesFor(card),types=[],keywords=(rules.keywords||[]).slice(),tags=[];
+  function visit(value){
+    if(!value||typeof value!=='object')return;
+    if(value.type)types.push(value.type);
+    if(value.keyword)keywords.push(value.keyword);
+    Object.keys(value).forEach(function(key){if(typeof value[key]==='object')visit(value[key]);});
   }
-  chosen.sort(function(a,b){return cardCostOrder(a.card,b.card);});
-  $('deckShelfSummary').textContent=chosen.length+'種類・'+total+'枚';
-  if(!chosen.length){shelf.innerHTML='';return;}
-  var html=[];
-  for(var i=0;i<chosen.length;i++){
-    var card=chosen[i].card,count=chosen[i].count,escaped=escapeHtml(card.name);
-    html.push('<div class="bookGroup" aria-label="'+escaped+'を'+count+'枚採用">');
-    for(var copy=0;copy<count;copy++){
-      var length=Array.from(card.name).length,desktopFont=Math.max(7,Math.min(11,Math.floor((copy===0?115:130)/length))),mobileFont=Math.max(6,Math.min(10,Math.floor((copy===0?96:112)/length)));
-      html.push('<button type="button" class="bookSpine '+(COLOR_CLASS[card.color]||'')+(copy===0?' first':'')+'" style="--book-font:'+desktopFont+'px;--book-font-mobile:'+mobileFont+'px" data-book-name="'+escaped+'" title="'+escaped+'：'+count+'枚採用" aria-label="'+escaped+'、コスト'+card.cost+'、'+count+'枚中'+(copy+1)+'枚目。カード詳細を表示"><span class="bookSpineCost">'+card.cost+'</span><span class="bookSpineName">'+escaped+'</span>'+(copy===0?'<span class="bookSpineCount">×'+count+'</span>':'')+'</button>');
-    }
-    html.push('</div>');
-  }
-  shelf.innerHTML=html.join('');shelf.scrollLeft=previousScroll;
-  shelf.onclick=function(event){var spine=event.target.closest('.bookSpine');if(!spine||!shelf.contains(spine))return;var template=cardTemplateByName(spine.getAttribute('data-book-name'));if(template)showCardDetail(cloneCard(template.row,template.color));};
+  visit(rules);
+  var keywordNames={guard:'守護',lethal:'殺傷',haste:'猛襲',pierce:'貫通',unblockable:'防衛されない',cannotAttack:'攻撃不可'};
+  (KEYWORD_GUIDE||[]).forEach(function(guide){if(guide.pattern.test(card.text||'')||keywords.some(function(k){return keywordNames[k]===guide.name;})||(guide.name==='潜水'&&rules.dive!=null)||(guide.name==='報復'&&rules.revenge))tags.push({id:'kw:'+guide.name,label:guide.name});});
+  Object.keys(keywordNames).forEach(function(key){var label=keywordNames[key];if(keywords.indexOf(key)>=0&&!tags.some(function(tag){return tag.label===label;}))tags.push({id:'kw:'+label,label:label});});
+  EDITOR_EFFECTS.forEach(function(group){if(types.some(function(type){return group.types.test(type);})||(group.id==='move'&&rules.moveOnAttack))tags.push({id:'effect:'+group.id,label:group.label});});
+  return tags;
+}
+function editorAvailableCards(){
+  var cards=[];
+  editorColors.forEach(function(color){(CARD_POOLS[color]||[]).forEach(function(row){cards.push(cloneCard(row,color));});});
+  return cards.sort(cardCostOrder);
+}
+function populateEditorKeywordFilter(){
+  var found=new Map(),select=$('editorKeywordFilter');
+  var colors=editorColors.length?editorColors:Object.keys(CARD_POOLS);
+  colors.forEach(function(color){(CARD_POOLS[color]||[]).forEach(function(row){editorCardTags(cloneCard(row,color)).forEach(function(tag){found.set(tag.id,tag.label);});});});
+  var html='<option value="all">すべて</option>';
+  ['kw:','effect:'].forEach(function(prefix){
+    var options=[];found.forEach(function(label,id){if(id.indexOf(prefix)===0)options.push('<option value="'+escapeHtml(id)+'">'+escapeHtml(label)+'</option>');});
+    if(options.length)html+='<optgroup label="'+(prefix==='kw:'?'キーワード':'効果')+'">'+options.join('')+'</optgroup>';
+  });
+  if(editorKeywordFilter!=='all'&&!found.has(editorKeywordFilter))editorKeywordFilter='all';
+  select.innerHTML=html;select.value=editorKeywordFilter;
+}
+function matchesEditorCard(card){
+  var count=editorCounts[card.name]||0;
+  if(!matchesCardFilters(card,editorTypeFilter,editorSetFilter))return false;
+  if(editorViewFilter==='included'&&!count||editorViewFilter==='excluded'&&count)return false;
+  if(editorKeywordFilter!=='all'&&!editorCardTags(card).some(function(tag){return tag.id===editorKeywordFilter;}))return false;
+  var text=(card.name+' '+card.text).normalize('NFKC').toLocaleLowerCase('ja');
+  return String(editorSearch).normalize('NFKC').toLocaleLowerCase('ja').trim().split(/\s+/).every(function(word){return text.indexOf(word)>=0;});
+}
+function updateDeckEditorRow(entry,total){
+  var count=editorCounts[entry.card.name]||0;
+  if(entry.value.textContent!==String(count))entry.value.textContent=String(count);
+  entry.value.setAttribute('aria-label',entry.card.name+' 採用'+count+'枚');
+  entry.minus.disabled=count<=0;entry.plus.disabled=count>=4||total>=40;
+  entry.node.classList.toggle('included',count>0);
+}
+function createDeckEditorRow(card){
+  var row=document.createElement('div'),escaped=escapeHtml(card.name),color=COLOR_CLASS[card.color]||'',tags=editorCardTags(card);
+  row.className='deckEditCard '+color+(card.legendary?' legendary':'');row.dataset.cardName=card.name;
+  var summary=tags.length?tags.map(function(tag){return tag.label;}).slice(0,3).join('・'):(card.text||'効果なし').replace(/[■◼︎]/g,'').trim();
+  row.innerHTML='<button type="button" class="deckEditInfo" aria-label="'+escaped+'の詳細"><span class="deckEditCost">'+card.cost+'</span><span><span class="deckEditName">'+escaped+'</span><span class="deckEditMeta"><span class="deckColorIcon '+color+'" aria-hidden="true"></span>'+escapeHtml(card.color+' ／ '+card.type)+(card.type==='ユニット'?' ／ ⚔ '+card.power:'')+'</span><span class="deckEditSummary">'+escapeHtml(summary)+'</span></span></button><div class="quantityControl"><button type="button" aria-label="'+escaped+'を減らす">－</button><span class="quantityValue">0</span><button type="button" aria-label="'+escaped+'を増やす">＋</button></div>';
+  row.querySelector('.deckEditInfo').onclick=function(){showCardDetail(card);};
+  var buttons=row.querySelectorAll('.quantityControl button'),entry={node:row,card:card,minus:buttons[0],plus:buttons[1],value:row.querySelector('.quantityValue')};
+  entry.minus.onclick=function(){adjustDeckCard(card.name,-1);};entry.plus.onclick=function(){adjustDeckCard(card.name,1);};
+  return entry;
 }
 function renderDeckEditor(){
-  var tabs=document.querySelectorAll('[data-editor-color]');for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle('selected',editorColors.indexOf(tabs[i].getAttribute('data-editor-color'))>=0);
-  var total=totalDeckCards(editorCounts),root=$('deckEditList');$('deckTotalCount').textContent=total+' / 40';$('deckProgress').classList.toggle('complete',total===40);$('deckSaveBtn').disabled=!(editorColors.length>=1&&editorColors.length<=2&&total===40);renderDeckEditorStats(total);
-  renderDeckBookShelf(total);
-  root.innerHTML='';if(!editorColors.length){root.innerHTML='<div class="deckEditorEmpty">先にデッキのカラーを選択してください</div>';return;}
-  var cards=[];for(var c=0;c<editorColors.length;c++){var pool=CARD_POOLS[editorColors[c]]||[];for(var p=0;p<pool.length;p++)cards.push(cloneCard(pool[p],editorColors[c]));}
-  cards=cards.filter(function(card){return matchesCardFilters(card,editorTypeFilter,editorSetFilter);}).sort(cardCostOrder);
-  $('editorResultCount').textContent=cards.length+'枚表示 ／ 長押しで詳細';
-  if(!cards.length){root.innerHTML='<div class="deckEditorEmpty">条件に合うカードがありません</div>';return;}
-  for(var j=0;j<cards.length;j++)(function(card){
-    var count=editorCounts[card.name]||0,row=document.createElement('div');row.className='deckEditCard '+(COLOR_CLASS[card.color]||'')+(card.legendary?' legendary':'');
-    row.innerHTML='<div class="deckEditInfo" role="button" tabindex="0" aria-label="'+escapeHtml(card.name)+'。長押しでカード詳細"><div class="deckEditName">'+escapeHtml(card.name)+'</div><div class="deckEditMeta">コスト '+card.cost+' ／ '+(card.type==='スペル'?'✦ スペル':card.type==='ランドマーク'?escapeHtml(cardFaceMeta(card)):'⚔ '+card.power+' ／ '+escapeHtml(cardFaceMeta(card)))+'</div></div><div class="quantityControl"><button type="button" aria-label="'+escapeHtml(card.name)+'を減らす" '+(count<=0?'disabled':'')+'>－</button><span class="quantityValue">'+count+'</span><button type="button" aria-label="'+escapeHtml(card.name)+'を増やす" '+(count>=4||total>=40?'disabled':'')+'>＋</button></div>';
-    var info=row.querySelector('.deckEditInfo'),buttons=row.querySelectorAll('button');attachCardHold(info,card,null,true);info.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();showCardDetail(card);}};buttons[0].onclick=function(){adjustDeckCard(card.name,-1);};buttons[1].onclick=function(){adjustDeckCard(card.name,1);};root.appendChild(row);
-  })(cards[j]);
+  var tabs=document.querySelectorAll('[data-editor-color]');
+  for(var i=0;i<tabs.length;i++){var selected=editorColors.indexOf(tabs[i].getAttribute('data-editor-color'))>=0;tabs[i].classList.toggle('selected',selected);tabs[i].setAttribute('aria-pressed',String(selected));}
+  document.querySelectorAll('[data-editor-view]').forEach(function(tab){tab.setAttribute('aria-pressed',String(tab.getAttribute('data-editor-view')===editorViewFilter));});
+  var total=totalDeckCards(editorCounts),root=$('deckEditList');
+  $('deckTotalCount').textContent=total+' / 40';$('deckProgress').classList.toggle('complete',total===40);$('deckSaveBtn').disabled=!(editorColors.length>=1&&editorColors.length<=2&&total===40);
+  renderDeckEditorStats(total);
+  var cards=editorAvailableCards().filter(matchesEditorCard),desired=new Set(cards.map(function(card){return card.name;}));
+  $('editorResultCount').textContent=cards.length+'種類';
+  Array.from(root.children).forEach(function(row){if(!desired.has(row.dataset.cardName))row.remove();});
+  if(!cards.length){
+    if(!root.firstElementChild){var empty=document.createElement('div');empty.className='deckListEmpty';empty.textContent=editorColors.length?'条件に合うカードがありません':'カラー未選択';root.appendChild(empty);}
+    return;
+  }
+  cards.forEach(function(card,index){
+    var entry=editorRows.get(card.name);
+    if(!entry){entry=createDeckEditorRow(card);editorRows.set(card.name,entry);}
+    updateDeckEditorRow(entry,total);
+    if(root.children[index]!==entry.node)root.insertBefore(entry.node,root.children[index]||null);
+  });
 }
 function saveEditedDeck(){
   var name=$('deckNameInput').value.trim(),total=totalDeckCards(editorCounts),error='';
@@ -3798,5 +3910,6 @@ renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
 </html>
+
 
 
