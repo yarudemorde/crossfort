@@ -46,7 +46,7 @@ const textKeywords=['守護','殺傷','猛襲','貫通','潜水：2','魂響','�
 for(const keyword of textKeywords) check(ctx.formatCardText(`■ ${keyword}`).includes('keywordText'),`${keyword} remains highlighted in card text`);
 const badgeSource=html.slice(html.indexOf('function keywordBadges'),html.indexOf('function formatCardText'));
 check(!badgeSource.includes('<img')&&!badgeSource.includes('assets/icons/keywords'),'AI-generated PNG assets are not referenced by keyword rendering');
-check(!/battlefieldKeywordEffects|animateKeywordEffect|\banimatePlacement\b|keywordAura|keywordMoment|keywordFx/.test(html+css),'keyword-only effects remain disabled independently of generic effect feedback');
+check(!/battlefieldKeywordEffects|animateKeywordEffect|animatePlacement|keywordAura|keywordMoment|keywordFx/.test(html+css),'keyword effects remain disabled');
 check(/\.keywordIcon\{[^}]*border:1px solid #ead5b5[^}]*border-radius:5px[^}]*box-shadow:0 2px 6px #0009/.test(html),'original icon frame, radius, and shadow are restored');
 check(/\.keywordIcon\.guard\{background:#36536c\}/.test(html)&&/\.keywordIcon\.lethal\{background:#6b2830\}/.test(html)&&/\.keywordIcon\.pierce\{background:#674f24\}/.test(html)&&/\.keywordIcon\.haste\{background:#793e24\}/.test(html),'original keyword colors are restored');
 check(/\.keywordIcon svg\{width:14px;height:14px[^}]*stroke-width:1\.8/.test(css),'original SVG size and line width are restored');
@@ -60,4 +60,3 @@ check(!handSource.includes('keywordBadges')&&!catalogSource.includes('keywordBad
 check(html.includes('parchment.css?v=14'),'clients receive the restored icon stylesheet without stale cache reuse');
 check(!/(burning\.png|burn-icon)/.test(html+css)&&html.includes('burningLane'),'third-set burning uses the compact lane-state marker without adding a keyword image asset');
 console.log(`${checks} restored HTML/CSS keyword-icon assertions passed`);
-

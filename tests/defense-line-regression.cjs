@@ -35,7 +35,7 @@ run('render=function(){};renderPicker=function(){};wait=async function(){};anima
     check(ctx.state.enemyDefense[0]===Math.min(2,hit),'defense stage after combat '+hit);
     check(before-ctx.state.enemyLife===(hit===1?0:hit===2?2:3),'intact blocks, cracked takes normal damage, breached gains one damage');
   }
-  check(ctx.state.battleHistory.some(e=>e.text.includes('攻撃を防ぎ、ヒビが入った'))&&ctx.state.battleHistory.some(e=>e.text.includes('崩壊した'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'defense, transition, and bonus messages enter battle history');
+  check(ctx.state.battleHistory.some(e=>e.text.includes('攻撃を防ぎ、ヒビが入った'))&&ctx.state.battleHistory.some(e=>e.text.includes('突破された'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'defense, transition, and bonus messages enter battle history');
   check(!html.includes('防衛線 BLOCK')&&!html.includes('0ダメージ')&&css.includes('.fxDefenseShield')&&css.includes('.life.wallShielded'),'blocked combat uses a text-free shield effect');
   const slots=node('enemyDefense');slots.children=[];ctx.renderDefenseLine('enemy','enemyDefense');check(slots.children.length===5&&slots.children[0].innerHTML.includes('defense_wall_breached.png')&&slots.children[1].innerHTML.includes('defense_wall_intact.png'),'five aligned wall images reflect state');
   ctx.state.enemyMana=3;ctx.state.enemyMaxMana=5;ctx.renderResourceSlots('enemy','enemyResourceSlots','enemyResourceTrack');const track=node('enemyResourceSlots').innerHTML;
@@ -61,4 +61,3 @@ run('render=function(){};renderPicker=function(){};wait=async function(){};anima
   check(['resource_bar_10slots.png','resource_coin_gold.png','resource_empty_slot.png','life_heart.png','defense_wall_intact.png','defense_wall_cracked.png','defense_wall_breached.png'].every(name=>fs.existsSync(path.join(dir,'assets/ui/battle',name))),'all seven supplied images are integrated');
   console.log(`${checks} defense-line regression assertions passed`);
 })().catch(error=>{console.error(error);process.exitCode=1});
-
