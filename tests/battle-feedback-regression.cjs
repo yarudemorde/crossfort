@@ -53,6 +53,14 @@ let checks=0;function check(value,msg){assert.ok(value,msg);checks++;}
  check(trace.join('|')==='begin:連続元|begin:生存誘発|end:生存誘発|begin:破壊対象|end:破壊対象|end:連続元|begin:連続元|end:連続元','visual phases preserve original nested resolution order');
  check(s.battleHistory.some(e=>e.source==='連続元'&&e.text.includes('2ダメージ'))&&s.battleHistory.some(e=>e.source==='破壊対象'&&e.text.includes('LIFE -1')),'effect history records individual sources and numeric results');
  check(!ctx.battleFeedbackBusy(),'all nested presentation frames drain');
+ s=fresh();const retaliation=unit('報復発動元',1,{revenge:3,keywords:['lethal']}),selfSpell=unit('自傷の発動元',1);s.playerHand=[retaliation];
+ const oldRevengeChoice=ctx.chooseRevengeCard,oldOpenSlot=ctx.chooseOpenSlot;
+ ctx.chooseRevengeCard=async()=>retaliation;ctx.chooseOpenSlot=async()=>1;
+ await ctx.executeActions([{type:'damageLife',target:'self',amount:3}],'player',-1,selfSpell,{});
+ check(s.playerLife===17&&s.playerBoard[1]===retaliation,'revenge still resolves within the original life-change action');
+ check(s.battleHistory.some(e=>e.source==='報復発動元'&&e.text.includes('レーン2に配置'))&&!s.battleHistory.some(e=>e.source==='自傷の発動元'&&e.text.includes('レーン2に配置')),'revenge deployment belongs to its own source, not the parent spell');
+ check(!ctx.battleFeedbackBusy(),'revenge presentation releases its nested frame');
+ ctx.chooseRevengeCard=oldRevengeChoice;ctx.chooseOpenSlot=oldOpenSlot;
  s=fresh();s.enemyHand=[card('【狩猟の月】オイタネヴ')];await ctx.emitFriendlyAction('enemy','onFriendlyAttack',{});
  check(s.enemyHand[0].power===2&&s.battleHistory.some(e=>e.source==='【狩猟の月】オイタネヴ'),'hand effects have individual history');
  s=fresh();const relic=card('サントラーヴ・ベイ');s.enemyLandmarks[0]=relic;await ctx.destroyLandmark('enemy',0);

@@ -2946,6 +2946,8 @@ async function useRevengeCard(side,card){
     slot=await checkedBattle(chooseOpenSlot(side,side,card.name+'の報復配置レーンを選択',card.type==='ランドマーク'?'landmark':null,card), battleGeneration);
     if(slot==null||!canPlaceCard(side,card,slot)) return;
   }
+  var revengeFrame=await checkedBattle(beginEffectPresentation(card,side,slot,{type:'revengeUse'},'onRevenge'),battleGeneration);
+  try{
   var placementOrigin=card.type!=='スペル'?capturePlacementOrigin(side,card):null;
   hand.splice(index,1);
   if(card.type==='スペル'){
@@ -2960,6 +2962,7 @@ async function useRevengeCard(side,card){
     await checkedBattle(triggerCard(card,'onPlay',side,slot,{revenge:true}), battleGeneration);
   }
   checkGame();render();
+  }finally{await endEffectPresentation(revengeFrame);}
 }
 async function damage(board,index,amount,side,lethal,context){
   const battleGeneration = state && state.generation;
@@ -3903,6 +3906,7 @@ function effectNode(location){
   return node;
 }
 function effectActionLabel(action){
+  if(action.type==='revengeUse')return '報復を使用';
   var labels={draw:'カードを引く',heal:'LIFEを回復',gainMana:'資源を増やす',gainMaxMana:'最大資源を増やす',damageLife:'LIFEにダメージ',damageUnit:'ユニットにダメージ',damageAllEnemies:'相手ユニットすべてにダメージ',damageSelf:'自身にダメージ',destroyUnit:'ユニットを破壊',destroyAllUnits:'全ユニットを破壊',destroySelf:'自身を破壊',destroyOtherUnits:'他の味方ユニットを破壊',buffSelf:'自身のパワーを強化',buffUnit:'パワーを強化',buffAll:'味方全体を強化',buffOthers:'他の味方を強化',buffSameLaneUnit:'同じレーンの味方を強化',buffDeckUnitsPermanently:'山札のユニットを強化',buffHandPower:'手札のパワーを強化',increaseSpellDamage:'手札のスペルを強化',reduceHandCost:'手札のコストを軽減',recoverGrave:'墓地から回収',deployFromGrave:'墓地から配置',deployFromHand:'手札から配置',deployFromDeck:'山札から配置',deployDiveFromBottom:'潜水ユニットを配置',returnUnitToHand:'手札に戻す',returnAnyAllies:'味方を手札に戻す',sendUnitToBottom:'山札の下へ送る',sendUnitsToBottom:'山札の下へ送る',explore:'探査',createTokens:'トークンを配置',createTokenCardsInHand:'トークンを手札に生成',applyLaneStatus:'スロットに炎上を付与',applyAdjacentLaneStatus:'隣接スロットに炎上を付与',applyTemporaryRestriction:'ユニットの行動を制限',moveEnemyUnitToLane:'正面へ移動',moveEnemyToOpposing:'正面へ移動',mill:'山札から墓地へ送る',shuffleGraveSpellsIntoDeck:'墓地のスペルを山札へ戻す',selectSpellFromDeckTop:'山札からスペルを選択',soulEcho:'魂響',addTurn:'追加ターン',opponentDiscard:'相手の手札を捨てる',enemyHandToBottom:'相手の手札を山札へ戻す'};
   return labels[action.type]||({buff:'パワーを強化',destroy:'カードを破壊',deploy:'カードを配置',create:'トークンを生成',grant:'能力を付与',set:'パワーを変更'}[Object.keys({buff:1,destroy:1,deploy:1,create:1,grant:1,set:1}).find(function(prefix){return action.type.indexOf(prefix)===0;})]||'カード効果');
 }
