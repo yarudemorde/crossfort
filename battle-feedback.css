@@ -1,0 +1,20 @@
+/* Temporary battle information; never contributes rows to the battlefield. */
+.battleArrow{position:fixed;inset:0;width:100%;height:100%;z-index:92;pointer-events:none;overflow:visible}
+.attackPreviewPanel{position:fixed;z-index:94;width:min(410px,calc(100vw - 16px));padding:7px 10px;border:1px solid #aa8b60;border-radius:7px;background:#10151bf5;box-shadow:0 4px 16px #0009;color:#eee1cd;font-size:11px;line-height:1.45;pointer-events:none;max-height:112px;overflow:auto}
+.attackPreviewPanel[hidden],.battleEffectNotice[hidden]{display:none}
+.attackPreviewTitle{font-family:Georgia,"Yu Mincho",serif;font-weight:900;color:#efdab8}
+.attackPreviewResult{color:#c8bfb2;font-size:10px}
+.attackPreviewUncertain{color:#e1bd86;font-size:10px}
+#gameScreen .card.attackPreviewSource,#gameScreen .slot.attackPreviewSource{outline:2px solid #e1c394;outline-offset:1px}
+#gameScreen .attackPreviewTarget{outline:2px solid #b8655d;outline-offset:1px}
+#gameScreen .slot.previewLane{border-color:#d9bc8b;box-shadow:inset 0 0 0 1px #d9bc8b99;cursor:pointer}
+#controls.previewControls #specialBtn{display:none}
+.battleEffectNotice{position:fixed;z-index:93;max-width:min(400px,calc(100vw - 24px));max-height:76px;overflow:hidden;padding:6px 11px;border:1px solid #8a7253;border-radius:5px;background:#14171bf0;color:#ead8bb;font-size:11px;line-height:1.4;pointer-events:none;box-shadow:0 3px 12px #0009}
+.battleEffectNotice strong{display:block;font-family:Georgia,"Yu Mincho",serif;color:#f0d8b1}
+.battleEffectNotice span{display:block;color:#c8bba5;font-size:10px}
+.battleEffectSource{animation:battleSourceCue .2s ease-out}
+.battleEffectTarget{outline:1px solid #d9b97b;outline-offset:1px}
+.battlePowerCue{animation:battlePowerCue .25s ease-out}
+@keyframes battleSourceCue{50%{outline:2px solid #e4c38b;box-shadow:0 0 9px #d1ad6966}100%{outline:1px solid #8b7350}}
+@keyframes battlePowerCue{50%{filter:brightness(1.6)}}
+@media(prefers-reduced-motion:reduce){.battleEffectSource,.battlePowerCue{animation:none;outline:1px solid #d9b97b}}

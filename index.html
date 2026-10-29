@@ -740,13 +740,17 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
   <div class="controls" id="controls" style="display:none">
     <div class="controlInner">
       <button class="battleToolBtn graveAction" onclick="openGravePanel()" aria-label="墓地を見る" title="墓地">🪦<span class="battleToolCount" id="graveToolCount">0</span></button>
-      <button class="ctrl primary" id="playBtn" onclick="playSelectedCard()">配置</button>
+      <button class="ctrl primary" id="playBtn" onclick="battlePrimaryAction()">配置</button>
       <button class="ctrl" id="specialBtn" onclick="playSpecialCard()">特殊</button>
-      <button class="ctrl danger" id="endBtn" onclick="endTurn()">ターン終了</button>
+      <button class="ctrl danger" id="endBtn" onclick="battleSecondaryAction()">ターン終了</button>
     </div>
   </div>
   <div class="hand" id="playerHand"></div>
 </section>
+<svg id="battleAttackArrow" class="battleArrow" aria-hidden="true"></svg>
+<aside id="attackPreviewPanel" class="attackPreviewPanel" role="status" aria-live="polite" hidden></aside>
+<div id="battleEffectNotice" class="battleEffectNotice" role="status" aria-live="polite" hidden></div>
+<link rel="stylesheet" href="battle-feedback.css?v=1">
 
 <div class="targetPrompt" id="targetPrompt" role="status" aria-live="polite">対象のカードをタップしてください</div>
 
@@ -1587,6 +1591,7 @@ function cloneCard(a,color){
 var battleGenerationCounter=0;
 var staleBattle=Object.freeze({staleBattle:true});
 function cancelBattleRequests(battle){
+  clearAttackPreview(false);cancelBattleFeedback();
   cancelPlacementMotion();
   cancelHandDraw();
   if(!battle)return;
@@ -1969,10 +1974,11 @@ function renderStableBattle(){
   });
 }
 function render(){
+  if(battlePreview&&!validAttackPreview(battlePreview))clearAttackPreview(false);
   var prompt=$('targetPrompt');
   if(state.targetRequest){prompt.textContent=state.targetRequest.prompt;prompt.classList.add('show');}
   else prompt.classList.remove('show');
-  var side=activeSide(),humanTurn=isHumanSide(side),bottomSide=state.matchMode==='local'?side:'player',topSide=otherSide(bottomSide);
+  var side=activeSide(),humanTurn=isHumanSide(side),bottomSide=state.matchMode==='local'?side:'player',topSide=otherSide(bottomSide),processing=state.animating||battleFeedbackBusy();
   renderBattleHud(topSide,bottomSide);
   $('enemyHandCount').textContent=handFor(topSide).length;
   $('enemyDeckCount').textContent=deckFor(topSide).length;
@@ -1986,9 +1992,10 @@ function render(){
   controls.classList.toggle('hasSpecial',!!special);
   $('playBtn').textContent=special?'通常':'配置';
   $('specialBtn').textContent=special?special.label:'特殊';
-  $('specialBtn').disabled=!special || !humanTurn || state.gameOver || state.animating || special.cost>manaFor(side) || !selected || (selected.type==='ユニット' && state.selectedSlot<0);
-  $('playBtn').disabled=(!humanTurn || state.gameOver || state.animating || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type!=='スペル' && (state.selectedSlot<0 || placementBoard(side,selected)[state.selectedSlot])));
-  $('endBtn').disabled=(!humanTurn || state.gameOver || state.animating);
+  $('specialBtn').disabled=!special || !humanTurn || state.gameOver || processing || special.cost>manaFor(side) || !selected || (selected.type==='ユニット' && state.selectedSlot<0);
+  $('playBtn').disabled=(!humanTurn || state.gameOver || processing || state.selectedCard<0 || (selected && effectiveCost(selected,side)>manaFor(side)) || (selected && selected.type!=='スペル' && (state.selectedSlot<0 || placementBoard(side,selected)[state.selectedSlot])));
+  $('endBtn').disabled=(!humanTurn || state.gameOver || processing);
+  $('endBtn').textContent='ターン終了';
   renderDefenseLine(topSide,'enemyDefense');
   renderLandmarks(topSide,'enemyLandmarks');
   renderBoard(topSide,'enemyBoard',true);
@@ -1996,6 +2003,7 @@ function render(){
   renderLandmarks(bottomSide,'playerLandmarks');
   renderDefenseLine(bottomSide,'playerDefense');
   renderHand();
+  renderAttackPreview();
 }
 function renderResourceSlots(side,rootId,trackId){
   var current=Math.max(0,Math.min(10,manaFor(side))),maximum=Math.max(0,Math.min(10,maxManaFor(side))),html='';
@@ -2044,13 +2052,15 @@ function renderBoard(side,rootId,asOpponent){
       var selectedCard=handFor(acting)[state.selectedCard];
       var isSelected=(side===acting && selectedCard && selectedCard.type==='ユニット' && state.selectedSlot===index);
       var targetable=!!(state.targetRequest && state.targetRequest.zone!=='landmark' && state.targetRequest.targetSide===side && state.targetRequest.candidates.indexOf(index)>=0);
+      var previewChoice=!!(battlePreview&&battlePreview.choosingLane&&battlePreview.side===side&&attackMoveCandidates(side,battlePreview.index).indexOf(index)>=0);
       var activeHand=handFor(acting),canSelect=(side===acting && humanTurn && !board[index] && state.selectedCard>=0 && activeHand[state.selectedCard] && activeHand[state.selectedCard].type==='ユニット');
       var burning=hasLaneStatus(side,index,'burning');
-      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(burning?' burningLane':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'');
+      slot.className='slot '+(asOpponent?'enemy ':'')+(board[index]?'':'empty')+(burning?' burningLane':'')+(canSelect?' selectable':'')+(isSelected?' selectedSlot':'')+(targetable?' targetable':'')+(previewChoice?' previewLane':'');
       if(burning){var burningOverlay=document.createElement('div');burningOverlay.className='burningSlotOverlay';burningOverlay.setAttribute('aria-hidden','true');slot.appendChild(burningOverlay);}
       var idx=document.createElement('div'); idx.className='slotIndex'; idx.textContent=(index+1); slot.appendChild(idx);
       if(targetable) slot.onclick=function(){ resolveTarget(side,index); };
       else if(canSelect) slot.onclick=function(){ selectSlot(index); };
+      if(previewChoice)slot.onclick=function(){setAttackPreviewLane(index);};
       var u=board[index];
       if(u){
         var card=document.createElement('div');
@@ -2059,8 +2069,10 @@ function renderBoard(side,rootId,asOpponent){
         card.innerHTML='<div class="boardCost">'+u.cost+'</div><div class="cardType">'+escapeHtml((u.legendary?'伝説 ／ ':'')+(u.species||u.color||''))+'</div><div class="cardName">'+escapeHtml(u.name)+'</div>'
           +'<div class="effect">'+formatCardText(u.text)+'</div>'
           +keywordBadges(u,side)+'<div class="power">'+u.power+'</div>';
-        if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
-        else attachCardHold(card,u,side===acting && humanTurn?function(){attack(side,index);}:null);
+        if(previewChoice)attachCardHold(card,u,function(e){e.stopPropagation();setAttackPreviewLane(index);});
+        else if(targetable) attachCardHold(card,u,function(e){e.stopPropagation();resolveTarget(side,index);});
+        else attachCardHold(card,u,side===acting && humanTurn?function(){selectAttackPreview(side,index);}:null);
+        if(side===acting&&humanTurn){card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label',u.name+'の攻撃を確認');card.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();if(previewChoice)setAttackPreviewLane(index);else selectAttackPreview(side,index);}};}
         slot.appendChild(card);
       }
       root.appendChild(slot);
@@ -2176,7 +2188,8 @@ function renderHand(){
 window.addEventListener('resize',function(){syncCompactBattleMode();if(state&&$('gameScreen').style.display!=='none')renderHand();});
 function selectCard(i){
   var side=activeSide(),hand=handFor(side);
-  if(!isHumanSide(side) || state.gameOver || state.animating || handDrawBusy()) return;
+  if(!isHumanSide(side) || state.gameOver || state.animating || battleFeedbackBusy() || handDrawBusy()) return;
+  clearAttackPreview(false);
   var restriction=placementRestriction(side,hand[i]);if(restriction){logMsg(restriction);return;}
   if(lowestPlayableCost(hand[i],side)>manaFor(side)){ logMsg('資源が足りません'); return; }
   if(state.selectedCard===i){ state.selectedCard=-1; state.selectedSlot=-1; }
@@ -2185,7 +2198,7 @@ function selectCard(i){
 }
 function selectSlot(i){
   var side=activeSide(),hand=handFor(side),board=boardFor(side);
-  if(!isHumanSide(side) || state.gameOver || state.animating || state.selectedCard<0) return;
+  if(!isHumanSide(side) || state.gameOver || state.animating || battleFeedbackBusy() || state.selectedCard<0) return;
   var c=hand[state.selectedCard];
   if(!c || c.type!=='ユニット') return;
   if(board[i]){ logMsg('そのスロットにはすでにカードがあります'); return; }
@@ -2194,16 +2207,17 @@ function selectSlot(i){
 }
 function selectLandmarkSlot(i){
   var side=activeSide(),card=handFor(side)[state.selectedCard];
-  if(!isHumanSide(side)||state.gameOver||state.animating||!card||card.type!=='ランドマーク')return;
+  if(!isHumanSide(side)||state.gameOver||state.animating||battleFeedbackBusy()||!card||card.type!=='ランドマーク')return;
   if(i<0||i>=5||landmarkFor(side)[i]){logMsg('そのレーンにはすでにランドマークがあります');return;}
   state.selectedSlot=state.selectedSlot===i?-1:i;
   render();
 }
 function playSpecialCard(){var special=selectedSpecial();if(special)playSelectedCard(special.mode);}
 async function playSelectedCard(mode){
+  if(battlePreview)return;
   const battleGeneration = state && state.generation;
   var side=activeSide(),hand=handFor(side),board=boardFor(side);
-  if(state.selectedCard<0 || !isHumanSide(side) || state.gameOver || state.animating) return;
+  if(state.selectedCard<0 || !isHumanSide(side) || state.gameOver || state.animating || battleFeedbackBusy()) return;
   mode=mode||'normal';
   var c=hand[state.selectedCard],rules=rulesFor(c),cost=mode==='dive'?diveCost(c,side):effectiveCost(c,side);
   if(mode==='dive' && rules.dive==null) return;
@@ -2266,11 +2280,13 @@ function chooseAttackDestination(side,index,card){
     state.targetRequest={targetSide:side,candidates:candidates,prompt:(card?card.name:'ユニット')+'の攻撃位置を選択（現在位置または隣接スロット）',resolve:function(target){resolve(target?target.index:index);}};render();
   });
 }
-async function prepareAttackLane(side,index,card){
+async function prepareAttackLane(side,index,card,confirmedDestination){
   const battleGeneration = state && state.generation;
   if(!rulesFor(card).moveOnAttack)return index;
-  var destination=await checkedBattle(chooseAttackDestination(side,index,card), battleGeneration),board=boardFor(side);
+  var destination=confirmedDestination==null?await checkedBattle(chooseAttackDestination(side,index,card), battleGeneration):confirmedDestination,board=boardFor(side);
+  if(attackMoveCandidates(side,index).indexOf(destination)<0)return index;
   if(destination!==index&&board[index]===card&&!board[destination]){
+    await checkedBattle(animateBattleUnitMove(side,index,destination,card),battleGeneration);
     board[index]=null;board[destination]=card;render();pulseClass(boardCard(side,destination),'repositioning',380);logMsg(card.name+'がスロット'+(destination+1)+'へ移動');await checkedBattle(wait(300), battleGeneration);
   }
   return destination;
@@ -2449,10 +2465,10 @@ async function triggerCard(card,event,side,slot,context){
   const battleGeneration = state && state.generation;
   if(!card) return;
   var rules=rulesFor(card), actions=rules[event]||[];
-  await checkedBattle(executeActions(actions,side,slot,card,context||{}), battleGeneration);
+  await checkedBattle(executeActions(actions,side,slot,card,context||{},event), battleGeneration);
   if(event==='onPlay'){
     var conditional=rules.conditionalOnPlay||[];
-    for(var i=0;i<conditional.length;i++) if(conditionalEffectMatches(conditional[i],side,slot)) await checkedBattle(executeActions(conditional[i].actions,side,slot,card,context||{}), battleGeneration);
+    for(var i=0;i<conditional.length;i++) if(conditionalEffectMatches(conditional[i],side,slot)) await checkedBattle(executeActions(conditional[i].actions,side,slot,card,context||{},event), battleGeneration);
   }
 }
 function makeToken(power,color){
@@ -2502,7 +2518,7 @@ async function chooseUnitTargets(actingSide,targetSide,count,prompt,filter,hint)
   }
   return selected.map(function(index){return {side:targetSide,index:index};});
 }
-async function executeActions(actions,side,sourceSlot,sourceCard,context){
+async function executeActions(actions,side,sourceSlot,sourceCard,context,event){
   var scoreSource={sourceType:'ability',sourceSide:side,sourceCard:sourceCard};
   const battleGeneration = state && state.generation;
   for(var i=0;i<actions.length;i++){
@@ -2510,6 +2526,8 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.spellOrdinal!=null&&context.spellOrdinal!==a.spellOrdinal)continue;
     if(a.requiresReturned && !context.returned) continue;
     if(a.otherUnitDestroyed&&(!context.destroyed||context.destroyed.type!=='ユニット'||context.destroyed===sourceCard))continue;
+    var effectFrame=await checkedBattle(beginEffectPresentation(sourceCard,side,sourceSlot,a,event),battleGeneration);
+    try{
     if(a.type==='destroyAndRedeployOther'){
       var redeployTarget=await checkedBattle(chooseTarget(side,side,'破壊して別スロットへ再配置するユニットを選択',function(c,index){return redeployTargetValid(side,sourceCard,c,index);},{action:a,sourceCard:sourceCard,sourceSlot:sourceSlot}),battleGeneration);
       if(redeployTarget){
@@ -2531,6 +2549,11 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
     if(a.target==='allyUnit') target=await checkedBattle(chooseTarget(side,side,'効果の対象にする味方カードをタップ',function(c){return c.type==='ユニット';},{action:a,sourceCard:sourceCard,sourceSlot:sourceSlot}), battleGeneration);
     if(a.target==='otherAllyUnit') target=await checkedBattle(chooseTarget(side,side,'手札に戻す味方ユニットをタップ',function(c){return c!==sourceCard && c.type==='ユニット';},{action:a,sourceCard:sourceCard,sourceSlot:sourceSlot}), battleGeneration);
     if(a.target==='opposing' && sourceSlot>=0 && enemy[sourceSlot] && (a.type!=='damageUnit' || enemy[sourceSlot].type==='ユニット')) target={side:enemySide,index:sourceSlot};
+    if(target)await checkedBattle(cueEffectTargets([{side:target.side,zone:'unit',index:target.index}]),battleGeneration);
+    else if(a.type==='buffAll'||a.type==='buffOthers')await checkedBattle(cueEffectTargets(own.map(function(c,index){return c&&(a.type!=='buffOthers'||c!==sourceCard)?{side:side,zone:'unit',index:index}:null;}).filter(Boolean)),battleGeneration);
+    else if(a.type==='heal'||a.type==='damageLife')await checkedBattle(cueEffectTargets([{side:a.type==='heal'||a.target==='self'?side:enemySide,zone:'life',index:-1}]),battleGeneration);
+    else if(a.type==='draw'||a.type==='gainMana'||a.type==='gainMaxMana')await checkedBattle(cueEffectTargets([{side:side,zone:a.type==='draw'?'handArea':'mana',index:-1}]),battleGeneration);
+    else if(/^buffSelf|^setSelfPower|^grantKeyword/.test(a.type))await checkedBattle(cueEffectTargets([effectLocation(sourceCard,side,sourceSlot)]),battleGeneration);
     if(a.type==='draw') for(j=0;j<a.amount;j++) await checkedBattle(drawCard(side), battleGeneration);
     else if(a.type==='heal') await checkedBattle(changeLife(side,a.amount), battleGeneration);
     else if(a.type==='gainMana') changeMana(side,a.amount);
@@ -2579,7 +2602,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(sourceCard.type==='ランドマーク')await checkedBattle(destroyLandmark(side,sourceSlot), battleGeneration);
       else await checkedBattle(destroy(side,sourceSlot), battleGeneration);
     }
-    else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
+    else if(a.type==='moveEnemyToOpposing' && target && sourceSlot>=0){var held=enemy[sourceSlot];await checkedBattle(animateBattleUnitMove(enemySide,target.index,sourceSlot,enemy[target.index]),battleGeneration);enemy[sourceSlot]=enemy[target.index];enemy[target.index]=held;}
     else if(a.type==='applyLaneStatus'){
       var laneTargetSide=enemySide,laneTargets=[];
       if(a.target==='enemyFront'&&sourceSlot>=0)laneTargets=[sourceSlot];
@@ -2604,11 +2627,12 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
         // TODO(要確認): 対象が指定数未満の場合、存在する全対象へ発動可能とする。
         restrictionTargets=await checkedBattle(chooseUnitTargets(side,enemySide,Math.min(a.amount||1,enemy.filter(function(card){return card&&card.type==='ユニット';}).length),'行動を制限する相手ユニットを選択',function(card){return card.type==='ユニット';},{action:a,sourceCard:sourceCard,sourceSlot:sourceSlot}),battleGeneration);
       }
+      await checkedBattle(cueEffectTargets(restrictionTargets.map(function(t){return {side:t.side,zone:'unit',index:t.index};})),battleGeneration);
       for(j=0;j<restrictionTargets.length;j++){var restricted=boardFor(restrictionTargets[j].side)[restrictionTargets[j].index];if(restricted)addTemporaryRestriction(restricted,restrictionTargets[j].side,a);}
     }
     else if(a.type==='moveEnemyUnitToLane'&&target&&sourceSlot>=0&&!enemy[sourceSlot]){
       // TODO(要確認): 移動先スロットにユニットが存在する場合の処理。暫定的に効果を不発とする。
-      if(enemy[target.index]){enemy[sourceSlot]=enemy[target.index];enemy[target.index]=null;logMsg(enemy[sourceSlot].name+'がレーン'+(sourceSlot+1)+'へ移動');}
+      if(enemy[target.index]){await checkedBattle(animateBattleUnitMove(enemySide,target.index,sourceSlot,enemy[target.index]),battleGeneration);enemy[sourceSlot]=enemy[target.index];enemy[target.index]=null;logMsg(enemy[sourceSlot].name+'がレーン'+(sourceSlot+1)+'へ移動');}
     }
     else if(a.type==='damageAllEnemies'){for(j=0;j<enemy.length;j++) if(enemy[j] && enemy[j].type==='ユニット') await checkedBattle(damage(enemy,j,effectDamageAmount(sourceCard,side,a.amount),enemySide,false,scoreSource), battleGeneration);}
     else if(a.type==='addTurn'){
@@ -2712,6 +2736,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       for(j=0;j<5;j++) if(state.enemyBoard[j] && state.enemyBoard[j].type==='ユニット') await checkedBattle(destroy('enemy',j), battleGeneration);
     }else if(a.type==='soulEcho') await checkedBattle(resolveSoulEcho(side,sourceSlot,sourceCard), battleGeneration);
     render();
+    }finally{await endEffectPresentation(effectFrame);}
   }
 }
 function changeMana(side,amount){
@@ -2868,6 +2893,7 @@ async function changeLife(side,amount,source){
   if(combat)amount=-combatLifeDamage(side,-amount,source.laneIndex);
   var key=side==='player'?'playerLife':'enemyLife',oldLife=state[key]; state[key]+=amount;
   var actualDamage=Math.max(0,oldLife-state[key]);
+  if(amount!==0)recordEffectResult(sideLabel(side)+' LIFE '+(amount>0?'+':'')+amount);
   if(activeBattleStats()){
     if(side==='player')state.battleStats.lifeDamageTaken+=actualDamage;
     else if(isPlayerUnitSource(source))state.battleStats.unitDamage+=Math.min(Math.max(0,oldLife),actualDamage);
@@ -2938,6 +2964,8 @@ async function useRevengeCard(side,card){
 async function damage(board,index,amount,side,lethal,context){
   const battleGeneration = state && state.generation;
   var u=board[index]; if(!u) return;
+  await checkedBattle(cueEffectTargets([{side:side,zone:'unit',index:index}]),battleGeneration);
+  var frame=battleFeedback.stack[battleFeedback.stack.length-1];if(frame)frame.resultAt=Date.now();
   if(context&&context.sourceType==='combat'&&rulesFor(u).combatDamageImmune)return 0;
   var dmg=amount;
   dmg=Math.max(0,dmg-(rulesFor(u).damageReduction||0));
@@ -2945,6 +2973,7 @@ async function damage(board,index,amount,side,lethal,context){
   if(side==='enemy'&&activeBattleStats()&&isPlayerUnitSource(context))state.battleStats.unitDamage+=Math.min(Math.max(0,u.power),lethal&&dmg>0?Math.max(0,u.power):Math.max(0,dmg));
   if(lethal && dmg>0) u.power=0;
   else u.power-=dmg;
+  if(dmg>0)recordEffectResult(u.name+'：'+dmg+'ダメージ'+(u.power<=0?'・破壊':'・残パワー'+u.power));
   if(u.power<=0) await checkedBattle(destroy(side,index), battleGeneration);
 }
 async function destroy(side,index){
@@ -2954,6 +2983,9 @@ async function destroy(side,index){
   recordSeasonDestruction(side,destroyed,'unit');
   showDestroy(side,index);
   board[index]=null;if(!destroyed.isToken){resetCardAfterGrave(destroyed);grave.push(destroyed);}
+  await checkedBattle(cueEffectTargets([{side:side,zone:'unit',index:index}]),battleGeneration);
+  if(!recordEffectResult(destroyed.name+'が破壊された'))appendBattleHistory(destroyed.name+'が破壊された',{kind:'destruction',source:destroyed.name});
+  render();await checkedBattle(feedbackPause(550),battleGeneration);
   var survivors=board.slice(),landmarkSurvivors=landmarkFor(side).slice();
   for(var i=0;i<survivors.length;i++) if(survivors[i] && board[i]===survivors[i]) await checkedBattle(triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed,destroyedSide:side,destroyedLane:index}), battleGeneration);
   for(var i=0;i<landmarkSurvivors.length;i++) if(landmarkSurvivors[i] && landmarkFor(side)[i]===landmarkSurvivors[i]) await checkedBattle(triggerCard(landmarkSurvivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed,destroyedSide:side,destroyedLane:index}), battleGeneration);
@@ -2966,7 +2998,8 @@ async function destroyLandmark(side,index){
   recordSeasonDestruction(side,destroyed,'landmark');
   showLandmarkCollapse(side,index);landmarks[index]=null;
   if(!destroyed.isToken)graveFor(side).push(destroyed);
-  logMsg('レーン'+(index+1)+'の'+destroyed.name+'が破壊された');render();
+  logMsg('レーン'+(index+1)+'の'+destroyed.name+'が破壊された');recordEffectResult(destroyed.name+'が破壊された');render();
+  await checkedBattle(feedbackPause(650),battleGeneration);
   var units=boardFor(side).slice(),survivors=landmarks.slice();
   for(var i=0;i<units.length;i++)if(units[i]&&boardFor(side)[i]===units[i])await checkedBattle(triggerCard(units[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed}), battleGeneration);
   for(var i=0;i<survivors.length;i++)if(survivors[i]&&landmarks[i]===survivors[i])await checkedBattle(triggerCard(survivors[i],'onFriendlyDestroyed',side,i,{destroyed:destroyed}), battleGeneration);
@@ -2979,15 +3012,15 @@ function chooseRelicSlot(side,sourceCard,prompt){
   showSelectionBanner(sourceCard,prompt);
   return new Promise(function(resolve){state.targetRequest={zone:'landmark',targetSide:side,candidates:candidates,prompt:prompt,resolve:function(target){resolve(target?target.index:null);}};render();});
 }
-async function attack(side,i){
+async function attack(side,i,options){
   const battleGeneration = state && state.generation;
-  if(activeSide()!==side || !isHumanSide(side) || state.gameOver || state.animating) return;
+  if(activeSide()!==side || !isHumanSide(side) || state.gameOver || state.animating || battleFeedbackBusy()) return;
   var own=boardFor(side),enemySide=otherSide(side),enemy=boardFor(enemySide),a=own[i];
   if(!a) return;
   if(a.type==='ランドマーク' || hasKeyword(a,'cannotAttack',side)){logMsg('このカードは攻撃できません');return;}
   if(!remainingAttacks(a)){logMsg('このユニットは次のターンから攻撃できます');return;}
   state.animating=true; $('playBtn').disabled=true; $('endBtn').disabled=true;
-  i=await checkedBattle(prepareAttackLane(side,i,a), battleGeneration);
+  i=await checkedBattle(prepareAttackLane(side,i,a,options&&options.destination), battleGeneration);
   animateCard(side,i); await checkedBattle(wait(310), battleGeneration);
   await checkedBattle(emitFriendlyAction(side,'onFriendlyAttack',{attacker:a}), battleGeneration);
   await checkedBattle(triggerCard(a,'onAttack',side,i,{}), battleGeneration);
@@ -3031,9 +3064,10 @@ async function beginExtraTurn(side){
   state.animating=false;logMsg(sideLabel(side)+'の追加ターン');renderStableBattle();return true;
 }
 async function endTurn(){
+  clearAttackPreview(false);
   const battleGeneration = state && state.generation;
   var side=activeSide();
-  if(!isHumanSide(side) || state.gameOver || state.animating) return;
+  if(!isHumanSide(side) || state.gameOver || state.animating || battleFeedbackBusy()) return;
   state.animating=true; state.selectedCard=-1; state.selectedSlot=-1;
   await checkedBattle(processTurnEvent(side,'onTurnEnd'), battleGeneration);
   if(checkGame()){render();return;}
@@ -3735,6 +3769,7 @@ async function executeAttackAction(action){
   var lane=action.lane,destination=action.destination;
   if(destination!==lane){
     if(!rulesFor(attacker).moveOnAttack||own[destination])return false;
+    await checkedBattle(animateBattleUnitMove(side,lane,destination,attacker),battleGeneration);
     own[lane]=null;own[destination]=attacker;lane=destination;render();pulseClass(boardCard(side,lane),'repositioning',380);
     logMsg(attacker.name+'がスロット'+(lane+1)+'へ移動');await checkedBattle(wait(300), battleGeneration);
   }
@@ -3817,12 +3852,255 @@ function finish(win,text){
 }
 function logMsg(t){
   $('battleLog').textContent=t;
+  appendBattleHistory(t);
+}
+function appendBattleHistory(t,metadata){
   if(state){
     if(!state.battleHistory)state.battleHistory=[];
-    state.battleHistory.push({turn:state.turn||1,side:activeSide(),text:String(t)});
+    state.battleHistory.push(Object.assign({turn:state.turn||1,side:activeSide(),text:String(t)},metadata||{}));
     if(state.battleHistory.length>200)state.battleHistory.shift();
   }
 }
+// Presentation state is intentionally outside the game state and save format.
+var battlePreview=null;
+var battleFeedback={stack:[],waits:new Set(),overlays:new Set()};
+function battleFeedbackBusy(){return battleFeedback.stack.length>0;}
+function feedbackVisualsEnabled(){
+  var screen=$('gameScreen');
+  return !!(screen&&screen.style.display==='grid'&&screen.getBoundingClientRect&&typeof window.innerWidth==='number');
+}
+function feedbackPause(duration){
+  if(!feedbackVisualsEnabled()||placementMotionReduced()||duration<=0)return Promise.resolve();
+  return new Promise(function(resolve){var timer,done=false,entry={finish:function(){if(done)return;done=true;clearTimeout(timer);battleFeedback.waits.delete(entry);resolve();}};battleFeedback.waits.add(entry);timer=setTimeout(entry.finish,duration);});
+}
+function cancelBattleFeedback(){
+  battleFeedback.waits.forEach(function(entry){entry.finish();});battleFeedback.stack=[];
+  battleFeedback.overlays.forEach(function(node){node.remove();});battleFeedback.overlays.clear();
+  var notice=$('battleEffectNotice');if(notice)notice.hidden=true;
+}
+function effectSnapshot(){
+  var snapshot={cards:new Map(),sides:{}};
+  ['player','enemy'].forEach(function(side){
+    var hand=handFor(side),deck=deckFor(side),grave=graveFor(side);
+    snapshot.sides[side]={life:side==='player'?state.playerLife:state.enemyLife,mana:manaFor(side),maxMana:side==='player'?state.maxMana:state.enemyMaxMana,hand:hand.length,deck:deck.length,grave:grave.length};
+    [['unit',boardFor(side)],['landmark',landmarkFor(side)],['hand',hand],['deck',deck],['grave',grave]].forEach(function(pair){
+      pair[1].forEach(function(card,index){if(card)snapshot.cards.set(card,{side:side,zone:pair[0],index:index,power:card.power,bonus:card.spellDamageBonus||0,reduction:card.handCostReduction||0,permanent:card.permanentPowerBonus||0,keywords:JSON.stringify(card.grantedKeywords||[]),restrictions:JSON.stringify(card.temporaryEffects||[])});});
+    });
+  });
+  return snapshot;
+}
+function effectLocation(card,side,slot){
+  if(!card)return {side:side,zone:'unit',index:slot};
+  if(boardFor(side).indexOf(card)>=0)return {side:side,zone:'unit',index:boardFor(side).indexOf(card),card:card};
+  if(landmarkFor(side).indexOf(card)>=0)return {side:side,zone:'landmark',index:landmarkFor(side).indexOf(card),card:card};
+  if(handFor(side).indexOf(card)>=0)return {side:side,zone:'hand',index:handFor(side).indexOf(card),card:card};
+  return {side:side,zone:graveFor(side).indexOf(card)>=0?'grave':'offboard',index:-1,card:card};
+}
+function effectNode(location){
+  if(!location||!feedbackVisualsEnabled())return null;
+  var node=battleZoneNode(location.side,location.zone,location.index,location.card);
+  if(!node&&location.zone==='unit'){var root=$(battleRootPrefix(location.side)+'Board');node=root&&root.children&&root.children[location.index];}
+  return node;
+}
+function effectActionLabel(action){
+  var labels={draw:'カードを引く',heal:'LIFEを回復',gainMana:'資源を増やす',gainMaxMana:'最大資源を増やす',damageLife:'LIFEにダメージ',damageUnit:'ユニットにダメージ',damageAllEnemies:'相手ユニットすべてにダメージ',damageSelf:'自身にダメージ',destroyUnit:'ユニットを破壊',destroyAllUnits:'全ユニットを破壊',destroySelf:'自身を破壊',destroyOtherUnits:'他の味方ユニットを破壊',buffSelf:'自身のパワーを強化',buffUnit:'パワーを強化',buffAll:'味方全体を強化',buffOthers:'他の味方を強化',buffSameLaneUnit:'同じレーンの味方を強化',buffDeckUnitsPermanently:'山札のユニットを強化',buffHandPower:'手札のパワーを強化',increaseSpellDamage:'手札のスペルを強化',reduceHandCost:'手札のコストを軽減',recoverGrave:'墓地から回収',deployFromGrave:'墓地から配置',deployFromHand:'手札から配置',deployFromDeck:'山札から配置',deployDiveFromBottom:'潜水ユニットを配置',returnUnitToHand:'手札に戻す',returnAnyAllies:'味方を手札に戻す',sendUnitToBottom:'山札の下へ送る',sendUnitsToBottom:'山札の下へ送る',explore:'探査',createTokens:'トークンを配置',createTokenCardsInHand:'トークンを手札に生成',applyLaneStatus:'スロットに炎上を付与',applyAdjacentLaneStatus:'隣接スロットに炎上を付与',applyTemporaryRestriction:'ユニットの行動を制限',moveEnemyUnitToLane:'正面へ移動',moveEnemyToOpposing:'正面へ移動',mill:'山札から墓地へ送る',shuffleGraveSpellsIntoDeck:'墓地のスペルを山札へ戻す',selectSpellFromDeckTop:'山札からスペルを選択',soulEcho:'魂響',addTurn:'追加ターン',opponentDiscard:'相手の手札を捨てる',enemyHandToBottom:'相手の手札を山札へ戻す'};
+  return labels[action.type]||({buff:'パワーを強化',destroy:'カードを破壊',deploy:'カードを配置',create:'トークンを生成',grant:'能力を付与',set:'パワーを変更'}[Object.keys({buff:1,destroy:1,deploy:1,create:1,grant:1,set:1}).find(function(prefix){return action.type.indexOf(prefix)===0;})]||'カード効果');
+}
+function effectNotice(frame,text){
+  if(!feedbackVisualsEnabled())return;
+  var notice=$('battleEffectNotice');if(!notice)return;
+  notice.innerHTML='<strong>'+escapeHtml(frame.card.name)+'</strong><span>'+escapeHtml(text)+'</span>';notice.hidden=false;
+  $('battleLog').textContent=frame.card.name+'：'+text;positionBattleFeedback();
+}
+function effectDeltas(before,after){
+  var changes=[];
+  before.cards.forEach(function(old,card){
+    var now=after.cards.get(card),wasBoard=old.zone==='unit'||old.zone==='landmark';
+    if(wasBoard&&(!now||now.zone!==old.zone)){changes.push({text:card.name+'：'+(!now||now.zone==='grave'?'破壊':now.zone==='hand'?'手札へ戻る':'山札へ移動'),location:old});return;}
+    if(now&&wasBoard&&now.index!==old.index){changes.push({text:card.name+'：レーン'+(old.index+1)+' → '+(now.index+1),location:now});}
+    if(now&&now.zone===old.zone){
+      if(typeof old.power==='number'&&now.power!==old.power&&now.zone!=='grave')changes.push({text:card.name+'：パワー '+(now.power-old.power>0?'+':'')+(now.power-old.power),location:Object.assign({card:card},now),powerDelta:now.power-old.power});
+      if(now.bonus!==old.bonus)changes.push({text:card.name+'：ダメージ '+(now.bonus-old.bonus>0?'+':'')+(now.bonus-old.bonus),location:Object.assign({card:card},now)});
+      if(now.reduction!==old.reduction)changes.push({text:card.name+'：コスト '+(old.reduction-now.reduction),location:Object.assign({card:card},now)});
+      if(now.keywords!==old.keywords||now.restrictions!==old.restrictions)changes.push({text:card.name+'：能力・行動制限を更新',location:Object.assign({card:card},now)});
+    }
+  });
+  after.cards.forEach(function(now,card){var old=before.cards.get(card);if((now.zone==='unit'||now.zone==='landmark')&&(!old||old.zone!==now.zone))changes.push({text:card.name+'：レーン'+(now.index+1)+'に配置',location:Object.assign({card:card},now)});});
+  ['player','enemy'].forEach(function(side){
+    var a=before.sides[side],b=after.sides[side],label=sideLabel(side);
+    ['life','mana','maxMana','hand','grave'].forEach(function(key){var diff=b[key]-a[key];if(!diff)return;var names={life:'LIFE',mana:'資源',maxMana:'最大資源',hand:'手札',grave:'墓地'};changes.push({text:label+' '+names[key]+' '+(diff>0?'+':'')+diff,location:{side:side,zone:key==='life'?'life':key==='mana'||key==='maxMana'?'mana':'handArea',index:-1}});});
+  });
+  return changes;
+}
+async function flushEffectPresentation(frame,waitForResult){
+  if(!state||state.generation!==frame.generation||state.gameOver||battleFeedback.stack.indexOf(frame)<0)return;
+  var snapshot=effectSnapshot(),changes=effectDeltas(frame.snapshot,snapshot);frame.snapshot=snapshot;
+  if(changes.length){
+    var text=changes.map(function(change){return change.text;}).join(' ／ ');
+    appendBattleHistory(frame.card.name+'【'+effectActionLabel(frame.action)+'】 → '+text,{kind:'effect',source:frame.card.name,action:frame.action.type});
+    frame.logged=true;effectNotice(frame,text);
+    changes.forEach(function(change){var node=effectNode(change.location);if(node){pulseClass(node,'battleEffectTarget',260);if(change.powerDelta>0){pulseClass(node.querySelector?node.querySelector('.power')||node:node,'battlePowerCue',260);}}});
+  }
+  if(waitForResult&&(changes.length||frame.resultAt))await checkedBattle(feedbackPause(Math.max(0,250-(frame.resultAt?Date.now()-frame.resultAt:0))),frame.generation);
+  if(waitForResult&&frame.action.type==='draw'&&feedbackVisualsEnabled()&&!placementMotionReduced()){
+    var deadline=Date.now()+900;
+    while(handDrawBusy()&&Date.now()<deadline)await checkedBattle(feedbackPause(25),frame.generation);
+  }
+}
+function recordEffectResult(text){
+  var frame=battleFeedback.stack[battleFeedback.stack.length-1];if(!frame)return false;
+  appendBattleHistory(frame.card.name+'【'+effectActionLabel(frame.action)+'】 → '+text,{kind:'effect',source:frame.card.name,action:frame.action.type});
+  frame.logged=true;frame.resultAt=Date.now();frame.snapshot=effectSnapshot();effectNotice(frame,text);return true;
+}
+async function beginEffectPresentation(card,side,slot,action,event){
+  var parent=battleFeedback.stack[battleFeedback.stack.length-1];
+  if(parent)await flushEffectPresentation(parent,true);
+  var frame={card:card,side:side,slot:slot,action:action,event:event,generation:state.generation,snapshot:effectSnapshot(),logged:false,lastTarget:null};
+  battleFeedback.stack.push(frame);
+  render();effectNotice(frame,effectActionLabel(action));
+  pulseClass(effectNode(effectLocation(card,side,slot)),'battleEffectSource',220);
+  await checkedBattle(feedbackPause(180),frame.generation);return frame;
+}
+async function endEffectPresentation(frame){
+  if(!state||state.generation!==frame.generation||battleFeedback.stack.indexOf(frame)<0)return;
+  render();await flushEffectPresentation(frame,true);
+  if(!frame.logged&&!state.gameOver)appendBattleHistory(frame.card.name+'【'+effectActionLabel(frame.action)+'】 → 対象なし・変化なし',{kind:'effect',source:frame.card.name,action:frame.action.type});
+  var index=battleFeedback.stack.indexOf(frame);if(index>=0)battleFeedback.stack.splice(index,1);
+  var parent=battleFeedback.stack[battleFeedback.stack.length-1];if(parent)parent.snapshot=effectSnapshot();
+  else{var notice=$('battleEffectNotice');if(notice)notice.hidden=true;}
+  if(!state.gameOver)render();
+}
+async function cueEffectTargets(locations){
+  var frame=battleFeedback.stack[battleFeedback.stack.length-1];if(!frame||!locations.length)return;
+  var signature=locations.map(function(t){return t.side+t.zone+t.index;}).join('|');if(frame.lastTarget===signature)return;frame.lastTarget=signature;
+  var source=effectNode(effectLocation(frame.card,frame.side,frame.slot)),markup='';
+  locations.forEach(function(target){var node=effectNode(target);if(node){pulseClass(node,'battleEffectTarget',300);markup+=battleArrowMarkup(source,node);}});
+  var arrow=null;
+    if(markup&&feedbackVisualsEnabled()&&document.createElementNS){arrow=document.createElementNS('http://www.w3.org/2000/svg','svg');arrow.setAttribute('class','battleArrow');arrow.setAttribute('aria-hidden','true');arrow.fxFrame=frame;arrow.fxTargets=locations;layoutEffectTrail(arrow);document.body.appendChild(arrow);battleFeedback.overlays.add(arrow);}
+  try{await checkedBattle(feedbackPause(130),frame.generation);}finally{if(arrow){arrow.remove();battleFeedback.overlays.delete(arrow);}}
+}
+async function animateBattleUnitMove(side,from,to,card){
+  if(!feedbackVisualsEnabled()||placementMotionReduced())return;
+  var node=boardCard(side,from),target=placementTarget(side,to,card);
+  if(!node||!target||!node.getBoundingClientRect)return;
+  var rect=node.getBoundingClientRect(),ghost=node.cloneNode(true);ghost.setAttribute('aria-hidden','true');ghost.removeAttribute('tabindex');
+  Object.assign(ghost.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',zIndex:'95',pointerEvents:'none',margin:'0',transition:'none'});
+  ($('gameScreen')||document.body).appendChild(ghost);node.style.visibility='hidden';
+  try{await placementMotion(ghost,[{transform:'translate(0,0)'},{transform:'translate('+(target.left-rect.left)+'px,'+(target.top-rect.top)+'px)'}],{duration:220,easing:'ease-in-out',fill:'forwards'},true);}
+  finally{node.style.visibility='';ghost.remove();}
+}
+function validAttackPreview(preview){
+  return !!(state&&!state.gameOver&&!state.animating&&!battleFeedbackBusy()&&state.generation===preview.generation&&activeSide()===preview.side&&isHumanSide(preview.side)&&boardFor(preview.side)[preview.index]===preview.card&&remainingAttacks(preview.card)>0&&!hasKeyword(preview.card,'cannotAttack',preview.side));
+}
+function previewCombatHit(card,power,lethal){
+  var dealt=rulesFor(card).combatDamageImmune?0:Math.max(0,power-(rulesFor(card).damageReduction||0));
+  return {damage:dealt,power:Math.max(0,card.power-dealt),destroyed:dealt>0&&(lethal||dealt>=card.power)};
+}
+function predictAttack(side,index,destination){
+  var attacker=boardFor(side)[index];if(!attacker)return null;
+  var lane=destination==null?index:destination,enemySide=otherSide(side),defender=hasKeyword(attacker,'unblockable',side)?-1:defenderIndex(enemySide,lane),target=defender>=0?boardFor(enemySide)[defender]:null;
+  var power=attacker.power*damageMultiplierFor(side),reply=target?target.power*damageMultiplierFor(enemySide):0;
+  var hit=target?previewCombatHit(target,power,hasKeyword(attacker,'lethal',side)):null;
+  var counter=target?previewCombatHit(attacker,reply,hasKeyword(target,'lethal',enemySide)):null;
+  var raw=target?(hasKeyword(attacker,'pierce',side)?Math.max(0,power-target.power):0):power;
+  var life=raw>0?combatLifeDamage(enemySide,raw,lane):0,stage=defenseFor(enemySide)[lane];
+  var result={attacker:attacker,side:side,index:index,lane:lane,target:target,targetIndex:defender,power:power,reply:reply,hit:hit,counter:counter,lifeDamage:life,pierce:!!target&&raw>0,defenseBefore:stage,defenseAfter:raw>0?Math.min(2,stage+1):stage,reasons:[]};
+  function hasActions(card,event){return card&&(rulesFor(card)[event]||[]).length>0;}
+  var all=boardFor(side).concat(landmarkFor(side),boardFor(enemySide),landmarkFor(enemySide));
+  if(hasActions(attacker,'onAttack')||boardFor(side).concat(landmarkFor(side)).some(function(c){return hasActions(c,'onFriendlyAttack');})||handFor(side).some(function(c){return hasActions(c,'onHandFriendlyAttack');}))result.reasons.push('攻撃時効果が発動');
+  if(target&&hasActions(target,'onDefended'))result.reasons.push('防衛時効果が発動');
+  if((hit&&hit.destroyed||counter&&counter.destroyed)&&all.some(function(c){return hasActions(c,'onDestroyed')||hasActions(c,'onFriendlyDestroyed')||hasActions(c,'onEnemyDestroyed');}))result.reasons.push('破壊時に連続効果が発動');
+  if(raw>0&&stage===1&&boardFor(enemySide).concat(landmarkFor(enemySide)).some(function(c){return hasActions(c,'onDefenseBroken');}))result.reasons.push('防衛線崩壊時の効果が発動');
+  if(life>0&&landmarkFor(enemySide)[lane]&&hasActions(landmarkFor(enemySide)[lane],'onDestroyed'))result.reasons.push('ランドマークの破壊時効果が発動');
+  if(life>0&&revengeCards(enemySide,life).length)result.reasons.push('報復が発動する可能性');
+  return result;
+}
+function selectAttackPreview(side,index){
+  if(!state||state.animating||battleFeedbackBusy()||state.gameOver||state.targetRequest||state.choiceRequest||activeSide()!==side||!isHumanSide(side))return;
+  var card=boardFor(side)[index];if(!card||card.type!=='ユニット'||!remainingAttacks(card)||hasKeyword(card,'cannotAttack',side))return;
+  battlePreview={generation:state.generation,side:side,index:index,card:card,destination:index,choosingLane:!!rulesFor(card).moveOnAttack&&attackMoveCandidates(side,index).length>1};
+  render();
+}
+function setAttackPreviewLane(lane){
+  if(!battlePreview||!validAttackPreview(battlePreview)||attackMoveCandidates(battlePreview.side,battlePreview.index).indexOf(lane)<0)return;
+  battlePreview.destination=lane;battlePreview.choosingLane=false;render();
+}
+function clearAttackPreview(redraw){
+  battlePreview=null;
+  var panel=$('attackPreviewPanel'),arrow=$('battleAttackArrow');if(panel)panel.hidden=true;if(arrow)arrow.innerHTML='';
+  if(redraw&&state)render();
+}
+function battlePrimaryAction(){return battlePreview?confirmAttackPreview():playSelectedCard();}
+function battleSecondaryAction(){if(battlePreview)clearAttackPreview(true);else return endTurn();}
+async function confirmAttackPreview(){
+  var preview=battlePreview;if(!preview||!validAttackPreview(preview)||preview.choosingLane)return;
+  if(rulesFor(preview.card).moveOnAttack&&attackMoveCandidates(preview.side,preview.index).indexOf(preview.destination)<0){clearAttackPreview(true);return;}
+  clearAttackPreview(false);
+  try{await attack(preview.side,preview.index,{destination:preview.destination});}
+  finally{if(state&&state.generation===preview.generation&&!state.gameOver){state.animating=false;render();}}
+}
+function battleRootPrefix(side){return (state.matchMode==='local'?side===activeSide():side==='player')?'player':'enemy';}
+function battleZoneNode(side,zone,index,card){
+  if(zone==='unit')return boardCard(side,index);
+  if(zone==='landmark')return landmarkCard(side,index);
+  if(zone==='hand')return side===(state.matchMode==='local'?activeSide():'player')?handView.nodes.get(card):null;
+  if(zone==='defense'){var root=$(battleRootPrefix(side)+'Defense');return root&&root.children&&root.children[index];}
+  if(zone==='life')return document.querySelector('.battleHud[data-side="'+side+'"] .life');
+  if(zone==='mana')return $(battleRootPrefix(side)+'ResourceSlots');
+  if(zone==='handArea')return side===(state.matchMode==='local'?activeSide():'player')?$('playerHand'):$('enemyHandCount');
+  return null;
+}
+function battleArrowMarkup(from,to){
+  if(!from||!to||!from.getBoundingClientRect||!to.getBoundingClientRect)return '';
+  var a=from.getBoundingClientRect(),b=to.getBoundingClientRect();if(!a.width||!b.width)return '';
+  var x=a.left+a.width/2,y=a.top+a.height/2,tx=b.left+b.width/2,ty=b.top+b.height/2;
+  return '<defs><marker id="battleArrowHead" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7" fill="none" stroke="#dfbd8d" stroke-width="1.3"/></marker></defs><path d="M'+x+' '+y+' Q'+((x+tx)/2+14)+' '+((y+ty)/2)+' '+tx+' '+ty+'" fill="none" stroke="#dfbd8d" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#battleArrowHead)"/>';
+}
+function renderAttackPreview(){
+  var panel=$('attackPreviewPanel'),arrow=$('battleAttackArrow'),controls=$('controls');if(!panel||!arrow||!controls)return;
+  controls.classList.toggle('previewControls',!!battlePreview);
+  if(!battlePreview){panel.hidden=true;arrow.innerHTML='';return;}
+  var preview=battlePreview,result=predictAttack(preview.side,preview.index,preview.destination);
+  if(!result){clearAttackPreview(false);return;}
+  var source=boardCard(preview.side,preview.index),target=result.target?boardCard(otherSide(preview.side),result.targetIndex):battleZoneNode(otherSide(preview.side),'defense',result.lane);
+  if(source)source.classList.add('attackPreviewSource');if(target&&!preview.choosingLane)target.classList.add('attackPreviewTarget');
+  $('playBtn').textContent='攻撃する';$('playBtn').disabled=preview.choosingLane;$('endBtn').textContent='キャンセル';$('endBtn').disabled=false;
+  $('specialBtn').disabled=true;controls.querySelector('.controlInner').classList.remove('hasSpecial');
+  var title=escapeHtml(result.attacker.name)+' ⚔'+result.attacker.power+' → '+(result.target?escapeHtml(result.target.name)+' ⚔'+result.target.power:'防衛線 '+(result.lane+1));
+  var lines=[];
+  if(preview.choosingLane)lines.push('<span class="attackPreviewUncertain">攻撃位置を選択</span>');
+  else if(result.reasons.length)lines.push('<span class="attackPreviewUncertain">'+escapeHtml(result.reasons.join(' ／ '))+'・結果未確定</span>');
+  else{
+    if(result.hit)lines.push('相手 '+result.hit.damage+'ダメージ・'+(result.hit.destroyed?'破壊':'残⚔'+result.hit.power)+' ／ 自分 '+result.counter.damage+'ダメージ・'+(result.counter.destroyed?'破壊':'残⚔'+result.counter.power));
+    if(!result.target||result.pierce){var stages=['無傷','ヒビ','崩壊'];lines.push((result.pierce?'貫通：':'')+'LIFE '+result.lifeDamage+'ダメージ ／ '+stages[result.defenseBefore]+' → '+stages[result.defenseAfter]);}
+  }
+  panel.innerHTML='<div class="attackPreviewTitle">'+title+'</div><div class="attackPreviewResult">'+lines.join('<br>')+'</div>';panel.hidden=false;
+  var directionSource=source;
+  if(preview.destination!==preview.index&&!preview.choosingLane){
+    var ownRoot=$(battleRootPrefix(preview.side)+'Board'),destinationNode=ownRoot&&ownRoot.children&&ownRoot.children[preview.destination];
+    if(destinationNode){destinationNode.classList.add('attackPreviewSource');directionSource=destinationNode;}
+    panel.querySelector('.attackPreviewTitle').textContent='レーン'+(preview.index+1)+' → '+(preview.destination+1)+' ／ '+result.attacker.name+' → '+(result.target?result.target.name:'防衛線');
+  }
+  arrow.innerHTML=preview.choosingLane?'':battleArrowMarkup(directionSource,target);
+  positionBattleFeedback();
+}
+function positionBattleFeedback(){
+  var panel=$('attackPreviewPanel'),controls=$('controls'),notice=$('battleEffectNotice'),log=$('battleLog');
+  if(!controls||!controls.getBoundingClientRect||typeof window.innerWidth!=='number')return;
+  var rect=controls.getBoundingClientRect();
+  if(panel&&!panel.hidden){panel.style.left=Math.max(8,(window.innerWidth-Math.min(410,window.innerWidth-16))/2)+'px';panel.style.top=Math.max(8,rect.top-panel.offsetHeight-5)+'px';}
+  if(notice&&!notice.hidden&&log&&log.getBoundingClientRect){var mid=log.getBoundingClientRect();notice.style.left=Math.max(12,(window.innerWidth-notice.offsetWidth)/2)+'px';notice.style.top=Math.max(8,mid.top-notice.offsetHeight-4)+'px';}
+  battleFeedback.overlays.forEach(layoutEffectTrail);
+}
+function layoutEffectTrail(arrow){
+  if(!arrow.fxFrame)return;
+  var frame=arrow.fxFrame,source=effectNode(effectLocation(frame.card,frame.side,frame.slot)),markup='';
+  arrow.fxTargets.forEach(function(target){var part=battleArrowMarkup(source,effectNode(target));markup+=part;var motion=part.match(/d="(M[^"]+)"/);if(motion&&!placementMotionReduced())markup+='<circle r="2.5" fill="#e4c68e"><animateMotion dur=".13s" path="'+motion[1]+'" fill="freeze"/></circle>';});
+  arrow.innerHTML=markup;
+}
+window.addEventListener('resize',function(){if(battlePreview)renderAttackPreview();positionBattleFeedback();});
+window.addEventListener('scroll',function(){if(battlePreview)renderAttackPreview();positionBattleFeedback();},{passive:true});
+if(window.visualViewport){window.visualViewport.addEventListener('resize',function(){if(battlePreview)renderAttackPreview();positionBattleFeedback();});window.visualViewport.addEventListener('scroll',positionBattleFeedback);}
 function openInfoModal(title,sub,html,tabs){
   $('infoTitle').textContent=title;$('infoSub').textContent=sub||'';$('infoContent').innerHTML=html||'';
   $('infoTabs').innerHTML=tabs||'';$('infoTabs').style.display=tabs?'flex':'none';
@@ -3867,6 +4145,7 @@ function reportRuntimeError(error,location){
   var message=error && error.message ? error.message : String(error || '不明なエラー');
   var gameScreen=$('gameScreen');
   if(state && !state.gameOver && (state.animating || (gameScreen && gameScreen.style.display==='grid'))){
+    clearAttackPreview(false);cancelBattleFeedback();cancelPlacementMotion();
     state.animating=false;
     // Recovery unlocks controls; already-applied card effects are not rolled back.
     var notice='戦闘中にエラーが発生しました。操作ロックを解除しました。\n'+message;
@@ -3910,6 +4189,7 @@ renderHomeProfile();renderSeason1Banner();
 </script>
 </body>
 </html>
+
 
 
 

@@ -45,7 +45,7 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   reset();ctx.state.playerBoard[1]=unit();ctx.state.playerLandmarks[1]=landmark();await ctx.damage(ctx.state.playerBoard,1,1,'player',false);check(ctx.state.playerLandmarks[1]!=null,'unit damage does not hit coexisting landmark');
   reset();ctx.state.enemyBoard[0]=unit();let pending=ctx.chooseTarget('player','enemy','選択',null,null);let prior=ctx.state;reset();prior.targetRequest.resolve({side:'enemy',index:0});check((await pending)?.index===0,'request releases old input');
   let gate;const deferred=new Promise(resolve=>gate=resolve),generation=ctx.state.generation;let stale=ctx.checkedBattle(deferred,generation).then(()=>false,error=>error===ctx.staleBattle);reset();gate('old');check(await stale,'stale generation cancels awaited continuation');
-  reset();ctx.state.playerHand.push(landmark());ctx.state.selectedCard=0;ctx.state.selectedSlot=2;let resume;ctx.wait=()=>new Promise(resolve=>resume=resolve);const oldPlay=ctx.playSelectedCard().then(()=>false,error=>error===ctx.staleBattle);reset();resume();check(await oldPlay&&ctx.state.playerLandmarks.every(c=>!c),'old placement continuation cannot modify a new match');ctx.wait=async()=>{};
+  reset();ctx.state.playerHand.push(landmark());ctx.state.selectedCard=0;ctx.state.selectedSlot=2;let resume;const originalPlacement=ctx.animateHandPlacement;ctx.animateHandPlacement=()=>new Promise(resolve=>resume=resolve);const oldPlay=ctx.playSelectedCard().then(()=>false,error=>error===ctx.staleBattle);reset();resume();check(await oldPlay&&ctx.state.playerLandmarks.every(c=>!c),'old placement continuation cannot modify a new match');ctx.animateHandPlacement=originalPlacement;
   reset();let over=ctx.checkedBattle(Promise.resolve('old'),ctx.state.generation).then(()=>false,error=>error===ctx.staleBattle);ctx.state.gameOver=true;check(await over,'game over cancels awaited continuation');
   check(html.indexOf('id="enemyLandmarks"')<html.indexOf('id="enemyBoard"')&&html.indexOf('id="playerBoard"')<html.indexOf('id="playerLandmarks"'),'four rows appear in specified order');
   check(html.includes('assets/fortified-lane.png')&&fs.existsSync(dir+'/assets/fortified-lane.png'),'fortification art integrated');
@@ -135,9 +135,10 @@ const unit=()=>card('クロスフォート兵'),landmark=()=>card('クロスフ�
   reset();await ctx.applyLaneStatus('enemy',2,'burning');const burningSlots=[];node('enemyBoard').appendChild=slot=>burningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(burningSlots[2].className.includes('burningLane')&&!burningSlots[1].className.includes('burningLane'),'burning is visible on an empty slot without adding a new board row');
   reset();ctx.state.enemyBoard[2]=unit();await ctx.applyLaneStatus('enemy',2,'burning');const occupiedBurningSlots=[];node('enemyBoard').appendChild=slot=>occupiedBurningSlots.push(slot);ctx.renderBoard('enemy','enemyBoard',true);check(!occupiedBurningSlots[2].className.includes('burningLane'),'occupied slot damage clears burning before rendering');
   check(html.includes("burningOverlay.className='burningSlotOverlay'")&&html.includes('assets/ui/battle/burning_slot.png')&&fs.existsSync(dir+'/assets/ui/battle/burning_slot.png'),'burning lane renderer uses the transparent slot overlay asset');
-  check(html.includes('// TODO(要確認): 炎上ダメージと「配置」効果の解決順')&&html.includes('// TODO(要確認): シート上の「崩壊」'),'remaining undefined third-set ordering and naming rules stay explicit TODOs');
+  check(html.includes('// TODO(要確認): 炎上ダメージと「配置」効果の解決順')&&html.includes('防衛線state=2は「崩壊」'),'burning ordering stays explicit and resolved defense naming remains documented');
 
   console.log(`${count} phase2 and landmark regression assertions passed`);
 })().catch(e=>{console.error(e);process.exitCode=1});
+
 
 
