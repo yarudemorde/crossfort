@@ -4085,7 +4085,7 @@ function renderAttackPreview(){
   if(preview.destination!==preview.index&&!preview.choosingLane){
     var ownRoot=$(battleRootPrefix(preview.side)+'Board'),destinationNode=ownRoot&&ownRoot.children&&ownRoot.children[preview.destination];
     if(destinationNode){destinationNode.classList.add('attackPreviewSource');directionSource=destinationNode;}
-    panel.querySelector('.attackPreviewTitle').textContent='レーン'+(preview.index+1)+' → '+(preview.destination+1)+' ／ '+result.attacker.name+' → '+(result.target?result.target.name:'防衛線');
+    panel.querySelector('.attackPreviewTitle').textContent='レーン'+(preview.index+1)+' → '+(preview.destination+1)+' ／ '+result.attacker.name+' ⚔'+result.attacker.power+' → '+(result.target?result.target.name+' ⚔'+result.target.power:'防衛線 '+(result.lane+1));
   }
   arrow.innerHTML=preview.choosingLane?'':battleArrowMarkup(directionSource,target);
   positionBattleFeedback();

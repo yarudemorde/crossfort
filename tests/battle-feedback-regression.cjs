@@ -40,6 +40,17 @@ let checks=0;function check(value,msg){assert.ok(value,msg);checks++;}
  s=fresh();a=unit('攻撃不可',3,{keywords:['cannotAttack']});s.playerBoard[0]=a;ctx.selectAttackPreview('player',0);check(!ctx.battlePreview,'cannot-attack cards cannot enter preview');
  s=fresh();a=unit('移動攻撃',4,{moveOnAttack:true});s.playerBoard[2]=a;s.enemyBoard[1]=unit('移動先の敵',1);const before=JSON.stringify(s);ctx.selectAttackPreview('player',2);check(ctx.battlePreview.choosingLane,'movable attacker asks for lane first');ctx.setAttackPreviewLane(1);check(JSON.stringify(s)===before&&ctx.predictAttack('player',2,1).target===s.enemyBoard[1],'destination preview does not actually move card');await ctx.confirmAttackPreview();check(s.playerBoard[1]===a&&!s.playerBoard[2]&&s.enemyBoard[1]===null,'confirmed attack uses chosen lane');
  s=fresh();a=unit('攻撃時効果',3,{onAttack:[{type:'damageLife',amount:1,target:'enemy'}]});s.playerBoard[0]=a;check(ctx.predictAttack('player',0).reasons.includes('攻撃時効果が発動'),'attack triggers mark result uncertain');
+ s=fresh();a=unit('移動先表示',4,{moveOnAttack:true});s.playerBoard[2]=a;s.enemyBoard[1]=unit('移動先の防衛',3);ctx.selectAttackPreview('player',2);ctx.setAttackPreviewLane(1);ctx.renderAttackPreview();
+ check(element('attackPreviewPanel-child').textContent.includes('移動先表示 ⚔4 → 移動先の防衛 ⚔3'),'moved preview retains both power values in its title');
+ for(let stage=1;stage<=3;stage++){
+  s=fresh();s.eventMode=true;s.eventStage=stage;s.battleStats=ctx.newBattleStats(14,true);s.playerLife=14;ctx.eventSeason1={started:true,currentStage:stage,currentHp:14,maxHp:20,selectedDeckId:'regression'};
+  a=unit('イベント攻撃'+stage,4);s.playerBoard[2]=a;s.enemyBoard[2]=unit('イベント防衛'+stage,3);
+  const savedStats=JSON.stringify(s.battleStats),savedProgress=JSON.stringify(ctx.eventSeason1);
+  ctx.selectAttackPreview('player',2);ctx.predictAttack('player',2);ctx.clearAttackPreview(true);
+  check(JSON.stringify(s.battleStats)===savedStats&&JSON.stringify(ctx.eventSeason1)===savedProgress,'stage '+stage+' preview and cancellation do not affect scores or carried HP');
+  ctx.selectAttackPreview('player',2);await ctx.confirmAttackPreview();
+  check(s.battleStats.unitDamage===3&&s.battleStats.enemyUnitKills===1&&s.playerLife===14&&s.playerBoard[2].power===1,'stage '+stage+' confirmed combat records original event statistics exactly once');
+ }
  s=fresh();s.playerBoard[0]=unit('本体攻撃',4);s.enemyDefense[0]=1;s.enemyHand=[card('原始的な投槍')];check(ctx.predictAttack('player',0).reasons.some(x=>x.includes('報復')),'available revenge marks uncertainty');
  s=fresh();a=unit('古い攻撃',3);s.playerBoard[0]=a;ctx.selectAttackPreview('player',0);s.playerBoard[0]=unit('新しいユニット',4);await ctx.confirmAttackPreview();check(s.playerBoard[0].canAttack&&s.enemyLife===20,'stale preview cannot attack replacement card');
  // Nested effects retain existing executor order and do not overlap UI phases.
