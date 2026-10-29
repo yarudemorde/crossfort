@@ -83,6 +83,10 @@ let checks=0;function check(value,msg){assert.ok(value,msg);checks++;}
  let release;const oldPause=ctx.feedbackPause;ctx.feedbackPause=()=>new Promise(r=>release=r);
  const pending=ctx.triggerCard(a,'onPlay','player',0,{}).catch(e=>e);await Promise.resolve();s.generation++;ctx.cancelBattleFeedback();release();const error=await pending;
  check(error===ctx.staleBattle&&s.playerHand.length===0&&!ctx.battleFeedbackBusy(),'interruption cannot resume effects in a new generation');ctx.feedbackPause=oldPause;
+ const originalQueryAll=ctx.document.querySelectorAll;let transientVisualsRemoved=0;
+ ctx.document.querySelectorAll=selector=>selector.includes('.fxFloat')?Array.from({length:4},()=>({remove(){transientVisualsRemoved++;}})):[];
+ ctx.cancelBattleFeedback();ctx.document.querySelectorAll=originalQueryAll;
+ check(transientVisualsRemoved===4,'leaving battle removes damage numbers, destruction ghosts, shields and collapsing landmarks');
  check(html.includes('selectAttackPreview(side,index)')&&html.includes('battlePrimaryAction()'),'board and controls use preview entry points');
  console.log(checks+' attack preview and effect-chain checks passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});
