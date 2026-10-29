@@ -1791,6 +1791,7 @@ async function applyBurning(side,lane){
   return setLaneStatus(side,lane,'burning');
 }
 async function applyLaneStatus(side,lane,status){
+  await checkedBattle(cueEffectTargets([{side:side,zone:'unit',index:lane}]),state&&state.generation);
   if(status==='burning')return applyBurning(side,lane);
   return setLaneStatus(side,lane,status);
 }
@@ -3885,7 +3886,7 @@ function effectSnapshot(){
   var snapshot={cards:new Map(),sides:{}};
   ['player','enemy'].forEach(function(side){
     var hand=handFor(side),deck=deckFor(side),grave=graveFor(side);
-    snapshot.sides[side]={life:side==='player'?state.playerLife:state.enemyLife,mana:manaFor(side),maxMana:side==='player'?state.maxMana:state.enemyMaxMana,hand:hand.length,deck:deck.length,grave:grave.length};
+    snapshot.sides[side]={life:side==='player'?state.playerLife:state.enemyLife,mana:manaFor(side),maxMana:side==='player'?state.maxMana:state.enemyMaxMana,hand:hand.length,deck:deck.length,grave:grave.length,lanes:(state[side==='player'?'playerLaneStates':'enemyLaneStates']||[{},{},{},{},{}]).map(function(lane){return JSON.stringify(lane||{});})};
     [['unit',boardFor(side)],['landmark',landmarkFor(side)],['hand',hand],['deck',deck],['grave',grave]].forEach(function(pair){
       pair[1].forEach(function(card,index){if(card)snapshot.cards.set(card,{side:side,zone:pair[0],index:index,power:card.power,bonus:card.spellDamageBonus||0,reduction:card.handCostReduction||0,permanent:card.permanentPowerBonus||0,keywords:JSON.stringify(card.grantedKeywords||[]),restrictions:JSON.stringify(card.temporaryEffects||[])});});
     });
@@ -3932,6 +3933,7 @@ function effectDeltas(before,after){
   after.cards.forEach(function(now,card){var old=before.cards.get(card);if((now.zone==='unit'||now.zone==='landmark')&&(!old||old.zone!==now.zone))changes.push({text:card.name+'：レーン'+(now.index+1)+'に配置',location:Object.assign({card:card},now)});});
   ['player','enemy'].forEach(function(side){
     var a=before.sides[side],b=after.sides[side],label=sideLabel(side);
+    b.lanes.forEach(function(lane,index){if(lane!==a.lanes[index]){var status=JSON.parse(lane).statuses||{};changes.push({text:label+' レーン'+(index+1)+'：'+(status.burning?'炎上':'スロット状態を更新'),location:{side:side,zone:'unit',index:index}});}});
     ['life','mana','maxMana','hand','grave'].forEach(function(key){var diff=b[key]-a[key];if(!diff)return;var names={life:'LIFE',mana:'資源',maxMana:'最大資源',hand:'手札',grave:'墓地'};changes.push({text:label+' '+names[key]+' '+(diff>0?'+':'')+diff,location:{side:side,zone:key==='life'?'life':key==='mana'||key==='maxMana'?'mana':'handArea',index:-1}});});
   });
   return changes;
@@ -3968,7 +3970,7 @@ async function beginEffectPresentation(card,side,slot,action,event){
 async function endEffectPresentation(frame){
   if(!state||state.generation!==frame.generation||battleFeedback.stack.indexOf(frame)<0)return;
   render();await flushEffectPresentation(frame,true);
-  if(!frame.logged&&!state.gameOver)appendBattleHistory(frame.card.name+'【'+effectActionLabel(frame.action)+'】 → 対象なし・変化なし',{kind:'effect',source:frame.card.name,action:frame.action.type});
+  if(!frame.logged&&!state.gameOver)appendBattleHistory(frame.card.name+'【'+effectActionLabel(frame.action)+'】を解決',{kind:'effect',source:frame.card.name,action:frame.action.type});
   var index=battleFeedback.stack.indexOf(frame);if(index>=0)battleFeedback.stack.splice(index,1);
   var parent=battleFeedback.stack[battleFeedback.stack.length-1];if(parent)parent.snapshot=effectSnapshot();
   else{var notice=$('battleEffectNotice');if(notice)notice.hidden=true;}

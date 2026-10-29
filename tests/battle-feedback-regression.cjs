@@ -61,6 +61,9 @@ let checks=0;function check(value,msg){assert.ok(value,msg);checks++;}
  check(s.battleHistory.some(e=>e.source==='報復発動元'&&e.text.includes('レーン2に配置'))&&!s.battleHistory.some(e=>e.source==='自傷の発動元'&&e.text.includes('レーン2に配置')),'revenge deployment belongs to its own source, not the parent spell');
  check(!ctx.battleFeedbackBusy(),'revenge presentation releases its nested frame');
  ctx.chooseRevengeCard=oldRevengeChoice;ctx.chooseOpenSlot=oldOpenSlot;
+ s=fresh();const fireSource=unit('炎上の発動元',2);s.enemyBoard[2]=fireSource;
+ await ctx.executeActions([{type:'applyLaneStatus',target:'enemyFront',status:'burning'}],'enemy',2,fireSource,{});
+ check(ctx.hasLaneStatus('player',2,'burning')&&s.battleHistory.some(e=>e.source==='炎上の発動元'&&e.text.includes('レーン3：炎上')),'empty-slot effects report their actual lane result');
  s=fresh();s.enemyHand=[card('【狩猟の月】オイタネヴ')];await ctx.emitFriendlyAction('enemy','onFriendlyAttack',{});
  check(s.enemyHand[0].power===2&&s.battleHistory.some(e=>e.source==='【狩猟の月】オイタネヴ'),'hand effects have individual history');
  s=fresh();const relic=card('サントラーヴ・ベイ');s.enemyLandmarks[0]=relic;await ctx.destroyLandmark('enemy',0);
