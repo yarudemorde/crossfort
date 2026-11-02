@@ -1,0 +1,230 @@
+{
+  "isPrototypeData": true,
+  "disclaimer": "正式カードではない。実装と試験のための仮データ。",
+  "decks": {
+    "player": [
+      "unit_militia",
+      "unit_scout",
+      "unit_archers",
+      "unit_infantry",
+      "unit_cavalry",
+      "unit_heavy",
+      "unit_ballista",
+      "unit_skirmish",
+      "unit_guard",
+      "landmark_basic",
+      "landmark_watchtower",
+      "landmark_fort",
+      "spell_heal",
+      "spell_damage",
+      "spell_reveal",
+      "spell_boost"
+    ],
+    "cpu": [
+      "unit_militia",
+      "unit_scout",
+      "unit_archers",
+      "unit_infantry",
+      "unit_cavalry",
+      "unit_heavy",
+      "unit_ballista",
+      "unit_skirmish",
+      "unit_guard",
+      "landmark_basic",
+      "landmark_watchtower",
+      "landmark_fort",
+      "spell_heal",
+      "spell_damage",
+      "spell_reveal",
+      "spell_boost"
+    ]
+  },
+  "cards": [
+    {
+      "id": "unit_militia",
+      "name": "民兵隊（仮）",
+      "type": "unit",
+      "cost": 1,
+      "vision": 1,
+      "power": 2,
+      "range": 1,
+      "movement": 2,
+      "resource": 3
+    },
+    {
+      "id": "unit_scout",
+      "name": "斥候隊（仮）",
+      "type": "unit",
+      "cost": 2,
+      "vision": 3,
+      "power": 2,
+      "range": 1,
+      "movement": 3,
+      "resource": 3
+    },
+    {
+      "id": "unit_archers",
+      "name": "弓兵隊（仮）",
+      "type": "unit",
+      "cost": 3,
+      "vision": 2,
+      "power": 3,
+      "range": 2,
+      "movement": 2,
+      "resource": 2
+    },
+    {
+      "id": "unit_infantry",
+      "name": "正規歩兵隊（仮）",
+      "type": "unit",
+      "cost": 2,
+      "vision": 1,
+      "power": 4,
+      "range": 1,
+      "movement": 2,
+      "resource": 2
+    },
+    {
+      "id": "unit_cavalry",
+      "name": "騎兵隊（仮）",
+      "type": "unit",
+      "cost": 4,
+      "vision": 1,
+      "power": 5,
+      "range": 1,
+      "movement": 3,
+      "resource": 1
+    },
+    {
+      "id": "unit_heavy",
+      "name": "重装歩兵隊（仮）",
+      "type": "unit",
+      "cost": 4,
+      "vision": 1,
+      "power": 6,
+      "range": 1,
+      "movement": 1,
+      "resource": 1
+    },
+    {
+      "id": "unit_ballista",
+      "name": "弩砲隊（仮）",
+      "type": "unit",
+      "cost": 5,
+      "vision": 2,
+      "power": 3,
+      "range": 2,
+      "movement": 0,
+      "resource": 2
+    },
+    {
+      "id": "unit_skirmish",
+      "name": "遊撃隊（仮）",
+      "type": "unit",
+      "cost": 3,
+      "vision": 2,
+      "power": 3,
+      "range": 1,
+      "movement": 3,
+      "resource": 2
+    },
+    {
+      "id": "unit_guard",
+      "name": "近衛隊（仮）",
+      "type": "unit",
+      "cost": 5,
+      "vision": 1,
+      "power": 7,
+      "range": 1,
+      "movement": 1,
+      "resource": 1
+    },
+    {
+      "id": "landmark_basic",
+      "name": "基礎拠点（仮）",
+      "type": "landmark",
+      "cost": 4,
+      "territory": 1,
+      "vision": 1,
+      "power": 10,
+      "resource": 1
+    },
+    {
+      "id": "landmark_watchtower",
+      "name": "監視塔（仮）",
+      "type": "landmark",
+      "cost": 3,
+      "territory": 1,
+      "vision": 3,
+      "power": 3,
+      "resource": 2
+    },
+    {
+      "id": "landmark_fort",
+      "name": "境界砦（仮）",
+      "type": "landmark",
+      "cost": 5,
+      "territory": 2,
+      "vision": 2,
+      "power": 7,
+      "resource": 1
+    },
+    {
+      "id": "spell_heal",
+      "name": "救護命令（仮）",
+      "type": "spell",
+      "cost": 2,
+      "resource": 2,
+      "effects": [
+        {
+          "effectId": "heal",
+          "amount": 2,
+          "target": "visibleFriendlyPiece"
+        }
+      ]
+    },
+    {
+      "id": "spell_damage",
+      "name": "一斉射撃（仮）",
+      "type": "spell",
+      "cost": 3,
+      "resource": 1,
+      "effects": [
+        {
+          "effectId": "directDamage",
+          "amount": 2,
+          "target": "visibleEnemyPiece"
+        }
+      ]
+    },
+    {
+      "id": "spell_reveal",
+      "name": "広域偵察（仮）",
+      "type": "spell",
+      "cost": 1,
+      "resource": 3,
+      "effects": [
+        {
+          "effectId": "reveal",
+          "radius": 2,
+          "target": "visibleHex"
+        }
+      ]
+    },
+    {
+      "id": "spell_boost",
+      "name": "突撃号令（仮）",
+      "type": "spell",
+      "cost": 2,
+      "resource": 2,
+      "effects": [
+        {
+          "effectId": "temporaryPowerBonus",
+          "amount": 1,
+          "duration": "untilTurnEnd",
+          "target": "visibleFriendlyUnit"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "version": "prototype-1.0",
+  "status": "PROVISIONAL_DEFAULTS_EXCEPT_EXPLICIT_USER_RULES",
+  "deck": {
+    "count": 16,
+    "uniqueDefinitions": 16,
+    "copiesPerDefinition": 1,
+    "initialHand": 0,
+    "drawPerTurn": 3,
+    "exchangePerTurn": 1,
+    "endTurnRecycle": "shuffle_used_resources_hand_append_to_bottom"
+  },
+  "resources": {
+    "initialPublicCards": 2,
+    "extraPerLivingFriendlyLandmark": 1,
+    "publicCardCap": 4,
+    "extractMin": 1,
+    "extractMax": 3,
+    "headquartersIncludedAsLandmark": false
+  },
+  "board": {
+    "coordinateSystem": "axial",
+    "defaultRadius": 4,
+    "mapSize": 61,
+    "availableMaps": 2
+  },
+  "headquarters": {
+    "power": 12,
+    "vision": 2,
+    "attackRange": 1,
+    "territory": 1,
+    "canMove": false,
+    "canAttackOncePerOwnTurn": true
+  },
+  "basicOutpost": {
+    "power": 10,
+    "vision": 1,
+    "territory": 1,
+    "interpretation": "provisional separate buildable landmark"
+  },
+  "landmark": {
+    "territoryMin": 1,
+    "territoryMax": 2,
+    "attackRangeDerivedFrom": "territoryNumber",
+    "visibleRadiusDerivedFrom": "visionNumber",
+    "territoryPriority": "earliestLivingStructure",
+    "enemyTerritoryBuildDenied": true,
+    "buildRequiresAdjacentFriendlyUnit": true
+  },
+  "terrain": {
+    "plain": {
+      "moveModifier": 0,
+      "counterBonus": 0
+    },
+    "forest": {
+      "moveModifier": 0,
+      "counterBonus": 1
+    },
+    "mountain": {
+      "moveModifier": -1,
+      "counterBonus": 1,
+      "floorIfPositiveBase": 1
+    },
+    "swamp": {
+      "moveModifier": -2,
+      "floorIfPositiveBase": 1
+    },
+    "desert": {
+      "effectivePowerModifier": -1,
+      "minEffectivePower": 1
+    },
+    "river": {
+      "movementFixed": 1,
+      "movementZeroException": true
+    }
+  },
+  "movement": {
+    "terrainEvaluatedAt": "startingHex",
+    "baseMoveZeroNeverImprovedByTerrain": true,
+    "friendlyUnitsPassable": true,
+    "friendlyUnitsStopAllowed": false,
+    "enemyPiecesImpassable": true,
+    "friendlyUnitAndStructureShareHex": true,
+    "unitActionPerOwnTurn": 1,
+    "newlyDeployedActsNextOwnTurn": true
+  },
+  "combat": {
+    "damageFrom": "currentEffectivePower",
+    "counterFrom": "survivingEffectivePower",
+    "counterIfInRange": true,
+    "counterBonusAppliedToDamageOnly": true,
+    "persistentDamage": true,
+    "automaticAdvanceAfterKill": false,
+    "activeAttacksPerUnitPerTurn": 1,
+    "counterConsumesOwnAction": false
+  },
+  "visibility": {
+    "exploredPermanent": true,
+    "perPlayerExploration": true,
+    "shareAlliedVision": true,
+    "movementPathReveals": true,
+    "enemyOnlyVisibleWhenCurrentlyInVision": true,
+    "terrainBlocksVision": false,
+    "terrainBlocksAttack": false
+  },
+  "game": {
+    "victory": "enemyHeadquartersDestroyed",
+    "mode": "player_vs_cpu",
+    "turnMode": "alternating",
+    "firstPlayerAdvantageCompensation": false
+  }
+}

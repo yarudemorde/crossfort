@@ -1,0 +1,32 @@
+[
+  {
+    "id": "crossing",
+    "name": "渡河戦（仮）",
+    "radius": 4,
+    "headquarters": {
+      "player": {
+        "q": -4,
+        "r": 0
+      },
+      "cpu": {
+        "q": 4,
+        "r": 0
+      }
+    }
+  },
+  {
+    "id": "highlands",
+    "name": "山岳戦（仮）",
+    "radius": 4,
+    "headquarters": {
+      "player": {
+        "q": -4,
+        "r": 0
+      },
+      "cpu": {
+        "q": 4,
+        "r": 0
+      }
+    }
+  }
+]

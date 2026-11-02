@@ -1,0 +1,4 @@
+{
+  "cpu": {"maxEvaluatedActions": 12000, "maxActionsPerTurn": 120},
+  "presentation": {"cpuDelayMs": 650, "combatStepMs": 600, "recycleStepMs": 450}
+}
