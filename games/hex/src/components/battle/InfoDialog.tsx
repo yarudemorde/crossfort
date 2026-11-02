@@ -16,7 +16,7 @@ export function InfoDialog({
         'button:not(:disabled),[tabindex="0"],summary',
       ),
     ];
-    controls()[0]?.focus();
+    controls()[0]?.focus({ preventScroll: true });
     function key(e: KeyboardEvent) {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -29,17 +29,17 @@ export function InfoDialog({
           last = items.at(-1);
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
-          last?.focus();
+          last?.focus({ preventScroll: true });
         } else if (!e.shiftKey && document.activeElement === last) {
           e.preventDefault();
-          first?.focus();
+          first?.focus({ preventScroll: true });
         }
       }
     }
     document.addEventListener("keydown", key, true);
     return () => {
       document.removeEventListener("keydown", key, true);
-      if (previous?.isConnected) previous.focus();
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
   }, [onClose]);
   return (

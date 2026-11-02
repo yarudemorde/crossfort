@@ -72,7 +72,8 @@ export function Board({
           className="hex-map"
           width="100%"
           height="100%"
-          viewBox={`0 0 ${map.size.width} ${map.size.height}`}
+          // Pixel coordinates stay fixed when UI resizes the viewport. A
+          // state-driven viewBox briefly letterboxed the old size on each resize.
           aria-label="戦場の六角形マップ"
         >
           <defs>

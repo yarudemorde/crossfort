@@ -101,7 +101,7 @@ export function BattleLayout({
         e.preventDefault();
         root.current
           ?.querySelector<HTMLButtonElement>(".drawer-handle,.tray-toggle")
-          ?.focus();
+          ?.focus({ preventScroll: true });
         setHandOpen(false);
       }
     }
@@ -243,7 +243,7 @@ export function BattleLayout({
               aria-expanded={handOpen}
               aria-controls="desktop-hand-content"
               onClick={(e) => {
-                e.currentTarget.focus();
+                e.currentTarget.focus({ preventScroll: true });
                 setHandOpen(!handOpen);
               }}
             >

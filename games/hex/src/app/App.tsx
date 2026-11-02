@@ -197,7 +197,9 @@ export default function App() {
           ].filter((el) => el.offsetParent !== null)
         : [];
     const frame = dialog
-      ? requestAnimationFrame(() => controls()[0]?.focus())
+      ? requestAnimationFrame(() =>
+          controls()[0]?.focus({ preventScroll: true }),
+        )
       : undefined;
     function keydown(e: KeyboardEvent) {
       if (e.key === "Escape" && dialog) {
@@ -217,14 +219,14 @@ export default function App() {
             !dialog.contains(document.activeElement))
         ) {
           e.preventDefault();
-          last?.focus();
+          last?.focus({ preventScroll: true });
         } else if (
           !e.shiftKey &&
           (document.activeElement === last ||
             !dialog.contains(document.activeElement))
         ) {
           e.preventDefault();
-          first?.focus();
+          first?.focus({ preventScroll: true });
         }
       }
     }
@@ -232,7 +234,8 @@ export default function App() {
     return () => {
       if (frame !== undefined) cancelAnimationFrame(frame);
       document.removeEventListener("keydown", keydown);
-      if (dialog && previous?.isConnected) previous.focus();
+      if (dialog && previous?.isConnected)
+        previous.focus({ preventScroll: true });
     };
   }, [pending, help, stack.length, showResult, o?.outcome]);
   function selectPiece(p: ObservedPiece) {

@@ -27,7 +27,7 @@ export function BattleHeader({
       if (e.key === "Escape") {
         e.preventDefault();
         setMenu(false);
-        trigger.current?.focus();
+        trigger.current?.focus({ preventScroll: true });
       }
     }
     document.addEventListener("pointerdown", outside);
@@ -39,7 +39,7 @@ export function BattleHeader({
   }, [menu]);
   const close = (action: () => void) => {
     setMenu(false);
-    trigger.current?.focus();
+    trigger.current?.focus({ preventScroll: true });
     action();
   };
   const own = o.pieces.find((p) => p.instanceId === "hq_player")?.power ?? 0;

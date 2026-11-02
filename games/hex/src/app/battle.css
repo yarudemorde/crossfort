@@ -831,6 +831,8 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+  /* SVG focus must not scroll this viewport behind the camera transform. */
+  overflow: clip;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;

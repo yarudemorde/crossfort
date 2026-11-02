@@ -23,7 +23,7 @@ export function MobileBottomDrawer({
   const handle = useRef<HTMLButtonElement>(null);
   function change(next: DrawerStage) {
     if (next < stage && root.current?.contains(document.activeElement))
-      handle.current?.focus();
+      handle.current?.focus({ preventScroll: true });
     onStage(next);
   }
   return (

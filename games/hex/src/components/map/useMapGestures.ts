@@ -14,7 +14,6 @@ export function useMapGestures(initial: Coord, key: string) {
   const viewport = useRef<HTMLDivElement>(null);
   const controller = useRef(new MapGestureController());
   const [camera, setCamera] = useState<Camera>(controller.current.camera);
-  const [size, setSize] = useState({ width: 1, height: 1 });
   const sizeRef = useRef({ width: 0, height: 0 });
   const raf = useRef(0);
   const autoRaf = useRef(0);
@@ -125,21 +124,19 @@ export function useMapGestures(initial: Coord, key: string) {
     const measure = () => {
       const next = { width: el.clientWidth, height: el.clientHeight };
       if (!next.width || !next.height) return;
-      const old = sizeRef.current;
+      if (
+        next.width === sizeRef.current.width &&
+        next.height === sizeRef.current.height &&
+        initialized
+      )
+        return;
       sizeRef.current = next;
-      setSize(next);
       if (!initialized) {
         initialized = true;
         focus(initial, false);
-      } else {
-        const c = controller.current.camera;
-        controller.current.camera = {
-          ...c,
-          x: c.x + (next.width - old.width) / 2,
-          y: c.y + (next.height - old.height) / 2,
-        };
-        publish();
       }
+      // UI panels change the visible area, never the camera. Recentring here
+      // made every card selection and hand toggle move the battlefield.
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -167,7 +164,7 @@ export function useMapGestures(initial: Coord, key: string) {
       stopAuto();
       controller.current.pointers.clear();
     };
-    // A new battle resets the camera; opening the hand only resizes it.
+    // A new battle resets the camera; UI resizing only updates camera bounds.
   }, [key]);
   const point = (e: ReactPointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -176,7 +173,6 @@ export function useMapGestures(initial: Coord, key: string) {
   return {
     viewport,
     camera,
-    size,
     focus,
     fit,
     ensureVisible,

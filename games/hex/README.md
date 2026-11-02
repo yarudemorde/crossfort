@@ -75,7 +75,7 @@ npm ci
 npm run dev
 ```
 
-ルートの `.github/workflows/hex-ci.yml` が型検査・lint・123件のルール/描画/結合テスト・ビルドを実行します。`pages.yml` は同じ検証後、既存ゲームの `index.html`、CSS、`assets/`、`data/` と本作の最新ビルドを同じPages成果物へまとめて公開します。既存ゲームのソースは変更しません。
+ルートの `.github/workflows/hex-ci.yml` が型検査・lint・126件のルール/描画/結合テスト・ビルドを実行します。`pages.yml` は同じ検証後、既存ゲームの `index.html`、CSS、`assets/`、`data/` と本作の最新ビルドを同じPages成果物へまとめて公開します。既存ゲームのソースは変更しません。
 
 GitHub PagesのSourceが未設定の場合は、リポジトリの Settings → Pages → Source で GitHub Actions を選びます。`main` へのpushか、Actionsの「Deploy Crossfort and Hex to Pages」で再公開できます。Viteの相対baseにより、Worker・CSS・JSは `/hex/` のサブパスでも読み込めます。
 
