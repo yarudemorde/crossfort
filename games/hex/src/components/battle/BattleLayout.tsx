@@ -1,4 +1,10 @@
-import { useEffect, useReducer, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type {
   Action,
   CardDefinition,
@@ -8,9 +14,7 @@ import type {
 } from "../../game/types";
 import { BattleHeader } from "./BattleHeader";
 import { HandTray } from "./HandTray";
-import { DesktopSidebar } from "./DesktopSidebar";
 import { MobileBottomDrawer } from "./MobileBottomDrawer";
-import { DetailPanels } from "./DetailPanels";
 import { ResourceSummary } from "./ResourceSummary";
 import { ChroniclePanel } from "./ChroniclePanel";
 import {
@@ -18,13 +22,14 @@ import {
   displayName,
   selectionHint,
 } from "./SelectionInspector";
-import { panelsReducer, initialPanels, type DetailPanel } from "./panels";
+import { InfoDialog } from "./InfoDialog";
+import { Card } from "../Card";
 function useCompactLayout() {
   const [compact, setCompact] = useState(
-    () => window.matchMedia("(max-width: 900px)").matches,
+    () => window.matchMedia("(max-width:900px)").matches,
   );
   useEffect(() => {
-    const m = window.matchMedia("(max-width: 900px)");
+    const m = window.matchMedia("(max-width:900px)");
     const update = () => setCompact(m.matches);
     m.addEventListener("change", update);
     return () => m.removeEventListener("change", update);
@@ -70,13 +75,12 @@ export function BattleLayout({
   onReplay: () => void;
   children: ReactNode;
 }) {
-  const [panels, dispatch] = useReducer(panelsReducer, initialPanels);
+  const [handOpen, setHandOpen] = useState(false);
+  const [info, setInfo] = useState<"reference" | "selection" | null>(null);
+  const closeInfo = useCallback(() => setInfo(null), []);
   const compact = useCompactLayout();
   const root = useRef<HTMLElement>(null);
-  const sidebarToggle = useRef<HTMLButtonElement>(null);
-  const trayToggle = useRef<HTMLButtonElement>(null);
   const card = cardId ? cards[cardId] : undefined;
-  const selected = !!card || !!selectedPiece;
   const canAttack = legal.some(
     (a) =>
       a.type === "act" &&
@@ -85,50 +89,25 @@ export function BattleLayout({
       JSON.stringify(a.path) === JSON.stringify(path),
   );
   const hint = selectionHint(o, card, selectedPiece, path.length, canAttack);
-  const selectionName = card
-    ? card.name.replace("（仮）", "")
-    : selectedPiece
-      ? displayName(selectedPiece, cards)
-      : "";
-  function closeSidebar() {
-    sidebarToggle.current?.focus();
-    dispatch({ type: "sidebar" });
-  }
-  function setPanel(panel: DetailPanel) {
-    const active = document.activeElement as HTMLElement;
-    if (panels.panel === panel && active.closest(".accordion-content"))
-      root.current
-        ?.querySelector<HTMLButtonElement>(
-          `#${compact ? "mobile" : "desktop"}-${panel}-toggle`,
-        )
-        ?.focus();
-    dispatch({ type: "panel", panel });
-  }
+  const selected = !!card || !!selectedPiece;
   useEffect(() => {
     function escape(e: KeyboardEvent) {
       if (
-        e.key !== "Escape" ||
-        e.defaultPrevented ||
-        document.querySelector('[role="dialog"]')
-      )
-        return;
-      if (panels.drawer || panels.tray || panels.sidebar) {
+        e.key === "Escape" &&
+        !e.defaultPrevented &&
+        !document.querySelector('[role="dialog"]') &&
+        handOpen
+      ) {
         e.preventDefault();
         root.current
-          ?.querySelector<HTMLButtonElement>(
-            compact
-              ? ".drawer-handle"
-              : panels.sidebar
-                ? ".sidebar-toggle"
-                : ".tray-toggle",
-          )
+          ?.querySelector<HTMLButtonElement>(".drawer-handle,.tray-toggle")
           ?.focus();
-        dispatch({ type: "close" });
+        setHandOpen(false);
       }
     }
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
-  }, [panels, compact]);
+  }, [handOpen]);
   const hand = (
     <HandTray
       observation={o}
@@ -138,18 +117,6 @@ export function BattleLayout({
       onSelect={onSelectCard}
     />
   );
-  const content = {
-    resources: <ResourceSummary observation={o} cards={cards} />,
-    selection: (
-      <SelectionInspector
-        observation={o}
-        card={card}
-        piece={selectedPiece}
-        cards={cards}
-      />
-    ),
-    chronicle: <ChroniclePanel events={o.events} />,
-  };
   const endButton = (
     <button
       className="primary battle-end-turn"
@@ -169,7 +136,7 @@ export function BattleLayout({
   return (
     <main
       ref={root}
-      className={`battle-layout ${panels.sidebar && !compact ? "sidebar-open" : ""} ${selected ? "has-selection" : ""}`}
+      className={`battle-layout ${selected ? "has-selection" : ""}`}
     >
       <BattleHeader
         observation={o}
@@ -177,49 +144,12 @@ export function BattleLayout({
         onHelp={onHelp}
         onHome={onHome}
         onReplay={onReplay}
+        onInfo={() => setInfo("reference")}
       />
-      <div
-        className="battle-workspace"
-        onPointerDownCapture={(e) => {
-          if (
-            compact &&
-            panels.drawer === 2 &&
-            !selected &&
-            (e.target as Element).closest(".battlefield")
-          )
-            dispatch({ type: "drawer", stage: 0 });
-        }}
-      >
+      <div className="battle-workspace">
         <section className="map-stage" aria-label="戦場">
           {children}
-          {!compact && (
-            <button
-              ref={sidebarToggle}
-              className="sidebar-toggle"
-              aria-label={
-                panels.sidebar ? "サイドパネルを閉じる" : "サイドパネルを開く"
-              }
-              aria-expanded={panels.sidebar}
-              aria-controls="desktop-sidebar"
-              onClick={() => {
-                if (panels.sidebar) closeSidebar();
-                else dispatch({ type: "sidebar" });
-              }}
-            >
-              {panels.sidebar ? "詳細 ›" : "‹ 詳細"}
-            </button>
-          )}
         </section>
-        {!compact && panels.sidebar && (
-          <DesktopSidebar onClose={closeSidebar}>
-            <DetailPanels
-              panel={panels.panel}
-              onPanel={setPanel}
-              content={content}
-              id="desktop"
-            />
-          </DesktopSidebar>
-        )}
       </div>
       {selected && (
         <section
@@ -227,7 +157,11 @@ export function BattleLayout({
           aria-label="選択中の指示"
         >
           <div className="selection-summary">
-            <strong>{selectionName}</strong>
+            <strong>
+              {card
+                ? card.name.replace("（仮）", "")
+                : displayName(selectedPiece!, cards)}
+            </strong>
             {selectedPiece && (
               <span
                 className="quick-stats"
@@ -252,7 +186,11 @@ export function BattleLayout({
             )}
             {path.length > 0 && (
               <>
-                <button className="secondary" onClick={onClearPath}>
+                <button
+                  className="secondary"
+                  disabled={busy}
+                  onClick={onClearPath}
+                >
                   経路解除
                 </button>
                 <button
@@ -266,13 +204,8 @@ export function BattleLayout({
             )}
             <button
               className="icon-button"
-              aria-label="選択の詳細を表示"
-              onClick={() => {
-                if (compact) dispatch({ type: "drawer", stage: 2 });
-                else if (!panels.sidebar) dispatch({ type: "sidebar" });
-                if (panels.panel !== "selection")
-                  dispatch({ type: "panel", panel: "selection" });
-              }}
+              aria-label={card ? "選択カードを拡大" : "選択部隊を確認"}
+              onClick={() => setInfo("selection")}
             >
               ⓘ
             </button>
@@ -288,26 +221,18 @@ export function BattleLayout({
       )}
       {compact ? (
         <MobileBottomDrawer
-          stage={panels.drawer}
-          onStage={(stage) => dispatch({ type: "drawer", stage })}
+          stage={handOpen ? 1 : 0}
+          onStage={(stage) => setHandOpen(stage > 0)}
           count={o.self.hand.length}
           resource={o.self.resourceRemaining}
           total={o.self.resourceTotal}
           endButton={endButton}
         >
           {hand}
-          {panels.drawer === 2 && (
-            <DetailPanels
-              panel={panels.panel}
-              onPanel={setPanel}
-              content={content}
-              id="mobile"
-            />
-          )}
         </MobileBottomDrawer>
       ) : (
         <section className="desktop-tray" aria-label="手札トレイ">
-          {panels.tray && (
+          {handOpen && (
             <div className="desktop-hand-body" id="desktop-hand-content">
               {hand}
             </div>
@@ -315,27 +240,68 @@ export function BattleLayout({
           <div className="desktop-bottom-bar">
             <button
               className="tray-toggle secondary"
-              ref={trayToggle}
-              aria-expanded={panels.tray}
+              aria-expanded={handOpen}
               aria-controls="desktop-hand-content"
-              onClick={() => {
-                if (panels.tray) trayToggle.current?.focus();
-                dispatch({ type: "tray" });
+              onClick={(e) => {
+                e.currentTarget.focus();
+                setHandOpen(!handOpen);
               }}
             >
-              手札 {o.self.hand.length}
-              <span aria-hidden="true"> {panels.tray ? "⌄" : "⌃"}</span>
+              手札 {o.self.hand.length}{" "}
+              <span aria-hidden="true">{handOpen ? "⌄" : "⌃"}</span>
             </button>
             <div
               className="bar-resources"
               aria-label={`残り資源 ${o.self.resourceRemaining}、合計 ${o.self.resourceTotal}`}
             >
-              <span>◆</span> <b>{o.self.resourceRemaining}</b>
+              <span>◆</span>
+              <b>{o.self.resourceRemaining}</b>
               <small>/{o.self.resourceTotal}</small>
             </div>
             {endButton}
           </div>
         </section>
+      )}
+      {info && (
+        <InfoDialog
+          title={
+            info === "reference"
+              ? "対戦情報・記録"
+              : card
+                ? "カード詳細"
+                : "部隊情報"
+          }
+          onClose={closeInfo}
+        >
+          {info === "reference" ? (
+            <>
+              <p>
+                {o.mapName.replace("（仮）", "")} · シード {o.seed}
+              </p>
+              <h3>資源</h3>
+              <ResourceSummary observation={o} cards={cards} />
+              <h3>戦況記録</h3>
+              <ChroniclePanel events={o.events} />
+              <p className="detail-muted">
+                演出の短縮は端末の「動きを減らす」設定に従います。
+              </p>
+            </>
+          ) : (
+            <>
+              {card && (
+                <div className="enlarged-card">
+                  <Card card={card} />
+                </div>
+              )}
+              <SelectionInspector
+                observation={o}
+                card={card}
+                piece={selectedPiece}
+                cards={cards}
+              />
+            </>
+          )}
+        </InfoDialog>
       )}
     </main>
   );

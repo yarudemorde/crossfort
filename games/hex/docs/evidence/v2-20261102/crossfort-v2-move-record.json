@@ -1,0 +1,211 @@
+{
+  "frames": 17,
+  "p50ms": 16.70000000001164,
+  "p95ms": 132.84799999999814,
+  "samples": [
+    {
+      "ms": 997,
+      "kind": "",
+      "serial": "0",
+      "phase": "start",
+      "motion": null,
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 1129,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(180.23515725997635 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 1146,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(185.99851560800133 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 1163,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(191.00357750527036 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 1180,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(196.75810473576308 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 1196,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(202.9708368988478 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 2213,
+      "kind": "move",
+      "serial": "3",
+      "phase": "start",
+      "motion": "translate(209.36157130475095 263)",
+      "explored": 23,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 3229,
+      "kind": "move",
+      "serial": "4",
+      "phase": "start",
+      "motion": "translate(233.3753300971748 263)",
+      "explored": 30,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 4246,
+      "kind": "move",
+      "serial": "5",
+      "phase": "start",
+      "motion": "translate(287.06890513185675 263)",
+      "explored": 37,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 5262,
+      "kind": "",
+      "serial": "0",
+      "phase": "start",
+      "motion": null,
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        }
+      ],
+      "duplicates": []
+    }
+  ]
+}

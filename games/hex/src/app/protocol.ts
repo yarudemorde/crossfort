@@ -1,5 +1,6 @@
 import type { Action, GameEvent, Observation, Owner } from "../game/types";
-export type Request =
+import type { VisualFrame } from "../presentation/types";
+export type Request = (
   | { type: "new"; seed: number; mapId: string; first: Owner }
   | { type: "action"; action: Action }
   | { type: "cpu" }
@@ -9,8 +10,11 @@ export type Request =
       mapId: string;
       first: Owner;
       actions: Action[];
-    };
+    }
+) & { session?: number };
 export type Response = {
+  frames: VisualFrame[];
+  session?: number;
   observation: Observation;
   legal: Action[];
   events: GameEvent[];

@@ -6,12 +6,14 @@ export function BattleHeader({
   onHelp,
   onHome,
   onReplay,
+  onInfo = () => {},
 }: {
   observation: Observation;
   busy: boolean;
   onHelp: () => void;
   onHome: () => void;
   onReplay: () => void;
+  onInfo?: () => void;
 }) {
   const [menu, setMenu] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -101,17 +103,7 @@ export function BattleHeader({
             <button onClick={() => close(onHelp)}>遊び方</button>
             <button onClick={() => close(onReplay)}>対戦記録を保存</button>
             <button onClick={() => close(onHome)}>タイトルへ戻る</button>
-            <details>
-              <summary>対戦情報・表示設定</summary>
-              <p>
-                {o.mapName.replace("（仮）", "")}
-                <br />
-                シード {o.seed}
-                <br />
-                プロトタイプ 1.0
-              </p>
-              <p>動きを減らす設定は端末の設定に従います。</p>
-            </details>
+            <button onClick={() => close(onInfo)}>対戦情報・記録</button>
           </div>
         )}
       </div>

@@ -1,0 +1,20 @@
+{
+  "movement": { "stepMs": 210, "pauseMs": 45, "easing": "ease-in-out" },
+  "combat": {
+    "windupMs": 120,
+    "meleeMs": 180,
+    "projectileMs": 260,
+    "popupMs": 600,
+    "deathMs": 360
+  },
+  "revealMs": 180,
+  "territoryMs": 240,
+  "reducedMotionMs": 110,
+  "camera": {
+    "minScale": 0.18,
+    "maxScale": 3.6,
+    "dragThresholdPx": 10,
+    "wheelSensitivity": 0.0018,
+    "focusMs": 220
+  }
+}

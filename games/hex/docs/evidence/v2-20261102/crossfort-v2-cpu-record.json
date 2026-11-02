@@ -1,0 +1,143 @@
+{
+  "frames": 146,
+  "p50ms": 16.699999999953434,
+  "p95ms": 16.70000000001164,
+  "samples": [
+    {
+      "ms": 7,
+      "kind": "",
+      "serial": "0",
+      "phase": "start",
+      "motion": null,
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 2057,
+      "kind": "appear",
+      "serial": "8",
+      "phase": "impact",
+      "motion": "translate(447.3871500692704 263)",
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        },
+        {
+          "id": "piece_3",
+          "power": "10"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 4140,
+      "kind": "move",
+      "serial": "9",
+      "phase": "start",
+      "motion": "translate(500.235844333984 263)",
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_3",
+          "power": "10"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 5156,
+      "kind": "move",
+      "serial": "10",
+      "phase": "start",
+      "motion": "translate(446.7683176964567 263)",
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_3",
+          "power": "10"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "ms": 6173,
+      "kind": "",
+      "serial": "0",
+      "phase": "start",
+      "motion": null,
+      "explored": 44,
+      "popups": [],
+      "icons": [
+        {
+          "id": "hq_player",
+          "power": "12"
+        },
+        {
+          "id": "piece_1",
+          "power": "2"
+        },
+        {
+          "id": "piece_2",
+          "power": "5"
+        },
+        {
+          "id": "piece_3",
+          "power": "10"
+        }
+      ],
+      "duplicates": []
+    }
+  ]
+}

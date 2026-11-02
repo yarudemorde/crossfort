@@ -1,3 +1,9 @@
+import {
+  captureVisual,
+  watchVisualState,
+  type VisualObserver,
+  type HitMode,
+} from "./visualTrace";
 import type {
   Action,
   ActionResult,
@@ -69,6 +75,7 @@ function refresh(s: GameState) {
   recordExploration(s, "player");
   recordExploration(s, "cpu");
   checkVictoryMutable(s);
+  captureVisual(s, { kind: "sync" });
 }
 function checkVictoryMutable(s: GameState) {
   if (s.outcome) return;
@@ -231,15 +238,37 @@ function destroy(s: GameState, p: Piece) {
     p.instanceId,
   );
   s.pieces = s.pieces.filter((x) => x.instanceId !== p.instanceId);
+  captureVisual(s, { kind: "destroy", pieceId: p.instanceId });
   checkVictoryMutable(s);
 }
-function damage(s: GameState, p: Piece, amount: number) {
+function damage(
+  s: GameState,
+  p: Piece,
+  amount: number,
+  cause: { mode: HitMode; sourceId?: string; sourceRange?: number },
+) {
   const before = powerOf(s, p);
   if (amount >= before) {
+    captureVisual(s, {
+      kind: "hit",
+      targetId: p.instanceId,
+      ...cause,
+      amount,
+      powerBefore: before,
+      powerAfter: 0,
+    });
     destroy(s, p);
     return;
   }
   p.accumulatedDamage += amount;
+  captureVisual(s, {
+    kind: "hit",
+    targetId: p.instanceId,
+    ...cause,
+    amount,
+    powerBefore: before,
+    powerAfter: powerOf(s, p),
+  });
 }
 function combatMutable(s: GameState, a: Piece, t: Piece) {
   const amount = powerOf(s, a);
@@ -254,7 +283,11 @@ function combatMutable(s: GameState, a: Piece, t: Piece) {
       t.instanceId,
     );
   }
-  damage(s, t, amount);
+  damage(s, t, amount, {
+    mode: "attack",
+    sourceId: a.instanceId,
+    sourceRange: stats(s, a).range,
+  });
   if (!s.pieces.includes(t)) {
     refresh(s);
     return;
@@ -285,7 +318,11 @@ function combatMutable(s: GameState, a: Piece, t: Piece) {
         [owner],
       );
     }
-    damage(s, a, counter);
+    damage(s, a, counter, {
+      mode: "counter",
+      sourceId: t.instanceId,
+      sourceRange: stats(s, t).range,
+    });
   }
   refresh(s);
 }
@@ -327,6 +364,7 @@ function playMutable(
         (h) => hexDistance(h, action.coord!) <= effect.radius!,
       );
       recordExploration(s, owner, hexes);
+      captureVisual(s, { kind: "reveal", owner, coord: action.coord });
       emit(s, "spell", `${c.name}：周辺の地形を探索。`, [owner], action.coord);
     } else {
       const t = requireTarget(s, action.targetId);
@@ -340,9 +378,11 @@ function playMutable(
           atAudience(s, t.coord),
           t.coord,
         );
-        damage(s, t, effect.amount!);
+        damage(s, t, effect.amount!, { mode: "spell" });
       } else {
         if (t.owner !== owner) fail("味方の駒を指定してください。");
+        const powerBefore = powerOf(s, t);
+        const damageBefore = t.accumulatedDamage;
         if (effect.effectId === "heal") {
           if (t.accumulatedDamage === 0) fail("回復するダメージがありません。");
           t.accumulatedDamage = Math.max(
@@ -353,6 +393,17 @@ function playMutable(
           if (t.kind !== "unit") fail("味方ユニットを指定してください。");
           t.temporaryBonus += effect.amount!;
         }
+        captureVisual(s, {
+          kind: "hit",
+          targetId: t.instanceId,
+          mode: effect.effectId === "heal" ? "heal" : "boost",
+          amount:
+            effect.effectId === "heal"
+              ? damageBefore - t.accumulatedDamage
+              : effect.amount!,
+          powerBefore,
+          powerAfter: powerOf(s, t),
+        });
         emit(
           s,
           "spell",
@@ -428,6 +479,8 @@ function playMutable(
     [owner],
   );
   refresh(s);
+  if (c.type !== "spell")
+    captureVisual(s, { kind: "deploy", pieceId: s.pieces.at(-1)!.instanceId });
 }
 function actMutable(
   s: GameState,
@@ -485,13 +538,27 @@ function actMutable(
     )
   )
     fail("味方ユニットのいるマスには停止できません。");
+  const traversed = [{ ...piece.coord }];
   let lastFree = { ...piece.coord };
   let blocked = false;
   for (const c of action.path) {
     if (s.pieces.some((x) => x.owner !== owner && sameHex(x.coord, c))) {
       blocked = true;
+      const from = { ...piece.coord };
+      const route = traversed
+        .slice(traversed.map((c) => sameHex(c, lastFree)).lastIndexOf(true), -1)
+        .reverse();
       piece.coord = lastFree;
       recordExploration(s, owner);
+      if (route.length)
+        captureVisual(s, {
+          kind: "move",
+          pieceId: piece.instanceId,
+          from,
+          to: { ...lastFree },
+          route,
+        });
+      captureVisual(s, { kind: "reveal", owner, coord: c });
       emit(
         s,
         "discovery",
@@ -501,8 +568,16 @@ function actMutable(
       );
       break;
     }
+    const from = { ...piece.coord };
     piece.coord = { ...c };
     recordExploration(s, owner);
+    traversed.push({ ...c });
+    captureVisual(s, {
+      kind: "move",
+      pieceId: piece.instanceId,
+      from,
+      to: { ...c },
+    });
     if (
       !s.pieces.some(
         (x) =>
@@ -540,12 +615,14 @@ export function applyAction(
   state: GameState,
   action: Action,
   owner: Owner = state.activePlayer,
+  observer?: VisualObserver,
 ): ActionResult {
   if (state.phase === "finished")
     return { state, events: [], error: "戦いは終了しています。" };
   if (owner !== state.activePlayer)
     return { state, events: [], error: "自分のターンではありません。" };
   const s = structuredClone(state);
+  const unwatch = watchVisualState(s, observer);
   const start = s.actionLog.length;
   try {
     if (action.type === "endTurn") {
@@ -575,6 +652,8 @@ export function applyAction(
       events: [],
       error: e instanceof Error ? e.message : "操作が不正です。",
     };
+  } finally {
+    unwatch();
   }
 }
 export function replay(

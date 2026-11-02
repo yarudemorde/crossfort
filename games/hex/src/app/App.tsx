@@ -4,7 +4,6 @@ import { cards, maps, uiConfig } from "../data/catalog";
 import type {
   Action,
   Coord,
-  GameEvent,
   Observation,
   ObservedPiece,
   Owner,
@@ -15,6 +14,8 @@ import { Board } from "../components/Board";
 import { Sigil, terrainEffects, terrainNames } from "../components/Icons";
 import type { Request, Response } from "./protocol";
 import { BattleLayout } from "../components/battle/BattleLayout";
+import { AnimationQueue } from "../presentation/AnimationQueue";
+import type { ActiveAnimation } from "../presentation/types";
 import { calculateEffectivePower } from "../game/rules/board";
 const clean = (s: string) => s.replace("（仮）", "");
 const pieceName = (p: ObservedPiece) =>
@@ -39,12 +40,12 @@ export default function App() {
   const [pending, setPending] = useState<Pending>();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [event, setEvent] = useState<GameEvent>();
-  const [zoom, setZoom] = useState(1);
+  const [animation, setAnimation] = useState<ActiveAnimation>();
+  const animationQueue = useRef(new AnimationQueue());
+  const session = useRef(0);
   const [stack, setStack] = useState<ObservedPiece[]>([]);
   const [showResult, setShowResult] = useState(true);
   const worker = useRef<Worker | null>(null);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const mounted = useRef(true);
   const playerActions = useRef<Action[]>([]);
   const submittedAction = useRef<Action | null>(null);
@@ -54,8 +55,9 @@ export default function App() {
       type: "module",
     });
     worker.current = w;
-    w.onmessage = (msg: MessageEvent<Response>) => {
+    w.onmessage = async (msg: MessageEvent<Response>) => {
       const response = msg.data;
+      if (response.session !== session.current || !mounted.current) return;
       if (submittedAction.current) {
         if (!response.error)
           playerActions.current.push(submittedAction.current);
@@ -66,43 +68,35 @@ export default function App() {
         setBusy(false);
         return;
       }
-      const events = response.events.filter((e) =>
-        [
-          "attack",
-          "survive",
-          "counter",
-          "destroy",
-          "recycle",
-          "spell",
-          "discovery",
-        ].includes(e.type),
+      const expectedSession = session.current;
+      const played = await animationQueue.current.play(
+        response.frames ?? [],
+        {
+          start: (active) => {
+            setAnimation(active);
+            const snapshot =
+              active.frame.kind === "appear"
+                ? active.frame.after
+                : active.frame.before;
+            setO((previous) =>
+              previous ? { ...previous, ...snapshot } : previous,
+            );
+          },
+          impact: (active) => {
+            setAnimation(active);
+            setO((previous) =>
+              previous ? { ...previous, ...active.frame.after } : previous,
+            );
+          },
+        },
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
       );
-      let index = 0;
-      const commit = () => {
-        if (!mounted.current) return;
-        setO(response.observation);
-        setLegal(response.legal);
-        setBusy(false);
-        setEvent(undefined);
-      };
-      const next = () => {
-        if (!mounted.current) return;
-        if (index >= events.length) {
-          commit();
-          return;
-        }
-        setEvent(events[index++]);
-        timers.current.push(
-          setTimeout(
-            next,
-            events[index - 1].type === "recycle"
-              ? tuning.presentation.recycleStepMs
-              : tuning.presentation.combatStepMs,
-          ),
-        );
-      };
-      if (events.length) next();
-      else commit();
+      if (!played || expectedSession !== session.current || !mounted.current)
+        return;
+      setAnimation(undefined);
+      setO(response.observation);
+      setLegal(response.legal);
+      setBusy(false);
     };
     w.onerror = () => {
       setError("ゲーム処理でエラーが発生しました。再戦で初期化してください。");
@@ -111,7 +105,7 @@ export default function App() {
     return () => {
       mounted.current = false;
       w.terminate();
-      timers.current.forEach(clearTimeout);
+      animationQueue.current.cancel();
     };
   }, []);
   useEffect(() => {
@@ -123,7 +117,10 @@ export default function App() {
     ) {
       const t = setTimeout(() => {
         setBusy(true);
-        worker.current?.postMessage({ type: "cpu" } satisfies Request);
+        worker.current?.postMessage({
+          type: "cpu",
+          session: session.current,
+        } satisfies Request);
       }, tuning.presentation.cpuDelayMs);
       return () => clearTimeout(t);
     }
@@ -144,10 +141,13 @@ export default function App() {
     setStack([]);
   };
   function begin() {
+    session.current++;
+    animationQueue.current.cancel();
+    setAnimation(undefined);
+    submittedAction.current = null;
     resetSelection();
     setError("");
     setShowResult(true);
-    setZoom(1);
     setO(undefined);
     setLegal([]);
     playerActions.current = [];
@@ -155,6 +155,7 @@ export default function App() {
     setScreen("battle");
     worker.current?.postMessage({
       type: "new",
+      session: session.current,
       seed,
       mapId,
       first,
@@ -165,7 +166,11 @@ export default function App() {
     submittedAction.current = action;
     setBusy(true);
     resetSelection();
-    worker.current?.postMessage({ type: "action", action } satisfies Request);
+    worker.current?.postMessage({
+      type: "action",
+      action,
+      session: session.current,
+    } satisfies Request);
   }
   function requestEndTurn() {
     if (!interactive) return;
@@ -386,6 +391,14 @@ export default function App() {
       setPath([]);
     }
   }, [o, pieceId, cardId]);
+  function leaveBattle() {
+    session.current++;
+    animationQueue.current.cancel();
+    setAnimation(undefined);
+    setBusy(false);
+    resetSelection();
+    setScreen("setup");
+  }
   function requestHome() {
     if (!o?.outcome)
       setPending({
@@ -393,7 +406,7 @@ export default function App() {
         title: "タイトルへ戻る",
         text: "現在の対戦を終了します。",
       });
-    else setScreen("setup");
+    else leaveBattle();
   }
   return (
     <div className={`app-shell ${screen === "battle" ? "is-battle" : ""}`}>
@@ -584,17 +597,16 @@ export default function App() {
             hovered={hovered}
             onHex={hexClick}
             onHover={setHovered}
-            zoom={zoom}
-            onZoom={setZoom}
+            animation={animation}
+            locked={busy}
           />
-          {event &&
-            ["attack", "counter", "destroy", "spell", "discovery"].includes(
-              event.type,
-            ) && (
-              <div className={`event-banner ${event.type}`} role="status">
-                <strong>{event.text}</strong>
-              </div>
-            )}
+          <span className="sr-only" role="status">
+            {animation?.frame.kind === "hit"
+              ? `${animation.frame.mode === "counter" ? "反撃" : animation.frame.mode === "heal" ? "回復" : "命中"} ${animation.impact ? animation.frame.amount : ""}`
+              : animation?.frame.kind === "move"
+                ? "部隊が移動中"
+                : ""}
+          </span>
           {o.outcome && showResult && (
             <div className="modal-backdrop">
               <section
@@ -620,7 +632,7 @@ export default function App() {
                   className="secondary"
                   onClick={() => {
                     setSeed(randomSeed());
-                    setScreen("setup");
+                    leaveBattle();
                   }}
                 >
                   戦場選択へ
@@ -679,8 +691,7 @@ export default function App() {
                 className="primary"
                 onClick={() => {
                   if (pending.title === "タイトルへ戻る") {
-                    setScreen("setup");
-                    setPending(undefined);
+                    leaveBattle();
                   } else send(pending.action);
                 }}
               >
@@ -730,7 +741,7 @@ export default function App() {
               <li>
                 <strong>盤面を中心に操作する</strong>
                 <p>
-                  手札バーでカードを開き、選択したら明るいマスを選びます。ドロワーを閉じても指示は残ります。ハンドルの上下スワイプ、または矢印キーで展開できます。移動経路は「移動を確定」で実行。右の詳細やドロワーの詳細から資源と記録を確認できます。
+                  手札バーでカードを開き、選択したら明るいマスを選びます。ドロワーを閉じても指示は残ります。ハンドルの上下スワイプ、または矢印キーで展開できます。移動経路は「移動を確定」で実行。カードのⓘで詳細を確認できます。資源内訳と記録は対戦メニューにあります。マップは1本指/左ドラッグで移動、2本指/ホイールで拡大縮小できます。
                 </p>
               </li>
               <li>

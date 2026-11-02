@@ -1,0 +1,34 @@
+[
+  {
+    "mapId": "crossing",
+    "first": "player",
+    "seed": 1102,
+    "actions": 88,
+    "winner": "cpu",
+    "sha256": "27d449906c4454ce9405d97a868017eb826a62af4354d4292aacc8a3c6390129"
+  },
+  {
+    "mapId": "crossing",
+    "first": "cpu",
+    "seed": 1102,
+    "actions": 103,
+    "winner": "cpu",
+    "sha256": "7a2e8b7ebe3b6419e906f803cd873cc8ed0c9d6b84e49a0962280ab04a363c77"
+  },
+  {
+    "mapId": "highlands",
+    "first": "player",
+    "seed": 1102,
+    "actions": 83,
+    "winner": "cpu",
+    "sha256": "718ec5d2387608adc2a5cc59281f6c9ff40fd7eb8f9c53562713b14fb23711fd"
+  },
+  {
+    "mapId": "highlands",
+    "first": "cpu",
+    "seed": 1102,
+    "actions": 193,
+    "winner": "player",
+    "sha256": "0433c7ac2b0321bad804f4d703736872f2c6c661469674223be1a89489619121"
+  }
+]

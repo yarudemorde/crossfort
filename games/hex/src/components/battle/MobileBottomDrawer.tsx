@@ -85,19 +85,10 @@ export function MobileBottomDrawer({
       {stage > 0 && (
         <div className="drawer-body" id="mobile-drawer-content">
           <div className="drawer-controls">
-            <span>{stage === 2 ? "詳細" : "手札"}</span>
-            <button
-              className="quiet"
-              onClick={() => change(stage === 2 ? 1 : 2)}
-              aria-label={
-                stage === 2 ? "ドロワーを半開きにする" : "ドロワーを全展開する"
-              }
-            >
-              {stage === 2 ? "縮小" : "詳細を展開"} {stage === 2 ? "⌄" : "⌃"}
-            </button>
+            <span>手札</span>
             <button
               className="icon-button"
-              aria-label="ドロワーを閉じる"
+              aria-label="手札を閉じる"
               onClick={() => change(0)}
             >
               ×

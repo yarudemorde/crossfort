@@ -1,3 +1,5 @@
+import { applyObservedAction } from "./visualFrames";
+import type { VisualFrame } from "../presentation/types";
 /// <reference lib="webworker" />
 import { createGame, applyAction } from "../game/engine";
 import { getObservation } from "../game/selectors/observation";
@@ -10,6 +12,7 @@ self.onmessage = (message: MessageEvent<Request>) => {
   const request = message.data;
   try {
     let error: string | undefined;
+    let frames: VisualFrame[] = [];
     let start = state?.actionLog.length ?? 0;
     if (request.type === "new") {
       state = createGame(
@@ -21,7 +24,8 @@ self.onmessage = (message: MessageEvent<Request>) => {
       );
       start = 0;
     } else if (request.type === "action") {
-      const result = applyAction(state, request.action, "player");
+      const result = applyObservedAction(state, request.action, "player");
+      frames = result.frames;
       state = result.state;
       error = result.error;
     } else if (
@@ -30,7 +34,8 @@ self.onmessage = (message: MessageEvent<Request>) => {
       !state.outcome
     ) {
       const action = getCpuTurnAction(state);
-      const result = applyAction(state, action, "cpu");
+      const result = applyObservedAction(state, action, "cpu");
+      frames = result.frames;
       state = result.state;
       error = result.error;
     } else if (request.type === "replay") {
@@ -59,6 +64,8 @@ self.onmessage = (message: MessageEvent<Request>) => {
     }
     const observation = getObservation(state, "player");
     const response: Response = {
+      frames,
+      session: request.session,
       observation,
       legal: getLegalActions(observation, {
         cards: state.config.cards,
@@ -71,6 +78,7 @@ self.onmessage = (message: MessageEvent<Request>) => {
     self.postMessage(response);
   } catch (e) {
     self.postMessage({
+      session: request.session,
       error: e instanceof Error ? e.message : "ゲーム処理に失敗しました。",
     });
   }
