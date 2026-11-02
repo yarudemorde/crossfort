@@ -1,0 +1,112 @@
+/* Images sit below controls and above the fallback color; tint never replaces art. */
+.terrain-tile,
+.terrain-image,
+.hex-overlay,
+.hex-border {
+  pointer-events: none;
+}
+.terrain-image {
+  image-rendering: auto;
+}
+.hex.dim:not(.unknown) .terrain-tile {
+  filter: brightness(0.5) saturate(0.7);
+}
+.hex.unknown .terrain-tile {
+  opacity: 0.72;
+  filter: brightness(0.75) saturate(0.8);
+}
+.hex-overlay {
+  fill: transparent;
+  stroke: none;
+  transition: fill 0.15s;
+}
+.hex-border {
+  fill: none;
+  stroke: #172015;
+  stroke-width: 1.15;
+  transition:
+    stroke 0.15s,
+    stroke-width 0.15s;
+}
+.hex.unknown .hex-border {
+  stroke: #3e4a48;
+  stroke-width: 0.8;
+}
+.hex.player .hex-overlay {
+  fill: #489cbd;
+  fill-opacity: 0.12;
+}
+.hex.cpu .hex-overlay {
+  fill: #c56d4d;
+  fill-opacity: 0.14;
+}
+.hex.player .hex-border {
+  stroke: #83becd;
+  stroke-width: 2.2;
+}
+.hex.cpu .hex-border {
+  stroke: #d99b83;
+  stroke-width: 2.2;
+}
+.hex.deployable .hex-overlay {
+  fill: #edca76;
+  fill-opacity: 0.17;
+}
+.hex.deployable .hex-border {
+  stroke: #f2d58f;
+  stroke-width: 2.6;
+}
+.hex.movable .hex-overlay {
+  fill: #8ad1ec;
+  fill-opacity: 0.15;
+}
+.hex.movable .hex-border {
+  stroke: #9ad8ef;
+  stroke-width: 2.3;
+}
+.hex.path-chosen .hex-overlay {
+  fill: #efdfa2;
+  fill-opacity: 0.24;
+}
+.hex.path-chosen .hex-border {
+  stroke: #fff0b2;
+  stroke-width: 2.7;
+}
+.hex.hovered .hex-border,
+.hex:focus-visible .hex-border {
+  stroke: #ffe3aa;
+  stroke-width: 2.5;
+}
+.hex .influence-ring {
+  fill: #bda56808;
+  stroke: #efdab3;
+  stroke-width: 1.4;
+}
+.legal-dot {
+  stroke: #101d17;
+  stroke-width: 1;
+  fill: #fff0b7;
+  opacity: 1;
+}
+.hq-marker {
+  stroke: #d4c1a0;
+  opacity: 1;
+}
+.hq-marker text {
+  fill: #e3d8be;
+  paint-order: stroke;
+  stroke: #172020;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.piece-disc {
+  stroke-width: 1.5;
+}
+.piece.selected .piece-disc {
+  stroke-width: 3;
+}
+.route-line {
+  stroke: #fff1bc;
+  stroke-width: 2.6;
+  filter: drop-shadow(0 1px 1px #152015);
+}

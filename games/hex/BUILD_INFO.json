@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "spec": "GAME_SPEC.md v1.0 (2026-11-02)",
-  "testsPassed": 74,
+  "testsPassed": 87,
   "buildDate": "2026-11-02",
   "sha256": {
     "docs/GAME_SPEC.md": "4ebc2b4c509d5881afbea015a23b271d2992078cc6c5e64b51e8f86f20a26eee",
@@ -9,5 +9,10 @@
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/prototype.tuning.json": "d804d282bb75a077b93c41ab0e5cd5486165721ccee766f75b504fc6dc644e4b",
     "data/ruleset.prototype.json": "fd1a55a1686d443b39cce80d79d8a11a62b05d71418073e24d54250ef20f5e1c"
+  },
+  "terrainArt": {
+    "count": 7,
+    "source": "user-provided originals",
+    "unaltered": true
   }
 }

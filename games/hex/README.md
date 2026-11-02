@@ -75,7 +75,7 @@ npm ci
 npm run dev
 ```
 
-ルートの `.github/workflows/hex-ci.yml` が型検査・lint・74件のルール/結合テスト・ビルドを実行します。`pages.yml` は同じ検証後、既存ゲームの `index.html`、CSS、`assets/`、`data/` と本作の最新ビルドを同じPages成果物へまとめて公開します。既存ゲームのソースは変更しません。
+ルートの `.github/workflows/hex-ci.yml` が型検査・lint・87件のルール/描画/結合テスト・ビルドを実行します。`pages.yml` は同じ検証後、既存ゲームの `index.html`、CSS、`assets/`、`data/` と本作の最新ビルドを同じPages成果物へまとめて公開します。既存ゲームのソースは変更しません。
 
 GitHub PagesのSourceが未設定の場合は、リポジトリの Settings → Pages → Source で GitHub Actions を選びます。`main` へのpushか、Actionsの「Deploy Crossfort and Hex to Pages」で再公開できます。Viteの相対baseにより、Worker・CSS・JSは `/hex/` のサブパスでも読み込めます。
 
@@ -113,3 +113,7 @@ scripts/                   データ生成
 ## 初版の範囲
 
 難易度は標準のみ、デッキは添付の1構成です。正式カード/新規固有能力、オンライン対戦、保存・再開、効果音は対象外です。勝率やカード間のバランスは今後の実戦調整が必要です。フォントを取得できない環境では端末の明朝体へフォールバックします。
+
+## 地形アート
+
+提供された平原・森林・山岳・湿地・河川・砂漠・霧の7画像を地形ごとに表示します。画像ファイルは加工せず、六角形の表示領域に合わせてクリップします。未探索マスは実際の地形に関係なく霧画像だけを描画します。対応表は `docs/TERRAIN_ART.md` を参照してください。

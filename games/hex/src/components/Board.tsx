@@ -3,53 +3,16 @@ import { useEffect, useRef } from "react";
 import type { Action, Coord, Observation, ObservedPiece } from "../game/types";
 import { hexDistance, hexId, sameHex } from "../game/rules/hex";
 import { Sigil, terrainNames } from "./Icons";
-const size = 31;
+import {
+  TerrainTile,
+  tilePolygon as polygon,
+  TILE_RADIUS as size,
+  TERRAIN_CLIP_ID,
+} from "./TerrainTile";
 export const xy = (c: Coord) => ({
   x: 340 + Math.sqrt(3) * size * (c.q + c.r / 2),
   y: 263 + size * 1.5 * c.r,
 });
-const polygon = Array.from(
-  { length: 6 },
-  (_, i) =>
-    `${size * Math.cos(((60 * i - 30) * Math.PI) / 180)},${size * Math.sin(((60 * i - 30) * Math.PI) / 180)}`,
-).join(" ");
-function TerrainMark({ terrain }: { terrain?: string }) {
-  return (
-    <g className={`terrain-mark ${terrain}`}>
-      {terrain === "forest" ? (
-        <>
-          {[-12, 1, 12].map((x, i) => (
-            <path
-              key={x}
-              transform={`translate(${x} ${i === 1 ? -8 : 0})`}
-              d="M0-15 9 2H5l7 9H-12l7-9h-4zM0 11v5"
-            />
-          ))}
-        </>
-      ) : terrain === "mountain" ? (
-        <>
-          <path d="m-22 12 15-28L9 12zM0 12l13-24 15 24M-12-7l5 6 5-6" />
-        </>
-      ) : terrain === "river" ? (
-        <>
-          <path d="M-23-17Q5-12-3 0T23 18M-24-10Q-3-7-10 4T20 24M-18-23Q12-15 4-3T24 10" />
-        </>
-      ) : terrain === "swamp" ? (
-        <>
-          <path d="M-19 12H19M-23 19h36M-13 0l-4-9m4 14V-8m13 8 4-13M0 5V-9m12 14 5-10m-5 15V-3" />
-        </>
-      ) : terrain === "desert" ? (
-        <>
-          <path d="M-24 9Q-10-10 5 5T26 2M-20 20Q0 1 22 13M-3-18h1m13 5h1" />
-        </>
-      ) : (
-        <>
-          <path d="m-13 9 2-5 2 5m18-14 2-5 2 5M-6-12h1m10 29h1" />
-        </>
-      )}
-    </g>
-  );
-}
 export function Board({
   observation: o,
   selectedPiece,
@@ -216,19 +179,9 @@ export function Board({
           aria-label="戦場の六角形マップ"
         >
           <defs>
-            <pattern
-              id="fog"
-              width="8"
-              height="8"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="m0 8 8-8M-2 2l4-4M6 10l4-4"
-                stroke="#798178"
-                strokeWidth=".3"
-                opacity=".12"
-              />
-            </pattern>
+            <clipPath id={TERRAIN_CLIP_ID} clipPathUnits="userSpaceOnUse">
+              <polygon points={polygon} />
+            </clipPath>
             <filter id="pin-shadow">
               <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity=".7" />
             </filter>
@@ -270,18 +223,22 @@ export function Board({
                 }}
               >
                 <polygon points={polygon} className="hex-face" />
-                {h.explored ? (
-                  <TerrainMark terrain={h.terrain} />
-                ) : (
-                  <polygon points={polygon} fill="url(#fog)" />
-                )}
+                <TerrainTile
+                  terrain={h.explored ? h.terrain : undefined}
+                  explored={h.explored}
+                />
+                <polygon
+                  points={polygon}
+                  className="hex-overlay"
+                  aria-hidden="true"
+                />
+                <polygon
+                  points={polygon}
+                  className="hex-border"
+                  aria-hidden="true"
+                />
                 {influence && (
                   <polygon points={polygon} className="influence-ring" />
-                )}
-                {!h.explored && (
-                  <text y="4" className="fog-rune">
-                    ·
-                  </text>
                 )}
                 {(deploy || move) && !pieces.length && (
                   <circle r="4" className="legal-dot" />
