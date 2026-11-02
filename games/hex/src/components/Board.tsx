@@ -59,7 +59,9 @@ export function Board({
             parseFloat(getComputedStyle(el).paddingBottom || "0")) /
             2,
       ),
-      behavior,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : behavior,
     });
   }
   useEffect(() => {
@@ -128,10 +130,6 @@ export function Board({
   );
   return (
     <div className="battlefield">
-      <div className="map-corner top-left">
-        BATTLEFIELD / {o.hexes.filter((h) => h.explored).length} OF 61
-      </div>
-      <div className="map-corner bottom-right">HEX TERRITORY WARFARE</div>
       <div
         className="map-scroll"
         ref={viewport}

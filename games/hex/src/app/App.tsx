@@ -12,13 +12,9 @@ import type {
 import { sameHex } from "../game/rules/hex";
 import { Card, effectText } from "../components/Card";
 import { Board } from "../components/Board";
-import {
-  Sigil,
-  terrainEffects,
-  terrainNames,
-  typeNames,
-} from "../components/Icons";
+import { Sigil, terrainEffects, terrainNames } from "../components/Icons";
 import type { Request, Response } from "./protocol";
+import { BattleLayout } from "../components/battle/BattleLayout";
 import { calculateEffectivePower } from "../game/rules/board";
 const clean = (s: string) => s.replace("（仮）", "");
 const pieceName = (p: ObservedPiece) =>
@@ -45,9 +41,6 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [event, setEvent] = useState<GameEvent>();
   const [zoom, setZoom] = useState(1);
-  const [mobileTab, setMobileTab] = useState<"hand" | "command" | "log">(
-    "hand",
-  );
   const [stack, setStack] = useState<ObservedPiece[]>([]);
   const [showResult, setShowResult] = useState(true);
   const worker = useRef<Worker | null>(null);
@@ -154,7 +147,6 @@ export default function App() {
     resetSelection();
     setError("");
     setShowResult(true);
-    setMobileTab("hand");
     setZoom(1);
     setO(undefined);
     setLegal([]);
@@ -203,13 +195,12 @@ export default function App() {
       ? requestAnimationFrame(() => controls()[0]?.focus())
       : undefined;
     function keydown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && dialog) {
         e.preventDefault();
         if (pending) setPending(undefined);
         else if (help) setHelp(false);
         else if (stack.length) setStack([]);
         else if (o?.outcome && showResult) setShowResult(false);
-        else resetSelection();
       }
       if (e.key === "Tab" && dialog) {
         const items = controls(),
@@ -240,7 +231,6 @@ export default function App() {
     };
   }, [pending, help, stack.length, showResult, o?.outcome]);
   function selectPiece(p: ObservedPiece) {
-    setMobileTab("command");
     setCardId(undefined);
     setPieceId(p.instanceId);
     setPath([]);
@@ -386,36 +376,43 @@ export default function App() {
     a.click();
     URL.revokeObjectURL(url);
   }
-  const terrain = hovered
-    ? o?.hexes.find((h) => sameHex(h, hovered))
-    : undefined;
+  useEffect(() => {
+    if (pieceId && !o?.pieces.some((p) => p.instanceId === pieceId)) {
+      setPieceId(undefined);
+      setPath([]);
+    }
+    if (cardId && !o?.self.hand.includes(cardId)) {
+      setCardId(undefined);
+      setPath([]);
+    }
+  }, [o, pieceId, cardId]);
+  function requestHome() {
+    if (!o?.outcome)
+      setPending({
+        action: { type: "endTurn" },
+        title: "タイトルへ戻る",
+        text: "現在の対戦を終了します。",
+      });
+    else setScreen("setup");
+  }
   return (
     <div className={`app-shell ${screen === "battle" ? "is-battle" : ""}`}>
-      <header className="topbar">
-        <button
-          className="brand"
-          onClick={() => {
-            if (screen === "battle" && !o?.outcome)
-              setPending({
-                action: { type: "endTurn" },
-                title: "タイトルへ戻る",
-                text: "現在の対戦を終了します。",
-              });
-            else setScreen("setup");
-          }}
-        >
-          <span className="brand-crest">✦</span>
-          <span>
-            CROSSFORT<small>WAR CHRONICLE — 戦記</small>
-          </span>
-        </button>
-        <nav>
-          <span className="build-label">HEX TERRITORY / PROTOTYPE 1.0</span>
-          <button className="quiet" onClick={() => setHelp(true)}>
-            遊び方 <span>?</span>
+      {screen === "setup" && (
+        <header className="topbar">
+          <button className="brand" onClick={() => setScreen("setup")}>
+            <span className="brand-crest">✦</span>
+            <span>
+              CROSSFORT<small>WAR CHRONICLE — 戦記</small>
+            </span>
           </button>
-        </nav>
-      </header>
+          <nav>
+            <span className="build-label">HEX TERRITORY / PROTOTYPE 1.0</span>
+            <button className="quiet" onClick={() => setHelp(true)}>
+              遊び方 <span>?</span>
+            </button>
+          </nav>
+        </header>
+      )}
       {screen === "setup" ? (
         <main className="setup">
           <section className="setup-intro">
@@ -549,392 +546,55 @@ export default function App() {
           </section>
         </main>
       ) : o ? (
-        <main className={`game-layout mobile-${mobileTab}`}>
-          <section className="war-header">
-            <div>
-              <div className="eyebrow">
-                BATTLEFIELD {maps.findIndex((m) => m.id === mapId) + 1} /{" "}
-                {clean(o.mapName)}
+        <BattleLayout
+          observation={o}
+          cards={uiConfig.cards}
+          cardId={cardId}
+          selectedPiece={selectedPiece}
+          path={path}
+          legal={interactive ? legal : []}
+          busy={busy}
+          interactive={interactive}
+          onSelectCard={(id) => {
+            setCardId(id === cardId ? undefined : id);
+            setPieceId(undefined);
+            setPath([]);
+          }}
+          onClear={resetSelection}
+          onClearPath={() => setPath([])}
+          onMove={() =>
+            setPending({
+              action: { type: "act", pieceId: pieceId!, path },
+              title: "移動を確定",
+              text: `${path.length}マス移動して行動を終了します。攻撃も行う場合は、先に敵を選択してください。`,
+            })
+          }
+          onExchange={() => send({ type: "exchange", cardId: cardId! })}
+          onEndTurn={requestEndTurn}
+          onHelp={() => setHelp(true)}
+          onHome={requestHome}
+          onReplay={exportReplay}
+        >
+          <Board
+            observation={o}
+            selectedPiece={selectedPiece}
+            selectedCard={cardId}
+            legal={interactive ? legal : []}
+            stagedPath={path}
+            hovered={hovered}
+            onHex={hexClick}
+            onHover={setHovered}
+            zoom={zoom}
+            onZoom={setZoom}
+          />
+          {event &&
+            ["attack", "counter", "destroy", "spell", "discovery"].includes(
+              event.type,
+            ) && (
+              <div className={`event-banner ${event.type}`} role="status">
+                <strong>{event.text}</strong>
               </div>
-              <h1>
-                ヘックス領土戦 <span>第{o.self.ownTurnNumber || 1}ターン</span>
-              </h1>
-            </div>
-            <div className={`turn-indicator ${o.activePlayer}`}>
-              <i />
-              {o.outcome
-                ? "決着"
-                : o.activePlayer === "player"
-                  ? "あなたのターン"
-                  : "CPU 思考中"}
-              <small>
-                {o.outcome ? "FINISHED" : busy ? "RESOLVING" : "MAIN PHASE"}
-              </small>
-            </div>
-            <div className="castle-status">
-              <Sigil kind="headquarters" />
-              <span>
-                自軍本城
-                <strong>
-                  {o.pieces.find((p) => p.instanceId === "hq_player")?.power ??
-                    0}
-                  <small> / 12</small>
-                </strong>
-              </span>
-              <b>VS</b>
-              <span>
-                敵軍本城
-                <strong>
-                  {o.pieces.find((p) => p.instanceId === "hq_cpu")?.power ??
-                    (o.outcome?.winner === "player" ? 0 : "?")}
-                  <small> / 12</small>
-                </strong>
-              </span>
-            </div>
-          </section>
-          <section className="board-panel">
-            <Board
-              observation={o}
-              selectedPiece={selectedPiece}
-              selectedCard={cardId}
-              legal={interactive ? legal : []}
-              stagedPath={path}
-              hovered={hovered}
-              onHex={hexClick}
-              onHover={setHovered}
-              zoom={zoom}
-              onZoom={setZoom}
-            />
-            <div className="terrain-bar">
-              <span>
-                {terrain?.explored ? (
-                  <>
-                    <b>{terrainNames[terrain.terrain!]}</b>{" "}
-                    {terrainEffects[terrain.terrain!]}
-                  </>
-                ) : (
-                  <>霧に覆われた未探索の領域</>
-                )}
-              </span>
-              <small>
-                {hovered ? `${hovered.q}, ${hovered.r}` : "AXIAL COORDINATES"}{" "}
-                {terrain?.explored && !terrain.visible ? " · 現在視野外" : ""}
-              </small>
-            </div>
-            <div className="hand-area">
-              <div className="section-heading">
-                <span>HAND</span>
-                <h2>
-                  手札 <small>{o.self.hand.length} / 3</small>
-                </h2>
-                <div className="pile-counts">
-                  <span>
-                    山札 <b>{o.self.deckCount}</b>
-                  </span>
-                  <span>
-                    使用済 <b>{o.self.playedCards.length}</b>
-                  </span>
-                  <button className="quiet" onClick={exportReplay}>
-                    記録 ↓
-                  </button>
-                </div>
-              </div>
-              <div
-                className="mobile-resource-strip"
-                aria-label="公開資源カード"
-              >
-                {o.self.resourceCards.map((id) => (
-                  <span key={id}>
-                    {clean(uiConfig.cards[id].name)}{" "}
-                    <b>◆{uiConfig.cards[id].resource}</b>
-                  </span>
-                ))}
-              </div>
-              <div className="hand-cards">
-                {o.self.hand.map((id) => (
-                  <Card
-                    key={id}
-                    card={uiConfig.cards[id]}
-                    selected={id === cardId}
-                    disabled={
-                      !interactive ||
-                      uiConfig.cards[id].cost > o.self.resourceRemaining
-                    }
-                    onClick={() => {
-                      if (!interactive) return;
-                      setCardId(id === cardId ? undefined : id);
-                      if (id !== cardId) setMobileTab("command");
-                      setPieceId(undefined);
-                      setPath([]);
-                    }}
-                  />
-                ))}
-                {!o.self.hand.length && (
-                  <div className="empty-hand">
-                    <span>✦</span>
-                    {o.outcome
-                      ? "戦闘は終了しました。"
-                      : o.activePlayer === "cpu"
-                        ? "次のターンを待っています。"
-                        : "すべての手札を使用しました。"}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-          <nav className="mobile-tabs" aria-label="操作パネル">
-            {(
-              [
-                ["hand", "手札"],
-                ["command", "指揮"],
-                ["log", "記録"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                aria-pressed={mobileTab === id}
-                onClick={() => setMobileTab(id)}
-              >
-                {label}
-                {id === "hand" && <span>{o.self.hand.length}</span>}
-              </button>
-            ))}
-          </nav>
-          <aside className="command-panel">
-            <section className="resource-panel">
-              <div className="eyebrow">TURN RESOURCES</div>
-              <div className="resource-total">
-                <span>◆</span>
-                <strong>{o.self.resourceRemaining}</strong>
-                <span>
-                  / {o.self.resourceTotal}
-                  <small>残り資源</small>
-                </span>
-              </div>
-              <div className="resource-cards">
-                {o.self.resourceCards.map((id) => (
-                  <div key={id} title={uiConfig.cards[id].name}>
-                    <span>{clean(uiConfig.cards[id].name)}</span>
-                    <b>◆ {uiConfig.cards[id].resource}</b>
-                  </div>
-                ))}
-              </div>
-              <p>
-                公開 {o.self.resourceCards.length}枚{" "}
-                <span>
-                  生存拠点{" "}
-                  {
-                    o.pieces.filter(
-                      (p) => p.owner === "player" && p.kind === "landmark",
-                    ).length
-                  }
-                  基
-                </span>
-              </p>
-            </section>
-            <section className="inspector">
-              <div className="section-heading">
-                <span>COMMAND</span>
-                <h2>
-                  {selectedCard
-                    ? "カード使用"
-                    : selectedPiece
-                      ? "部隊情報"
-                      : "指揮"}
-                </h2>
-                {(selectedCard || selectedPiece) && (
-                  <button className="quiet" onClick={resetSelection}>
-                    解除
-                  </button>
-                )}
-              </div>
-              {selectedCard ? (
-                <>
-                  <div className="inspector-title">
-                    <Sigil kind={selectedCard.type} variant={selectedCard.id} />
-                    <strong>{clean(selectedCard.name)}</strong>
-                  </div>
-                  <p>
-                    {selectedCard.type === "spell"
-                      ? effectText(selectedCard)
-                      : selectedCard.type === "unit"
-                        ? "明るく示された、自軍拠点の隣接マスへ展開。"
-                        : "自軍ユニットに隣接する、敵領土外のマスへ建設。"}
-                  </p>
-                  <div className="inspector-stats">
-                    <span>{typeNames[selectedCard.type]}</span>
-                    <span>
-                      コスト {selectedCard.cost} / 資源 {selectedCard.resource}
-                    </span>
-                  </div>
-                  <button
-                    className="secondary"
-                    disabled={!interactive || o.self.exchangedThisTurn}
-                    onClick={() => send({ type: "exchange", cardId: cardId! })}
-                  >
-                    {o.self.exchangedThisTurn
-                      ? "交換済み"
-                      : "この手札を交換する"}
-                  </button>
-                </>
-              ) : selectedPiece ? (
-                <>
-                  <div className="inspector-title">
-                    <Sigil
-                      kind={selectedPiece.kind}
-                      variant={selectedPiece.definitionId}
-                    />
-                    <strong>{pieceName(selectedPiece)}</strong>
-                  </div>
-                  <div className="inspector-stats">
-                    <span>⚔ 戦力 {selectedPiece.power}</span>
-                    <span>◉ 視野 {selectedPiece.vision}</span>
-                    <span>➶ 射程 {selectedPiece.range}</span>
-                    <span>
-                      {selectedPiece.kind === "unit"
-                        ? `↟ 移動 ${selectedPiece.movement}`
-                        : `⬡ 領土 ${selectedPiece.territory}`}
-                    </span>
-                  </div>
-                  <p>
-                    {selectedPiece.owner !== "player"
-                      ? "視野内で発見した敵軍の駒。"
-                      : selectedPiece.summonedOnOwnTurn >= o.self.ownTurnNumber
-                        ? "配置したターンは行動できません。"
-                        : selectedPiece.actedThisTurn
-                          ? "このターンの行動を終えています。"
-                          : path.length
-                            ? `${path.length}マスの経路を選択中。敵を選ぶと移動後に攻撃します。`
-                            : "移動先、または射程内の敵を選択。移動後の攻撃も同じ行動で行えます。"}
-                  </p>
-                  {path.length > 0 && (
-                    <>
-                      <button
-                        className="primary"
-                        disabled={!interactive}
-                        onClick={() =>
-                          setPending({
-                            action: { type: "act", pieceId: pieceId!, path },
-                            title: "移動を確定",
-                            text: `${path.length}マス移動して行動を終了します。攻撃も行う場合は、先に敵を選択してください。`,
-                          })
-                        }
-                      >
-                        移動のみで確定
-                      </button>
-                      <button className="quiet" onClick={() => setPath([])}>
-                        経路を解除
-                      </button>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="command-empty">
-                  <Sigil />
-                  <p>
-                    手札、または自軍の駒を
-                    <br />
-                    選択してください。
-                  </p>
-                  <small>敵の本城を破壊すると勝利</small>
-                </div>
-              )}
-            </section>
-            <section className="chronicle">
-              <div className="section-heading">
-                <span>CHRONICLE</span>
-                <h2>戦況記録</h2>
-              </div>
-              <div className="log-list">
-                {[...o.events]
-                  .reverse()
-                  .slice(0, 35)
-                  .map((e) => (
-                    <div key={e.id} className={`log-entry ${e.type}`}>
-                      <i />
-                      {e.text}
-                    </div>
-                  ))}
-              </div>
-            </section>
-            <button
-              className="primary end-turn"
-              disabled={!interactive}
-              onClick={requestEndTurn}
-            >
-              <span>
-                {o.outcome
-                  ? "戦闘終了"
-                  : o.activePlayer === "cpu"
-                    ? "CPUの行動中"
-                    : busy
-                      ? "処理中"
-                      : "ターンを終了"}
-              </span>
-              <span>→</span>
-            </button>
-            <div className="seed-label">SEED {o.seed} · PROTOTYPE 1.0</div>
-          </aside>
-          <div className="mobile-actionbar">
-            <div className="mobile-resource">
-              <span>残り資源</span>
-              <strong>
-                ◆ {o.self.resourceRemaining}
-                <small> / {o.self.resourceTotal}</small>
-              </strong>
-            </div>
-            {(selectedPiece || selectedCard) && (
-              <button
-                className="secondary mobile-clear"
-                aria-label="選択を解除"
-                onClick={resetSelection}
-              >
-                解除
-              </button>
             )}
-            {path.length ? (
-              <button
-                className="primary"
-                disabled={!interactive}
-                onClick={() =>
-                  setPending({
-                    action: { type: "act", pieceId: pieceId!, path },
-                    title: "移動を確定",
-                    text: `${path.length}マス移動して行動を終了します。攻撃も行う場合は、先に敵を選択してください。`,
-                  })
-                }
-              >
-                移動のみで確定
-              </button>
-            ) : (
-              <button
-                className="primary"
-                disabled={!interactive}
-                onClick={requestEndTurn}
-              >
-                {o.outcome
-                  ? "戦闘終了"
-                  : o.activePlayer === "cpu"
-                    ? "CPUの行動中"
-                    : busy
-                      ? "処理中"
-                      : "ターンを終了"}{" "}
-                →
-              </button>
-            )}
-          </div>
-          {event && (
-            <div className={`event-banner ${event.type}`} role="status">
-              <span>
-                {event.type === "recycle"
-                  ? "CARD CYCLE"
-                  : event.type === "counter"
-                    ? "COUNTERATTACK"
-                    : "BATTLE CHRONICLE"}
-              </span>
-              <strong>{event.text}</strong>
-            </div>
-          )}
           {o.outcome && showResult && (
             <div className="modal-backdrop">
               <section
@@ -979,17 +639,19 @@ export default function App() {
               対戦結果・再戦
             </button>
           )}
-        </main>
+        </BattleLayout>
       ) : (
         <div className="loading">
           <Sigil kind="headquarters" />
           戦場を準備しています…
         </div>
       )}
-      <footer>
-        <span>CROSSFORT 戦記</span>
-        <span>HEX TERRITORY WARFARE · 開発用カード / 仮マップ</span>
-      </footer>
+      {screen === "setup" && (
+        <footer>
+          <span>CROSSFORT 戦記</span>
+          <span>HEX TERRITORY WARFARE · 開発用カード / 仮マップ</span>
+        </footer>
+      )}
       {error && (
         <div className="error-toast" role="alert">
           {error}
@@ -1065,6 +727,12 @@ export default function App() {
             <div className="eyebrow">FIELD MANUAL</div>
             <h2>戦場の手引き</h2>
             <ol>
+              <li>
+                <strong>盤面を中心に操作する</strong>
+                <p>
+                  手札バーでカードを開き、選択したら明るいマスを選びます。ドロワーを閉じても指示は残ります。ハンドルの上下スワイプ、または矢印キーで展開できます。移動経路は「移動を確定」で実行。右の詳細やドロワーの詳細から資源と記録を確認できます。
+                </p>
+              </li>
               <li>
                 <strong>敵本城を破壊する</strong>
                 <p>

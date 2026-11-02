@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "spec": "GAME_SPEC.md v1.0 (2026-11-02)",
-  "testsPassed": 87,
+  "testsPassed": 95,
   "buildDate": "2026-11-02",
   "sha256": {
     "docs/GAME_SPEC.md": "4ebc2b4c509d5881afbea015a23b271d2992078cc6c5e64b51e8f86f20a26eee",
@@ -14,5 +14,18 @@
     "count": 7,
     "source": "user-provided originals",
     "unaltered": true
+  },
+  "uiLayout": {
+    "revision": "map-first-2026-11-02",
+    "verifiedViewports": [
+      "375x667",
+      "390x844",
+      "430x932",
+      "844x390",
+      "768x1024",
+      "1366x768",
+      "1440x900"
+    ],
+    "engineUnchanged": true
   }
 }

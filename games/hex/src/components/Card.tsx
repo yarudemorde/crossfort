@@ -18,16 +18,18 @@ export function Card({
   disabled = false,
   onClick,
   compact = false,
+  tray = false,
 }: {
   card: CardDefinition;
   selected?: boolean;
   disabled?: boolean;
   onClick?: () => void;
   compact?: boolean;
+  tray?: boolean;
 }) {
   return (
     <button
-      className={`game-card ${card.type} ${selected ? "selected" : ""} ${disabled ? "unaffordable" : ""} ${compact ? "compact" : ""}`}
+      className={`game-card ${card.type} ${selected ? "selected" : ""} ${disabled ? "unaffordable" : ""} ${compact ? "compact" : ""} ${tray ? "tray-card" : ""}`}
       onClick={onClick}
       aria-label={`${card.name} コスト${card.cost} 資源${card.resource}`}
       aria-pressed={selected}
