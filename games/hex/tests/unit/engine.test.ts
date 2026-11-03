@@ -44,7 +44,7 @@ describe("A デッキ・資源・循環", () => {
       s.players.player.deck.length,
     ]).toEqual([3, 2, 11]);
   });
-  it.each([0, 1, 2, 3])(
+  it.each([0, 1, 2, 3, 4, 5])(
     "D04–07,L15 ランドマーク%s基だけを資源に数える",
     (n) => {
       const s = fixture();
@@ -58,7 +58,7 @@ describe("A デッキ・資源・循環", () => {
       s.players.player.resourceCards = [];
       const next = startTurn(s, "player");
       expect(next.players.player.resourceCards).toHaveLength(
-        Math.min(4, 2 + n),
+        Math.min(5, 2 + n),
       );
       expect(next.players.player.resourceTotal).toBe(
         next.players.player.resourceCards.reduce(
@@ -584,11 +584,14 @@ describe("E ランドマーク・領土", () => {
     refresh(s);
     expect(startTurn(s, "cpu").players.cpu.resourceCards).toHaveLength(2);
   });
-  it("61マス×2、すべての本城距離8", () => {
+  it("小37・中61・大91マス、本城は各半径の両端", () => {
     for (const m of Object.values(defaultConfig.maps)) {
-      expect(m.hexes).toHaveLength(61);
-      expect(new Set(m.hexes.map(hexId)).size).toBe(61);
-      expect(hexDistance(m.headquarters.player, m.headquarters.cpu)).toBe(8);
+      const count = 1 + 3 * m.radius * (m.radius + 1);
+      expect(m.hexes).toHaveLength(count);
+      expect(new Set(m.hexes.map(hexId)).size).toBe(count);
+      expect(hexDistance(m.headquarters.player, m.headquarters.cpu)).toBe(
+        2 * m.radius,
+      );
     }
   });
 });

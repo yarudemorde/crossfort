@@ -5,6 +5,7 @@ import { getLegalActions } from "../../src/game/selectors/legal";
 import { chooseCpuAction } from "../../src/game/cpu/ai";
 import { add, fixture, terrain } from "../helpers";
 import type { Owner } from "../../src/game/types";
+import { maps } from "../../src/game/data";
 
 describe("CPUと最後までの対戦", () => {
   it("A02 敵本城を破壊できる攻撃を最優先する", () => {
@@ -37,7 +38,7 @@ describe("CPUと最後までの対戦", () => {
       chooseCpuAction(a, getLegalActions(a, s.config), 42, s.config),
     ).toEqual(chooseCpuAction(b, getLegalActions(b, s.config), 42, s.config));
   });
-  for (const mapId of ["crossing", "highlands"])
+  for (const { id: mapId } of maps)
     for (const first of ["player", "cpu"] as Owner[])
       it(`A01,A03 ${mapId} ${first}先攻、合法手で本城破壊まで完走`, () => {
         let s = createGame(1102, mapId, undefined, undefined, first);
@@ -64,6 +65,8 @@ describe("CPUと最後までの対戦", () => {
                 p.playedCards.length,
             ).toBe(16);
             expect(p.resourceRemaining).toBeGreaterThanOrEqual(0);
+            expect(p.resourceCards.length).toBeLessThanOrEqual(5);
+            expect(p.resourceTotal).toBeLessThanOrEqual(15);
           }
           expect(
             new Set(
@@ -80,5 +83,5 @@ describe("CPUと最後までの対戦", () => {
         console.info(
           `${mapId}, first=${first}: ${s.commands.length} actions / ${turns} turns / winner=${s.outcome?.winner}`,
         );
-      });
+      }, 30000);
 });

@@ -3,12 +3,13 @@ import { createGame, applyAction } from "../../src/game/engine";
 import { getObservation } from "../../src/game/selectors/observation";
 import { getLegalActions } from "../../src/game/selectors/legal";
 import { chooseCpuAction } from "../../src/game/cpu/ai";
+import { maps } from "../../src/game/data";
 it.each(Array.from({ length: 12 }, (_, i) => i + 1))(
-  "シード%s：2マップ・両手番の循環と完走",
+  "シード%s：全種類・サイズ・両手番の循環と完走",
   (seed) => {
     let s = createGame(
       seed,
-      seed % 2 ? "crossing" : "highlands",
+      maps[(seed - 1) % maps.length].id,
       undefined,
       undefined,
       seed % 3 ? "player" : "cpu",
@@ -27,6 +28,8 @@ it.each(Array.from({ length: 12 }, (_, i) => i + 1))(
       s = r.state;
       for (const p of Object.values(s.players)) {
         expect(p.resourceRemaining).toBeGreaterThanOrEqual(0);
+        expect(p.resourceCards.length).toBeLessThanOrEqual(5);
+        expect(p.resourceTotal).toBeLessThanOrEqual(15);
         expect([
           ...p.deck,
           ...p.hand,
@@ -40,4 +43,5 @@ it.each(Array.from({ length: 12 }, (_, i) => i + 1))(
       `seed ${seed}, ${s.commands.length} actions`,
     ).toBeDefined();
   },
+  30000,
 );

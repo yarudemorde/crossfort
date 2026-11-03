@@ -7,7 +7,15 @@ import { getObservation } from "../../src/game/selectors/observation";
 import { getLegalActions } from "../../src/game/selectors/legal";
 import { chooseCpuAction } from "../../src/game/cpu/ai";
 import type { Owner } from "../../src/game/types";
-describe("演出追加前の完全リプレイと一致", () => {
+import { defaultConfig } from "../../src/game/data";
+// Historical fixtures include the complete config in their hash. Keep the
+// original two maps and cap 4 here; the new cap 5 is tested with current rules.
+const legacyConfig = structuredClone(defaultConfig);
+legacyConfig.maps = Object.fromEntries(
+  Object.entries(legacyConfig.maps).filter(([, map]) => map.radius === 4),
+);
+legacyConfig.rules.resources.publicCardCap = 4;
+describe("旧設定（中サイズ・資源上限4）の完全リプレイと一致", () => {
   for (const test of golden)
     it(`${test.mapId}/${test.first}：操作数・勝者・状態のSHA256が同一`, () => {
       let state = createGame(
@@ -16,6 +24,7 @@ describe("演出追加前の完全リプレイと一致", () => {
         undefined,
         undefined,
         test.first as Owner,
+        legacyConfig,
       );
       let frameCount = 0;
       for (let i = 0; i < 1500 && !state.outcome; i++) {

@@ -15,6 +15,8 @@
     "maxScale": 3.6,
     "dragThresholdPx": 10,
     "wheelSensitivity": 0.0018,
-    "focusMs": 220
+    "focusMs": 220,
+    "fitPaddingPx": 16,
+    "toolbarInsetPx": 58
   }
 }

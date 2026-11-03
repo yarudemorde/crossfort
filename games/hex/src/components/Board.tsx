@@ -5,7 +5,7 @@ import type { ActiveAnimation } from "../presentation/types";
 import { tilePolygon, TERRAIN_CLIP_ID } from "./TerrainTile";
 import { useMapGestures } from "./map/useMapGestures";
 import { BoardScene } from "./map/BoardScene";
-import { xy } from "./map/geometry";
+import { xy, getMapBounds } from "./map/geometry";
 export { xy } from "./map/geometry";
 export function Board({
   observation: o,
@@ -30,7 +30,7 @@ export function Board({
   animation?: ActiveAnimation;
   locked?: boolean;
 }) {
-  const map = useMapGestures(o.headquarters[o.owner], `${o.seed}-${o.mapId}`);
+  const map = useMapGestures(getMapBounds(o.hexes), `${o.seed}-${o.mapId}`);
   useEffect(() => {
     const f = animation?.frame;
     if (!f) return;
@@ -120,7 +120,7 @@ export function Board({
             ◎
           </button>
           <button
-            onClick={map.fit}
+            onClick={() => map.fit()}
             aria-label="マップ全体を表示"
             title="マップ全体を表示"
           >
@@ -129,7 +129,7 @@ export function Board({
           <button onClick={() => map.zoom(1 / 1.2)} aria-label="マップを縮小">
             −
           </button>
-          <span>{Math.round((map.camera.scale / (720 / 610)) * 100)}%</span>
+          <span>{Math.round(map.camera.scale * 100)}%</span>
           <button onClick={() => map.zoom(1.2)} aria-label="マップを拡大">
             ＋
           </button>

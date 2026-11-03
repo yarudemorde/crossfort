@@ -1,8 +1,11 @@
 [
   {
     "id": "crossing",
+    "typeId": "crossing",
+    "size": "medium",
     "name": "渡河戦（仮）",
     "radius": 4,
+    "hexCount": 61,
     "headquarters": {
       "player": {
         "q": -4,
@@ -16,8 +19,11 @@
   },
   {
     "id": "highlands",
+    "typeId": "highlands",
+    "size": "medium",
     "name": "山岳戦（仮）",
     "radius": 4,
+    "hexCount": 61,
     "headquarters": {
       "player": {
         "q": -4,
@@ -25,6 +31,78 @@
       },
       "cpu": {
         "q": 4,
+        "r": 0
+      }
+    }
+  },
+  {
+    "id": "crossing-small",
+    "typeId": "crossing",
+    "size": "small",
+    "name": "渡河戦（仮）",
+    "radius": 3,
+    "hexCount": 37,
+    "headquarters": {
+      "player": {
+        "q": -3,
+        "r": 0
+      },
+      "cpu": {
+        "q": 3,
+        "r": 0
+      }
+    }
+  },
+  {
+    "id": "crossing-large",
+    "typeId": "crossing",
+    "size": "large",
+    "name": "渡河戦（仮）",
+    "radius": 5,
+    "hexCount": 91,
+    "headquarters": {
+      "player": {
+        "q": -5,
+        "r": 0
+      },
+      "cpu": {
+        "q": 5,
+        "r": 0
+      }
+    }
+  },
+  {
+    "id": "highlands-small",
+    "typeId": "highlands",
+    "size": "small",
+    "name": "山岳戦（仮）",
+    "radius": 3,
+    "hexCount": 37,
+    "headquarters": {
+      "player": {
+        "q": -3,
+        "r": 0
+      },
+      "cpu": {
+        "q": 3,
+        "r": 0
+      }
+    }
+  },
+  {
+    "id": "highlands-large",
+    "typeId": "highlands",
+    "size": "large",
+    "name": "山岳戦（仮）",
+    "radius": 5,
+    "hexCount": 91,
+    "headquarters": {
+      "player": {
+        "q": -5,
+        "r": 0
+      },
+      "cpu": {
+        "q": 5,
         "r": 0
       }
     }

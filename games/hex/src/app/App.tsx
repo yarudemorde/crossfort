@@ -1,6 +1,13 @@
 import tuning from "../../data/prototype.tuning.json";
 import { useEffect, useRef, useState } from "react";
-import { cards, maps, uiConfig } from "../data/catalog";
+import { cards, uiConfig } from "../data/catalog";
+import {
+  defaultMapSize,
+  mapTypes,
+  selectMap,
+  type MapSizeId,
+} from "../data/map-selection";
+import { MapSizeSelector } from "../components/MapSizeSelector";
 import type {
   Action,
   Coord,
@@ -26,7 +33,9 @@ const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0];
 type Pending = { action: Action; title: string; text: string };
 export default function App() {
   const [screen, setScreen] = useState<"setup" | "battle">("setup");
-  const [mapId, setMapId] = useState(maps[0].id);
+  const [mapTypeId, setMapTypeId] = useState(mapTypes[0].id);
+  const [mapSize, setMapSize] = useState<MapSizeId>(defaultMapSize);
+  const selectedMap = selectMap(mapTypeId, mapSize);
   const [first, setFirst] = useState<Owner>("player");
   const [seed, setSeed] = useState(randomSeed);
   const [deckOpen, setDeckOpen] = useState(false);
@@ -157,7 +166,7 @@ export default function App() {
       type: "new",
       session: session.current,
       seed,
-      mapId,
+      mapId: selectedMap.id,
       first,
     } satisfies Request);
   }
@@ -365,8 +374,11 @@ export default function App() {
         JSON.stringify(
           {
             version: "prototype-1.0",
-            seed,
-            mapId,
+            seed: o.seed,
+            mapId: o.mapId,
+            mapTypeId,
+            mapSize,
+            radius: o.radius,
             first,
             playerActions: playerActions.current,
             events: o.events,
@@ -450,7 +462,7 @@ export default function App() {
               </span>
             </div>
             <div className="setup-note">
-              PLAYER vs CPU <span>61 HEXES</span> 16 CARDS
+              PLAYER vs CPU <span>{selectedMap.hexCount} HEXES</span> 16 CARDS
             </div>
           </section>
           <section className="setup-panel">
@@ -460,11 +472,12 @@ export default function App() {
               <small>SELECT BATTLEFIELD</small>
             </div>
             <div className="map-options">
-              {maps.map((m, i) => (
+              {mapTypes.map((m, i) => (
                 <button
                   key={m.id}
-                  className={`map-option ${mapId === m.id ? "active" : ""}`}
-                  onClick={() => setMapId(m.id)}
+                  className={`map-option ${mapTypeId === m.id ? "active" : ""}`}
+                  aria-pressed={mapTypeId === m.id}
+                  onClick={() => setMapTypeId(m.id)}
                 >
                   <div className={`map-illustration map-${i}`}>
                     <svg viewBox="0 0 240 100" aria-hidden="true">
@@ -492,11 +505,12 @@ export default function App() {
                       : "地形を活かし、戦線を切り拓く。"}
                   </small>
                   <span className="selection-mark">
-                    {mapId === m.id ? "選択中 ✓" : "選択する"}
+                    {mapTypeId === m.id ? "選択中 ✓" : "選択する"}
                   </span>
                 </button>
               ))}
             </div>
+            <MapSizeSelector value={mapSize} onChange={setMapSize} />
             <div className="section-heading">
               <span>02</span>
               <h2>軍勢を編成</h2>
@@ -756,7 +770,14 @@ export default function App() {
               <li>
                 <strong>手札を使って展開する</strong>
                 <p>
-                  毎ターン手札3枚と資源2〜4枚を公開。ユニットは自軍拠点の隣、ランドマークは自軍ユニットの隣に配置します。配置したターンは行動できません。
+                  毎ターン手札3枚を引いた後、資源カードを2〜
+                  {uiConfig.rules.resources.publicCardCap}
+                  枚公開します。公開枚数は「2＋生存する自軍ランドマーク数」、上限
+                  {uiConfig.rules.resources.publicCardCap}
+                  枚。本城は数えません。各カードの💎1〜3を合計し、最大
+                  {uiConfig.rules.resources.publicCardCap *
+                    uiConfig.rules.resources.extractMax}
+                  資源です。ユニットは自軍拠点の隣、ランドマークは自軍ユニットの隣に配置します。配置したターンは行動できません。
                 </p>
               </li>
               <li>

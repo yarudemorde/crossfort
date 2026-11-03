@@ -1,6 +1,6 @@
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -9,12 +9,21 @@ import {
 import type { Coord } from "../../game/types";
 import settings from "../../../data/presentation.settings.json";
 import { MapGestureController } from "./gestures";
-import { xy, toScreen, type Camera, type Point } from "./geometry";
-export function useMapGestures(initial: Coord, key: string) {
+import {
+  xy,
+  toScreen,
+  fitMapCamera,
+  type MapBounds,
+  type Camera,
+  type Point,
+} from "./geometry";
+export function useMapGestures(bounds: MapBounds, key: string) {
   const viewport = useRef<HTMLDivElement>(null);
   const controller = useRef(new MapGestureController());
   const [camera, setCamera] = useState<Camera>(controller.current.camera);
   const sizeRef = useRef({ width: 0, height: 0 });
+  const boundsRef = useRef(bounds);
+  boundsRef.current = bounds;
   const raf = useRef(0);
   const autoRaf = useRef(0);
   const publish = useCallback(() => {
@@ -37,7 +46,7 @@ export function useMapGestures(initial: Coord, key: string) {
         window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ) {
         controller.current.camera = target;
-        publish();
+        setCamera({ ...target });
         return;
       }
       const start = performance.now();
@@ -65,31 +74,19 @@ export function useMapGestures(initial: Coord, key: string) {
         {
           ...c,
           x: s.width / 2 - p.x * c.scale,
-          y: (s.height - 44) / 2 - p.y * c.scale,
+          y: (s.height - settings.camera.toolbarInsetPx) / 2 - p.y * c.scale,
         },
         smooth,
       );
     },
     [go],
   );
-  const fit = useCallback(() => {
-    const s = sizeRef.current;
-    const scale = Math.max(
-      settings.camera.minScale,
-      Math.min(
-        settings.camera.maxScale,
-        Math.min((s.width - 24) / 610, (s.height - 60) / 486),
-      ),
-    );
-    go(
-      {
-        scale,
-        x: s.width / 2 - 340 * scale,
-        y: (s.height - 44) / 2 - 263 * scale,
-      },
-      true,
-    );
-  }, [go]);
+  const fit = useCallback(
+    (smooth = true) => {
+      go(fitMapCamera(boundsRef.current, sizeRef.current), smooth);
+    },
+    [go],
+  );
   const ensureVisible = useCallback(
     (points: Point[]) => {
       const s = sizeRef.current,
@@ -117,7 +114,7 @@ export function useMapGestures(initial: Coord, key: string) {
     },
     [go],
   );
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
     let initialized = false;
@@ -133,7 +130,7 @@ export function useMapGestures(initial: Coord, key: string) {
       sizeRef.current = next;
       if (!initialized) {
         initialized = true;
-        focus(initial, false);
+        fit(false);
       }
       // UI panels change the visible area, never the camera. Recentring here
       // made every card selection and hand toggle move the battlefield.
@@ -161,6 +158,7 @@ export function useMapGestures(initial: Coord, key: string) {
       observer.disconnect();
       el.removeEventListener("wheel", wheel);
       cancelAnimationFrame(raf.current);
+      raf.current = 0;
       stopAuto();
       controller.current.pointers.clear();
     };

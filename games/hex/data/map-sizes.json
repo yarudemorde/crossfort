@@ -1,0 +1,8 @@
+{
+  "defaultSize": "medium",
+  "sizes": [
+    { "id": "small", "label": "小", "radius": 3, "hexCount": 37 },
+    { "id": "medium", "label": "中", "radius": 4, "hexCount": 61 },
+    { "id": "large", "label": "大", "radius": 5, "hexCount": 91 }
+  ]
+}

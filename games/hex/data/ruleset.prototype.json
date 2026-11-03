@@ -13,7 +13,7 @@
   "resources": {
     "initialPublicCards": 2,
     "extraPerLivingFriendlyLandmark": 1,
-    "publicCardCap": 4,
+    "publicCardCap": 5,
     "extractMin": 1,
     "extractMax": 3,
     "headquartersIncludedAsLandmark": false

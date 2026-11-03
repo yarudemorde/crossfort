@@ -24,6 +24,7 @@ import {
 } from "./SelectionInspector";
 import { InfoDialog } from "./InfoDialog";
 import { Card } from "../Card";
+import { mapSizes } from "../../data/map-selection";
 function useCompactLayout() {
   const [compact, setCompact] = useState(
     () => window.matchMedia("(max-width:900px)").matches,
@@ -276,7 +277,9 @@ export function BattleLayout({
           {info === "reference" ? (
             <>
               <p>
-                {o.mapName.replace("（仮）", "")} · シード {o.seed}
+                {o.mapName.replace("（仮）", "")} ·{" "}
+                {mapSizes.find((s) => s.radius === o.radius)?.label}（
+                {o.hexes.length}マス） · シード {o.seed}
               </p>
               <h3>資源</h3>
               <ResourceSummary observation={o} cards={cards} />

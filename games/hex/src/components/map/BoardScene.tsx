@@ -10,7 +10,7 @@ import { hexDistance, hexId, sameHex } from "../../game/rules/hex";
 import type { ActiveAnimation } from "../../presentation/types";
 import { terrainNames } from "../Icons";
 import { TerrainTile, tilePolygon as polygon } from "../TerrainTile";
-import { xy } from "./geometry";
+import { xy, getMapBounds } from "./geometry";
 import { PieceIcon } from "./PieceIcon";
 import { PieceMotionLayer, motionPieceId } from "./PieceMotionLayer";
 import { CombatAnimationLayer } from "./CombatAnimationLayer";
@@ -73,9 +73,16 @@ export const BoardScene = memo(function BoardScene({
   );
   const movingId = motionPieceId(animation),
     f = animation?.frame;
+  const bounds = getMapBounds(o.hexes);
   return (
     <>
-      <circle cx="340" cy="263" r="260" fill="url(#map-light)" />
+      <ellipse
+        cx={(bounds.minX + bounds.maxX) / 2}
+        cy={(bounds.minY + bounds.maxY) / 2}
+        rx={bounds.width / 2}
+        ry={bounds.height / 2}
+        fill="url(#map-light)"
+      />
       {o.hexes.map((h) => {
         const pos = xy(h),
           id = hexId(h),

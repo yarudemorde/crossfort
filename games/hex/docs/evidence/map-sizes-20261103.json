@@ -1,0 +1,118 @@
+[
+  {
+    "label": "highlands-large-initial-390x844",
+    "camera": "translate(-9.698952447413063 178.15933972450108) scale(0.6020557424923914)",
+    "edges": {
+      "bottom": 235.8582763671875,
+      "left": 17.20411491394043,
+      "right": 17.204071044921875,
+      "top": 177.85830688476562
+    },
+    "height": 731,
+    "images": {
+      "desert": 1,
+      "fog": 82,
+      "forest": 1,
+      "plain": 6,
+      "swamp": 1
+    },
+    "page": {
+      "height": 844,
+      "width": 390
+    },
+    "tiles": 91,
+    "width": 390
+  },
+  {
+    "label": "highlands-large-fit-844x390",
+    "camera": "translate(292.65913370998123 16.95103578154425) scale(0.3804143126177024)",
+    "edges": {
+      "bottom": 74.76080322265625,
+      "left": 309.6580505371094,
+      "right": 309.6580810546875,
+      "top": 16.76082992553711
+    },
+    "height": 292,
+    "images": {
+      "desert": 1,
+      "fog": 82,
+      "forest": 1,
+      "plain": 6,
+      "swamp": 1
+    },
+    "page": {
+      "height": 390,
+      "width": 844
+    },
+    "tiles": 91,
+    "width": 844
+  },
+  {
+    "label": "highlands-large-fit-1366x768",
+    "camera": "translate(322.51035781544255 18.650659133710008) scale(1.0602636534839924)",
+    "edges": {
+      "bottom": 76.12054443359375,
+      "left": 369.8885803222656,
+      "right": 369.88861083984375,
+      "top": 18.120529174804688
+    },
+    "height": 653,
+    "images": {
+      "desert": 1,
+      "fog": 82,
+      "forest": 1,
+      "plain": 6,
+      "swamp": 1
+    },
+    "page": {
+      "height": 768,
+      "width": 1366
+    },
+    "tiles": 91,
+    "width": 1366
+  },
+  {
+    "label": "crossing-small-initial-1366x768",
+    "camera": "translate(128.159420289855 -131.6855072463768) scale(1.6318840579710145)",
+    "edges": {
+      "bottom": 77.26373291015625,
+      "left": 376.3240966796875,
+      "right": 376.3240966796875,
+      "top": 19.26377868652344
+    },
+    "height": 653,
+    "images": {
+      "fog": 28,
+      "forest": 1,
+      "plain": 8
+    },
+    "page": {
+      "height": 768,
+      "width": 1366
+    },
+    "tiles": 37,
+    "width": 1366
+  },
+  {
+    "label": "crossing-medium-initial-1366x768",
+    "camera": "translate(245.96803652968038 -40.55707762557074) scale(1.2853881278538812)",
+    "edges": {
+      "bottom": 76.57080078125,
+      "left": 372.4231262207031,
+      "right": 372.4231567382813,
+      "top": 18.570770263671875
+    },
+    "height": 653,
+    "images": {
+      "fog": 52,
+      "plain": 8,
+      "swamp": 1
+    },
+    "page": {
+      "height": 768,
+      "width": 1366
+    },
+    "tiles": 61,
+    "width": 1366
+  }
+]

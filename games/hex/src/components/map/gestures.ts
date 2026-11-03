@@ -2,7 +2,7 @@ import settings from "../../../data/presentation.settings.json";
 import { zoomAt, type Camera, type Point } from "./geometry";
 /** Platform-independent gesture math, shared by pointer and wheel input. */
 export class MapGestureController {
-  camera: Camera = { x: 0, y: 0, scale: 720 / 610 };
+  camera: Camera = { x: 0, y: 0, scale: 1 };
   pointers = new Map<number, Point>();
   suppressClick = false;
   private dragging = false;

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMapGestures } from "../../src/components/map/useMapGestures";
-import { xy, toScreen } from "../../src/components/map/geometry";
+import { xy, toScreen, getMapBounds } from "../../src/components/map/geometry";
+import settings from "../../data/presentation.settings.json";
 import type { MapGestureController } from "../../src/components/map/gestures";
 
 // Exercise the real hook's ResizeObserver and event handlers without a browser.
@@ -20,7 +21,8 @@ vi.mock("react", () => ({
     (v: unknown) => hooks.sizes.push(v),
   ],
   useCallback: (callback: unknown) => callback,
-  useEffect: (effect: () => void | (() => void)) => hooks.effects.push(effect),
+  useLayoutEffect: (effect: () => void | (() => void)) =>
+    hooks.effects.push(effect),
 }));
 
 describe("UI開閉時のマップ位置", () => {
@@ -44,7 +46,17 @@ describe("UI開閉時のマップ位置", () => {
     }
   }
   function mount() {
-    const map = useMapGestures({ q: -4, r: 0 }, "1102-highlands");
+    const map = useMapGestures(
+      getMapBounds([
+        { q: -4, r: 0 },
+        { q: -4, r: 4 },
+        { q: 0, r: 4 },
+        { q: 4, r: 0 },
+        { q: 4, r: -4 },
+        { q: 0, r: -4 },
+      ]),
+      "1102-highlands",
+    );
     hooks.refs[0].current = viewport;
     cleanup = hooks.effects[0]() || undefined;
     flush();
@@ -124,7 +136,9 @@ describe("UI開閉時のマップ位置", () => {
     expect(controller.camera).not.toEqual(before);
     const center = toScreen(controller.camera, xy({ q: 0, r: 0 }));
     expect(center.x).toBeCloseTo(viewport.clientWidth / 2);
-    expect(center.y).toBeCloseTo((viewport.clientHeight - 44) / 2);
+    expect(center.y).toBeCloseTo(
+      (viewport.clientHeight - settings.camera.toolbarInsetPx) / 2,
+    );
     const scale = controller.camera.scale;
     const preventDefault = vi.fn();
     listeners.get("wheel")!({

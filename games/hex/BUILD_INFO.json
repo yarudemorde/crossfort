@@ -1,14 +1,16 @@
 {
   "version": "1.0.0",
-  "spec": "GAME_SPEC.md v1.0 (2026-11-02)",
-  "testsPassed": 126,
+  "spec": "GAME_SPEC.md v1.1 (2026-11-03 approved map sizes and resource cap)",
+  "testsPassed": 161,
   "buildDate": "2026-11-03",
   "sha256": {
-    "docs/GAME_SPEC.md": "4ebc2b4c509d5881afbea015a23b271d2992078cc6c5e64b51e8f86f20a26eee",
+    "docs/GAME_SPEC.md": "c907ee8d626e50807cf131de153705bd7061fa4593c223330f5a111a4d6c362c",
     "data/cards.prototype.json": "827cf62e6bb0e9873c45cbb6d572700519060c3b5e4bb2a4f20cf62e6f302922",
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/prototype.tuning.json": "d804d282bb75a077b93c41ab0e5cd5486165721ccee766f75b504fc6dc644e4b",
-    "data/ruleset.prototype.json": "fd1a55a1686d443b39cce80d79d8a11a62b05d71418073e24d54250ef20f5e1c"
+    "data/ruleset.prototype.json": "ccae92b5f2ffd3bbabcf7803ee05435f710d0e427f1cc2348f7a096ed34ccb4c",
+    "data/map-sizes.json": "2b44542a3310bb9616e6b8a0ca004c63b21d5205bc98ab43479f5030d79cbf5c",
+    "data/maps.additional.prototype.json": "7d03a153b86643eb093730dff5c30a30ec5daf9094fd0d679c68664160c0a008"
   },
   "terrainArt": {
     "count": 7,
@@ -16,7 +18,7 @@
     "unaltered": true
   },
   "uiLayout": {
-    "revision": "map-animations-v2-2026-11-02",
+    "revision": "map-sizes-resource-cap-2026-11-03",
     "verifiedViewports": [
       "375x667",
       "390x844",
@@ -34,5 +36,26 @@
     "goldenReplays": 4,
     "settings": "data/presentation.settings.json",
     "physicalMobileVerified": false
+  },
+  "approvedExtensions": {
+    "mapTypes": 2,
+    "mapSizes": {
+      "small": {
+        "radius": 3,
+        "hexes": 37
+      },
+      "medium": {
+        "radius": 4,
+        "hexes": 61
+      },
+      "large": {
+        "radius": 5,
+        "hexes": 91
+      }
+    },
+    "defaultMapSize": "medium",
+    "resourcePublicCardCap": 5,
+    "maxResourceTotal": 15,
+    "originalMediumMapsUnchanged": true
   }
 }

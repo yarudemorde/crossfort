@@ -1,9 +1,10 @@
 import cardData from "../../data/cards.prototype.json";
 import mapData from "../../data/maps.prototype.json";
+import additionalMaps from "../../data/maps.additional.prototype.json";
 import rules from "../../data/ruleset.prototype.json";
 import type { CardDefinition, GameConfig, MapDefinition } from "./types";
 export const cards = cardData.cards as CardDefinition[];
-export const maps = mapData.maps as MapDefinition[];
+export const maps = [...mapData.maps, ...additionalMaps.maps] as MapDefinition[];
 export const defaultDeck = [...cardData.decks.player];
 export const defaultConfig: GameConfig = {
   cards: Object.fromEntries(cards.map((c) => [c.id, c])),
