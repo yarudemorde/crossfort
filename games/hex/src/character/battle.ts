@@ -78,7 +78,8 @@ export function observation(state: Battle, owner: Owner): BattleObservation {
     radius: state.map.radius,
     owner,
     activePlayer: state.activePlayer,
-    pendingActorId: state.pendingActorId,
+    pendingActorId:
+      owner === state.activePlayer ? state.pendingActorId : undefined,
     headquarters: {
       [owner]: state.headquarters[owner],
       [enemy]: {
@@ -221,6 +222,7 @@ export function beginMovement(
   owner: Owner,
   actorId: string,
   path: Coord[],
+  onStep?: (state: Battle) => void,
 ): Battle {
   if (state.outcome || state.activePlayer !== owner || state.pendingActorId)
     throw Error("現在の手番ではありません。");
@@ -243,11 +245,16 @@ export function beginMovement(
     throw Error("移動できません。");
   const s = structuredClone(state);
   const p = s.participants.find((x) => x.character.characterId === actorId)!;
-  moveAlong(s, p, path);
+  moveAlong(s, p, path, onStep);
   s.pendingActorId = actorId;
   return s;
 }
-function moveAlong(s: Battle, p: Participant, path: Coord[]): boolean {
+function moveAlong(
+  s: Battle,
+  p: Participant,
+  path: Coord[],
+  onStep?: (state: Battle) => void,
+): boolean {
   let lastFree = { ...p.coord };
   const traversed: Coord[] = [];
   for (const c of path) {
@@ -266,6 +273,7 @@ function moveAlong(s: Battle, p: Participant, path: Coord[]): boolean {
           actorId: p.character.characterId,
           coord: { ...previous },
         });
+        onStep?.(s);
       }
       if (!sameHex(p.coord, lastFree)) {
         p.coord = lastFree;
@@ -275,6 +283,7 @@ function moveAlong(s: Battle, p: Participant, path: Coord[]): boolean {
           actorId: p.character.characterId,
           coord: { ...lastFree },
         });
+        onStep?.(s);
       }
       return true;
     }
@@ -286,6 +295,7 @@ function moveAlong(s: Battle, p: Participant, path: Coord[]): boolean {
       actorId: p.character.characterId,
       coord: { ...c },
     });
+    onStep?.(s);
     if (
       !s.participants.some(
         (x) =>
@@ -302,6 +312,7 @@ export function applyBattleAction(
   state: Battle,
   action: BattleAction,
   owner: Owner,
+  onStep?: (state: Battle) => void,
 ): Battle {
   if (state.outcome || state.activePlayer !== owner)
     throw Error("現在の手番ではありません。");
@@ -325,7 +336,7 @@ export function applyBattleAction(
         x.alive &&
         x.owner === owner,
     )!;
-    const blocked = moveAlong(s, p, action.path);
+    const blocked = moveAlong(s, p, action.path, onStep);
     // A hidden enemy may interrupt an otherwise legal path without revealing its identity.
     if (!blocked && action.targetId) {
       const enemy = other(owner);

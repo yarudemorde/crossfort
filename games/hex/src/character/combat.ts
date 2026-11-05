@@ -3,13 +3,17 @@ import { hexDistance, hexId, neighbors } from "../game/rules/hex";
 import { stats } from "./roster";
 import type { Participant } from "./types";
 
-/** Place headquarters one hex inside each edge so all six adjacent slots exist. */
-export function headquartersFor(map: MapDefinition) {
-  const distance = map.radius - 1;
-  const headquarters = {
+/** Public placement rule; does not require map terrain. */
+export function headquartersForRadius(radius: number) {
+  const distance = radius - 1;
+  return {
     player: { q: -distance, r: 0 },
     cpu: { q: distance, r: 0 },
   };
+}
+/** Place headquarters one hex inside each edge so all six adjacent slots exist. */
+export function headquartersFor(map: MapDefinition) {
+  const headquarters = headquartersForRadius(map.radius);
   const tiles = new Set(map.hexes.map(hexId));
   const player = neighbors(headquarters.player),
     cpu = neighbors(headquarters.cpu);

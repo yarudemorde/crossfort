@@ -1,6 +1,6 @@
 import type { Coord } from "../game/types";
 import { CharacterSession, type NewBattle } from "./session";
-import type { BattleAction } from "./battle";
+import type { BattleAction, BattleObservation } from "./battle";
 
 export type CharacterRequest = (
   | { type: "new"; config: NewBattle }
@@ -11,6 +11,7 @@ export type CharacterRequest = (
 export type CharacterResponse = {
   session: number;
   error?: string;
+  frames?: BattleObservation[];
 } & Partial<ReturnType<CharacterSession["view"]>>;
 
 let current: CharacterSession | undefined;

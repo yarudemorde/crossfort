@@ -66,12 +66,16 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
 }
 
 /** Execute a full turn through observations, including targets revealed by movement. */
-export function playCpuTurn(state: Battle, seed: number): Battle {
+export function playCpuTurn(
+  state: Battle,
+  seed: number,
+  onStep?: (state: Battle) => void,
+): Battle {
   const owner = state.activePlayer;
   const first = chooseAction(observation(state, owner), seed);
   if (first.type === "pass" || state.pendingActorId)
-    return applyBattleAction(state, first, owner);
-  const moved = beginMovement(state, owner, first.actorId, first.path);
+    return applyBattleAction(state, first, owner, onStep);
+  const moved = beginMovement(state, owner, first.actorId, first.path, onStep);
   const followUp = chooseAction(observation(moved, owner), seed ^ 0x9e3779b9);
-  return applyBattleAction(moved, followUp, owner);
+  return applyBattleAction(moved, followUp, owner, onStep);
 }

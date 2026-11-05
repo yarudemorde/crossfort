@@ -13,6 +13,7 @@ import {
   startBattle,
   type Battle,
   type BattleAction,
+  type BattleObservation,
 } from "./battle";
 import { playCpuTurn } from "./cpu";
 import type { Character } from "./types";
@@ -64,20 +65,39 @@ export class CharacterSession {
     };
   }
   move(actorId: string, path: Coord[]) {
-    this.battle = beginMovement(this.battle, "player", actorId, path);
-    return this.view();
+    const frames: BattleObservation[] = [];
+    const capture = this.capture(frames);
+    this.battle = beginMovement(this.battle, "player", actorId, path, capture);
+    return { ...this.view(), frames };
   }
   act(action: BattleAction) {
-    this.battle = applyBattleAction(this.battle, action, "player");
-    return this.view();
+    const frames: BattleObservation[] = [];
+    this.battle = applyBattleAction(
+      this.battle,
+      action,
+      "player",
+      this.capture(frames),
+    );
+    return { ...this.view(), frames };
+  }
+  private capture(frames: BattleObservation[]) {
+    let previous = JSON.stringify(observation(this.battle, "player"));
+    return (state: Battle) => {
+      const next = observation(state, "player"),
+        serial = JSON.stringify(next);
+      if (serial !== previous) frames.push(next);
+      previous = serial;
+    };
   }
   cpu() {
     if (this.battle.activePlayer !== "cpu" || this.battle.outcome)
       throw Error("CPUの手番ではありません。");
+    const frames: BattleObservation[] = [];
     this.battle = playCpuTurn(
       this.battle,
       (this.battle.seed + ++this.step) >>> 0,
+      this.capture(frames),
     );
-    return this.view();
+    return { ...this.view(), frames };
   }
 }

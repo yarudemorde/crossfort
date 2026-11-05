@@ -54,4 +54,28 @@ describe("キャラクター戦闘の通信境界", () => {
       after.observation.activePlayer === "player" || after.observation.outcome,
     ).toBeTruthy();
   });
+  it("複数マス移動は各マスの観測を順に返し、未探索地形を含めない", () => {
+    const game = session();
+    const before = game.view();
+    const action = before.legal.find(
+      (a) => a.type === "act" && a.path.length === 2 && !a.targetId,
+    );
+    expect(action?.type).toBe("act");
+    if (!action || action.type !== "act") throw Error("移動先なし");
+    const result = game.move(action.actorId, action.path);
+    expect(result.frames).toHaveLength(2);
+    for (let i = 0; i < result.frames.length; i++) {
+      expect(
+        result.frames[i].participants.find(
+          (p) => p.character.characterId === action.actorId,
+        )?.coord,
+      ).toEqual(action.path[i]);
+      expect(
+        result.frames[i].hexes.every(
+          (h) => h.explored || h.terrain === undefined,
+        ),
+      ).toBe(true);
+      expect(result.frames[i]).not.toHaveProperty("seed");
+    }
+  });
 });
