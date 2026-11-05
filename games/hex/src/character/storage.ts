@@ -1,11 +1,12 @@
 import type { Character, Participant, RosterSave } from "./types";
 import { createInitialRoster, stats } from "./roster";
-import { sameCharacter } from "./reward";
+import { beginReward, sameCharacter } from "./reward";
+import { battleResult } from "./battle";
 
 const DB_NAME = "crossfort-hex-characters-v2";
 const STORE = "saves";
 const KEY = "active";
-function validCharacter(value: unknown): value is Character {
+export function validCharacter(value: unknown): value is Character {
   if (!value || typeof value !== "object") return false;
   const c = value as Record<string, unknown>;
   return (
@@ -31,7 +32,12 @@ function validCharacter(value: unknown): value is Character {
     Number.isInteger(c.kills) &&
     Number(c.kills) >= 0 &&
     ["starter", "replacement", "scout"].includes(String(c.acquisitionSource)) &&
-    typeof c.nameEditUsed === "boolean"
+    typeof c.nameEditUsed === "boolean" &&
+    (c.playerBattlesParticipated === undefined ||
+      (Number.isInteger(c.playerBattlesParticipated) &&
+        Number(c.playerBattlesParticipated) >= 0)) &&
+    (c.playerKills === undefined ||
+      (Number.isInteger(c.playerKills) && Number(c.playerKills) >= 0))
   );
 }
 export function validateSave(value: unknown): asserts value is RosterSave {
@@ -163,9 +169,10 @@ export async function updateSave(
     return await new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, "readwrite"),
         store = tx.objectStore(STORE),
-        request = store.get(KEY);
+        request = store.get(KEY),
+        battleRequest = store.get("battle");
       let result: RosterSave | undefined, failure: unknown;
-      request.onsuccess = () => {
+      battleRequest.onsuccess = () => {
         try {
           const current: unknown =
             request.result === undefined
@@ -174,6 +181,13 @@ export async function updateSave(
           validateSave(current);
           result = change(structuredClone(current));
           validateSave(result);
+          if (
+            battleRequest.result &&
+            (JSON.stringify(result.roster) !== JSON.stringify(current.roster) ||
+              JSON.stringify(result.archive) !==
+                JSON.stringify(current.archive))
+          )
+            throw Error("戦闘中は所持データを変更できません。");
           store.put(result, KEY);
         } catch (error) {
           failure = error;
@@ -193,3 +207,95 @@ export async function updateSave(
 }
 export const loadSave = (seed: number) =>
   updateSave(seed, (current) => current);
+
+/** Private battle state is stored under another key and is never returned by loadSave. */
+type Snapshot = ReturnType<import("./session").CharacterSession["snapshot"]>;
+const BATTLE_KEY = "battle";
+export async function readBattle(): Promise<Snapshot | undefined> {
+  const db = await openDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readonly"),
+        req = tx.objectStore(STORE).get(BATTLE_KEY);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+export async function persistBattle(
+  snapshot: Snapshot,
+  expectedRevision?: number,
+): Promise<RosterSave> {
+  const db = await openDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite"),
+        store = tx.objectStore(STORE);
+      const rosterReq = store.get(KEY),
+        battleReq = store.get(BATTLE_KEY);
+      let result: RosterSave, failure: unknown;
+      battleReq.onsuccess = () => {
+        try {
+          const save = rosterReq.result;
+          validateSave(save);
+          const current = battleReq.result as Snapshot | undefined;
+          if (
+            expectedRevision === undefined
+              ? !!current
+              : !current ||
+                current.config.id !== snapshot.config.id ||
+                current.revision !== expectedRevision
+          )
+            throw Error(
+              "別のタブで戦闘が更新されました。再読み込みしてください。",
+            );
+          if (
+            save.pendingReward ||
+            save.completedRewardIds.includes(snapshot.config.id)
+          )
+            throw Error("この戦闘は処理済みです。");
+          if (
+            snapshot.config.team.some(
+              (c) => !save.roster.some((own) => sameCharacter(own, c)),
+            )
+          )
+            throw Error("出撃時の所持データと一致しません。");
+          result = save;
+          if (snapshot.battle.outcome?.winner === "player") {
+            result = beginReward(
+              save,
+              battleResult(snapshot.battle),
+              snapshot.config.seed ^ 0x3c6ef372,
+            );
+            validateSave(result);
+            store.put(result, KEY);
+            store.delete(BATTLE_KEY);
+          } else store.put(snapshot, BATTLE_KEY);
+        } catch (e) {
+          failure = e;
+          tx.abort();
+        }
+      };
+      tx.oncomplete = () => resolve(result);
+      tx.onabort = () =>
+        reject(failure ?? tx.error ?? Error("戦闘を保存できません。"));
+    });
+  } finally {
+    db.close();
+  }
+}
+export async function discardBattle() {
+  const db = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(BATTLE_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onabort = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}

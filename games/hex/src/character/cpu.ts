@@ -1,3 +1,4 @@
+import type { PresentationEvent } from "./presentation";
 import { hexDistance } from "../game/rules/hex";
 import { nextRandom } from "../game/rng";
 import { damage } from "./combat";
@@ -69,7 +70,7 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
 export function playCpuTurn(
   state: Battle,
   seed: number,
-  onStep?: (state: Battle) => void,
+  onStep?: (state: Battle, event?: PresentationEvent) => void,
 ): Battle {
   const owner = state.activePlayer;
   const first = chooseAction(observation(state, owner), seed);

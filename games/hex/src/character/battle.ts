@@ -1,3 +1,4 @@
+import type { PresentationEvent } from "./presentation";
 import type { Coord, MapDefinition, Owner, Terrain } from "../game/types";
 import { hexDistance, hexId, neighbors, sameHex } from "../game/rules/hex";
 import {
@@ -18,6 +19,7 @@ export type Battle = {
   seed: number;
   map: MapDefinition;
   activePlayer: Owner;
+  actionNumber: number;
   pendingActorId?: string;
   participants: Participant[];
   headquarters: Record<Owner, { coord: Coord; hp: number }>;
@@ -40,6 +42,7 @@ export type BattleObservation = {
   radius: number;
   owner: Owner;
   activePlayer: Owner;
+  actionNumber: number;
   pendingActorId?: string;
   headquarters: Record<Owner, { coord: Coord; hp?: number }>;
   participants: Participant[];
@@ -78,6 +81,7 @@ export function observation(state: Battle, owner: Owner): BattleObservation {
     radius: state.map.radius,
     owner,
     activePlayer: state.activePlayer,
+    actionNumber: state.actionNumber,
     pendingActorId:
       owner === state.activePlayer ? state.pendingActorId : undefined,
     headquarters: {
@@ -126,6 +130,7 @@ export function startBattle(
     seed: seed >>> 0,
     map: structuredClone(map),
     activePlayer: first,
+    actionNumber: 1,
     headquarters: {
       player: { coord: hq.player, hp: 15 },
       cpu: { coord: hq.cpu, hp: 15 },
@@ -222,7 +227,7 @@ export function beginMovement(
   owner: Owner,
   actorId: string,
   path: Coord[],
-  onStep?: (state: Battle) => void,
+  onStep?: (state: Battle, event?: PresentationEvent) => void,
 ): Battle {
   if (state.outcome || state.activePlayer !== owner || state.pendingActorId)
     throw Error("現在の手番ではありません。");
@@ -253,7 +258,7 @@ function moveAlong(
   s: Battle,
   p: Participant,
   path: Coord[],
-  onStep?: (state: Battle) => void,
+  onStep?: (state: Battle, event?: PresentationEvent) => void,
 ): boolean {
   let lastFree = { ...p.coord };
   const traversed: Coord[] = [];
@@ -312,7 +317,7 @@ export function applyBattleAction(
   state: Battle,
   action: BattleAction,
   owner: Owner,
-  onStep?: (state: Battle) => void,
+  onStep?: (state: Battle, event?: PresentationEvent) => void,
 ): Battle {
   if (state.outcome || state.activePlayer !== owner)
     throw Error("現在の手番ではありません。");
@@ -346,12 +351,14 @@ export function applyBattleAction(
           0,
           s.headquarters[enemy].hp - amount,
         );
-        s.events.push({
-          type: "attack",
+        const hit = {
+          type: "attack" as const,
           actorId: action.actorId,
           targetId: action.targetId,
           amount,
-        });
+        };
+        s.events.push(hit);
+        onStep?.(s, hit);
       } else {
         const target = s.participants.find(
           (x) =>
@@ -367,8 +374,21 @@ export function applyBattleAction(
           terrainAt(s, p.coord),
           terrainAt(s, target.coord),
         );
-        Object.assign(p, r.attacker);
         Object.assign(target, r.defender);
+        onStep?.(s, {
+          type: "attack",
+          actorId: action.actorId,
+          targetId: action.targetId,
+          amount: r.hit,
+        });
+        Object.assign(p, r.attacker);
+        if (r.counter)
+          onStep?.(s, {
+            type: "counter",
+            actorId: action.targetId,
+            targetId: action.actorId,
+            amount: r.counter,
+          });
         s.events.push({
           type: "attack",
           actorId: action.actorId,
@@ -411,7 +431,10 @@ export function applyBattleAction(
           ? "headquartersDestroyed"
           : "allUnitsKilled",
     };
-  if (!s.outcome) s.activePlayer = enemy;
+  if (!s.outcome) {
+    s.activePlayer = enemy;
+    s.actionNumber++;
+  }
   return s;
 }
 export function battleResult(s: Battle): BattleResult {

@@ -152,6 +152,8 @@ export function commitVictory(save: RosterSave): RosterSave {
         ...c,
         battlesParticipated: c.battlesParticipated + 1,
         kills: c.kills + p.killsThisBattle,
+        playerBattlesParticipated: (c.playerBattlesParticipated ?? 0) + 1,
+        playerKills: (c.playerKills ?? 0) + p.killsThisBattle,
         level: c.characterId === r.promotedId ? nextLevel(c.level) : c.level,
       };
     });
@@ -163,6 +165,8 @@ export function commitVictory(save: RosterSave): RosterSave {
         ...c,
         battlesParticipated: c.battlesParticipated + 1,
         kills: c.kills + p.killsThisBattle,
+        playerBattlesParticipated: (c.playerBattlesParticipated ?? 0) + 1,
+        playerKills: (c.playerKills ?? 0) + p.killsThisBattle,
       };
     });
   if (r.scouted) roster.push(r.scouted);

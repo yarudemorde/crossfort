@@ -12,6 +12,8 @@ export type Character = {
   level: Level;
   battlesParticipated: number;
   kills: number;
+  playerBattlesParticipated?: number;
+  playerKills?: number;
   acquisitionSource: "starter" | "replacement" | "scout";
   nameEditUsed: boolean;
 };
@@ -45,3 +47,6 @@ export type RosterSave = {
   pendingReward?: Reward;
   completedRewardIds: string[];
 };
+
+/** Reserved identity for a future class; not generated or selectable in v2. */
+export type FutureClassId = ClassId | "unique";

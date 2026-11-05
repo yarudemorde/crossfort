@@ -12,6 +12,7 @@ import type { Coord, Owner } from "../game/types";
 import { damage, headquartersForRadius } from "../character/combat";
 import {
   stats,
+  nextLevel,
   scoutChance,
   validateFormation,
   recruitReplacement,
@@ -19,13 +20,13 @@ import {
   retire,
 } from "../character/roster";
 import {
-  beginReward,
   commitVictory,
   decideScout,
   promote,
   renameScout,
 } from "../character/reward";
 import { loadSave, updateSave } from "../character/storage";
+import type { CharacterFrame } from "../character/presentation";
 import type { BattleAction } from "../character/battle";
 import type { Character, ClassId, RosterSave } from "../character/types";
 import type {
@@ -67,7 +68,10 @@ function Detail({ character: c }: { character: Character }) {
         <br />
         個体差 HP {c.hpDelta >= 0 ? "+" : ""}
         {c.hpDelta} / 攻撃 {c.attackDelta >= 0 ? "+" : ""}
-        {c.attackDelta}　出撃 {c.battlesParticipated} / 撃破 {c.kills}
+        {c.attackDelta}　Lv補正 HP +{s.hp - s.initialHp} / 攻撃 +
+        {s.attack - s.initialAttack}
+        <br />
+        出撃 {c.battlesParticipated} / 撃破 {c.kills}
       </small>
     </>
   );
@@ -76,7 +80,14 @@ export default function CharacterApp() {
   const [save, setSave] = useState<RosterSave>();
   const [screen, setScreen] = useState<Screen>("home");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const [animation, setAnimation] = useState<{
+    frame: CharacterFrame;
+    impact: boolean;
+    serial: number;
+  }>();
+  const [chronicle, setChronicle] = useState<string[]>([]);
+  const [menu, setMenu] = useState(false);
   const [formation, setFormation] = useState<string[]>([]);
   const [placements, setPlacements] = useState<Record<string, Coord>>({});
   const [pick, setPick] = useState<string>();
@@ -88,10 +99,27 @@ export default function CharacterApp() {
   const [selection, setSelection] = useState<string>();
   const [preview, setPreview] =
     useState<Extract<BattleAction, { type: "act" }>>();
+  const [movePreview, setMovePreview] = useState<{
+    actorId: string;
+    path: Coord[];
+  }>();
   const [response, setResponse] = useState<CharacterResponse>();
   const worker = useRef<Worker | undefined>(undefined);
   const sid = useRef(0);
-  const savedResult = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!menu) return;
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenu(false);
+        document
+          .querySelector<HTMLButtonElement>('button[aria-label="メニュー"]')
+          ?.focus();
+      }
+    };
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, [menu]);
   useEffect(() => {
     let live = true;
     loadSave(seed())
@@ -112,60 +140,110 @@ export default function CharacterApp() {
       { type: "module" },
     );
     worker.current = w;
+    let live = true;
+    let serial = 0;
     w.onmessage = async (msg: MessageEvent<CharacterResponse>) => {
       const v = msg.data;
-      if (v.session !== sid.current) return;
+      if (!live || v.session !== sid.current) return;
       if (v.error) {
         setError(v.error);
         setBusy(false);
         return;
       }
+      if (v.discarded) {
+        setBusy(false);
+        return;
+      }
+      if (v.save) setSave(v.save);
+      if (v.resumed && v.config) {
+        const meta = mapTypes
+          .flatMap((t) =>
+            mapSizes.map((size) => ({
+              ...selectMap(t.id, size.id),
+              type: t.id,
+              size: size.id,
+            })),
+          )
+          .find((m) => m.id === v.config!.mapId)!;
+        setMapType(meta.type);
+        setMapSize(meta.size);
+        setFirst(v.config.first);
+        setBattleSeed(v.config.seed);
+        setFormation(v.config.team.map((c) => c.characterId));
+        setPlacements(v.config.placements);
+        setScreen(
+          v.observation?.outcome?.winner === "cpu" ? "defeat" : "battle",
+        );
+      }
       const reduced = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
+      const wait = (ms: number) =>
+        new Promise<void>((resolve) =>
+          window.setTimeout(resolve, reduced ? timing.reducedMotionMs : ms),
+        );
       for (const frame of v.frames ?? []) {
-        if (v.session !== sid.current) return;
-        setResponse((previous) =>
-          previous ? { ...previous, observation: frame, legal: [] } : previous,
-        );
-        await new Promise<void>((resolve) =>
-          window.setTimeout(
-            resolve,
-            reduced
-              ? timing.reducedMotionMs
-              : timing.movement.stepMs + timing.movement.pauseMs,
-          ),
-        );
+        if (!live || v.session !== sid.current) return;
+        setAnimation({ frame, impact: false, serial: ++serial });
+        setResponse((previous) => ({
+          ...previous,
+          session: v.session,
+          observation: frame.kind === "move" ? frame.after : frame.before,
+          legal: [],
+        }));
+        if (frame.kind === "move")
+          await wait(timing.movement.stepMs + timing.movement.pauseMs);
+        else if (frame.kind === "hit") {
+          await wait(
+            timing.combat.windupMs +
+              (frame.range === 2
+                ? timing.combat.projectileMs
+                : timing.combat.meleeMs),
+          );
+          if (!live || v.session !== sid.current) return;
+          setAnimation({ frame, impact: true, serial });
+          setResponse((previous) => ({
+            ...previous,
+            session: v.session,
+            observation: frame.after,
+            legal: [],
+          }));
+          const target =
+            frame.before.participants.find(
+              (p) => p.character.characterId === frame.targetId,
+            )?.character.displayName ?? "本城";
+          setChronicle((log) =>
+            [
+              ...log,
+              `${frame.counter ? "反撃" : "攻撃"}：${target} −${frame.amount}`,
+            ].slice(-40),
+          );
+          await wait(timing.combat.popupMs);
+        } else await wait(timing.combat.deathMs);
       }
-      if (v.session !== sid.current) return;
+      if (!live || v.session !== sid.current) return;
+      setAnimation(undefined);
+      setChronicle(v.chronicle ?? []);
       setResponse(v);
       setSelection(v.observation?.pendingActorId);
-      if (v.result && savedResult.current !== v.result.id) {
-        savedResult.current = v.result.id;
-        try {
-          const s = await updateSave(0, (current) =>
-            current.pendingReward?.id === v.result!.id
-              ? current
-              : beginReward(current, v.result!, battleSeed),
-          );
-          setSave(s);
-          setScreen("reward");
-        } catch (e) {
-          savedResult.current = undefined;
-          setError(String(e));
-        }
-      } else if (v.observation?.outcome?.winner === "cpu") setScreen("defeat");
+      if (v.save?.pendingReward) setScreen("reward");
+      else if (v.observation?.outcome?.winner === "cpu") setScreen("defeat");
       setBusy(false);
     };
+    w.postMessage({
+      type: "resume",
+      session: sid.current,
+    } satisfies CharacterRequest);
     w.onerror = () => {
       setError("戦闘処理でエラーが発生しました。");
       setBusy(false);
     };
     return () => {
+      live = false;
       w.terminate();
       worker.current = undefined;
     };
-  }, [battleSeed]);
+  }, []);
   useEffect(() => {
     if (
       screen === "battle" &&
@@ -181,6 +259,8 @@ export default function CharacterApp() {
     }
   }, [screen, response, busy]);
   function send(request: CharacterRequest) {
+    setMovePreview(undefined);
+    setPreview(undefined);
     setError("");
     setBusy(true);
     worker.current?.postMessage(request);
@@ -212,7 +292,7 @@ export default function CharacterApp() {
       placements,
     };
     sid.current++;
-    savedResult.current = undefined;
+    setChronicle([]);
     setPreview(undefined);
     setResponse(undefined);
     setScreen("battle");
@@ -253,17 +333,13 @@ export default function CharacterApp() {
         sameHex(a.path[a.path.length - 1], coord),
     );
     if (move?.type === "act") {
-      send({
-        type: "move",
-        actorId: move.actorId,
-        path: move.path,
-        session: sid.current,
-      });
+      setMovePreview({ actorId: move.actorId, path: move.path });
       return;
     }
     const piece = view.participants.find(
       (p) => p.owner === "player" && sameHex(p.coord, coord),
     );
+    setMovePreview(undefined);
     setSelection(piece?.character.characterId);
   }
   function chooseSlot(coord: Coord, characterId = pick) {
@@ -321,6 +397,7 @@ export default function CharacterApp() {
         </strong>
         {screen === "battle" && response?.observation && (
           <div>
+            {response.observation.actionNumber}手　
             {response.observation.activePlayer === "player"
               ? "自軍の手番"
               : "敵軍の手番"}
@@ -328,6 +405,13 @@ export default function CharacterApp() {
             {response.observation.headquarters.cpu.hp ?? "?"}
           </div>
         )}
+        <button
+          aria-label="メニュー"
+          aria-expanded={menu}
+          onClick={() => setMenu((m) => !m)}
+        >
+          ☰
+        </button>
         <button
           disabled={busy}
           onClick={() => {
@@ -337,6 +421,8 @@ export default function CharacterApp() {
             )
               return;
             sid.current++;
+            send({ type: "discard", session: sid.current });
+            setPreview(undefined);
             setResponse(undefined);
             setScreen(pending ? "reward" : "home");
           }}
@@ -344,6 +430,41 @@ export default function CharacterApp() {
           ホーム
         </button>
       </header>
+      {menu && (
+        <div className="v2-menu" role="dialog" aria-label="戦場メニュー">
+          <button
+            onClick={() => {
+              setMenu(false);
+              document
+                .querySelector<HTMLButtonElement>(
+                  'button[aria-label="メニュー"]',
+                )
+                ?.focus();
+            }}
+          >
+            閉じる
+          </button>
+          <h2>遊び方</h2>
+          <p>
+            1〜6名・コスト10以内で編成し、本城の周囲に配置します。自軍1体とCPU1体が交互に行動します。部隊を選び、金色のマスへ移動。移動後は赤い対象を選んで攻撃、または待機します。HPが減っても攻撃力は下がりません。
+          </p>
+          <p>
+            敵本城HP15を削るか敵兵を全滅させると勝利。生存した敵兵は本城破壊時だけ勧誘できます。勝利すると戦死者を永久に失い、生存者1名を強化します。敗北では所持データを巻き戻します。
+          </p>
+          <p>
+            森林・山岳：反撃＋1／山岳：移動−1／湿地：移動−2／砂漠：攻撃−1／河川：移動1。地形補正後も機動は最低1です。
+          </p>
+          <p>
+            1本指・マウスドラッグで移動、2本指・ホイールで拡縮。戦闘と報酬はこのブラウザに自動保存されます。
+          </p>
+          <details>
+            <summary>戦況記録</summary>
+            {chronicle.map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </details>
+        </div>
+      )}
       {error && (
         <div role="alert" className="v2-error">
           {error}
@@ -363,6 +484,7 @@ export default function CharacterApp() {
               <p>所持 {save.roster.length} / 15</p>
             </div>
             <button
+              disabled={busy}
               className="v2-primary"
               onClick={() => {
                 setFormation([]);
@@ -635,25 +757,23 @@ export default function CharacterApp() {
             legal={response.legal ?? []}
             selected={selection}
             onHex={hex}
+            animation={animation}
+            path={movePreview?.path}
           />
           <div className="v2-battle-controls">
-            {response.result && !pending && (
-              <button
-                disabled={busy}
-                onClick={async () => {
-                  const result = response.result!;
-                  if (
-                    await change((s) =>
-                      s.pendingReward?.id === result.id
-                        ? s
-                        : beginReward(s, result, battleSeed),
-                    )
-                  )
-                    setScreen("reward");
-                }}
-              >
-                報酬保存を再試行
-              </button>
+            {movePreview && (
+              <div className="v2-prediction">
+                移動経路 {movePreview.path.length}マス{" "}
+                <button
+                  disabled={busy}
+                  onClick={() =>
+                    send({ type: "move", ...movePreview, session: sid.current })
+                  }
+                >
+                  移動
+                </button>
+                <button onClick={() => setMovePreview(undefined)}>取消</button>
+              </div>
             )}
             {preview && attacking && (
               <div className="v2-prediction" role="status">
@@ -676,6 +796,19 @@ export default function CharacterApp() {
                 {response.observation.pendingActorId
                   ? "攻撃対象を選択"
                   : "移動先を選択"}
+                {(() => {
+                  const p = response.observation!.participants.find(
+                    (p) => p.character.characterId === selection,
+                  );
+                  if (!p) return null;
+                  const s = stats(p.character);
+                  return (
+                    <small>
+                      　❤️{p.hp}/{s.hp} 🗡{s.attack} 👁{s.vision} 🏹{s.range} 🥾
+                      {s.movement}
+                    </small>
+                  );
+                })()}
               </span>
             )}
             {selection && !response.observation.pendingActorId && (
@@ -707,10 +840,24 @@ export default function CharacterApp() {
           <h1>GAME OVER</h1>
           <p>戦闘前の所持状態に戻ります。</p>
           <div className="v2-actions">
-            <button onClick={() => setScreen("deployment")}>
+            <button
+              disabled={busy}
+              onClick={() => {
+                send({ type: "discard", session: sid.current });
+                setScreen("deployment");
+              }}
+            >
               戦闘前に戻る
             </button>
-            <button onClick={() => setScreen("home")}>ホームへ</button>
+            <button
+              disabled={busy}
+              onClick={() => {
+                send({ type: "discard", session: sid.current });
+                setScreen("home");
+              }}
+            >
+              ホームへ
+            </button>
           </div>
         </main>
       )}
@@ -737,13 +884,25 @@ export default function CharacterApp() {
           {pending.scoutStatus === "pending" && (
             <section>
               <h2>降伏兵の勧誘</h2>
+              {save.roster.length -
+                pending.result.participants.filter(
+                  (p) => p.owner === "player" && !p.alive,
+                ).length >=
+                15 && <p>所持上限15名です。今回は勧誘を見送ってください。</p>}
               <div className="v2-cards">
                 {pending.result.participants
                   .filter((p) => p.owner === "cpu" && p.alive)
                   .map((p) => (
                     <button
                       className="v2-card v2-select"
-                      disabled={busy}
+                      disabled={
+                        busy ||
+                        save.roster.length -
+                          pending.result.participants.filter(
+                            (p) => p.owner === "player" && !p.alive,
+                          ).length >=
+                          15
+                      }
                       key={p.character.characterId}
                       onClick={() =>
                         void change((s) =>
@@ -766,7 +925,11 @@ export default function CharacterApp() {
           )}
           {pending.scoutStatus !== "pending" && (
             <section>
-              <h2>
+              <h2
+                className="v2-reward-announcement"
+                key={pending.scoutStatus}
+                role="status"
+              >
                 勧誘：
                 {pending.scoutStatus === "succeeded"
                   ? "成功"
@@ -817,12 +980,39 @@ export default function CharacterApp() {
                         }
                       >
                         <Detail character={p.character} />
-                        <strong>1段階強化</strong>
+                        <strong>
+                          Lv.{p.character.level} →{" "}
+                          {nextLevel(p.character.level)}　❤️
+                          {stats(p.character).hp} →{" "}
+                          {
+                            stats({
+                              ...p.character,
+                              level: nextLevel(p.character.level),
+                            }).hp
+                          }
+                          　🗡{stats(p.character).attack} →{" "}
+                          {
+                            stats({
+                              ...p.character,
+                              level: nextLevel(p.character.level),
+                            }).attack
+                          }
+                        </strong>
                       </button>
                     ))}
                 </div>
               </section>
             )}
+          {pending.promotionStatus === "chosen" && (
+            <p className="v2-reward-announcement" role="status">
+              {
+                pending.result.participants.find(
+                  (p) => p.character.characterId === pending.promotedId,
+                )?.character.displayName
+              }{" "}
+              の強化を選択しました。
+            </p>
+          )}
           {pending.scoutStatus !== "pending" &&
             pending.promotionStatus !== "pending" && (
               <button

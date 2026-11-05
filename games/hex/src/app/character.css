@@ -348,3 +348,113 @@
     transition: none;
   }
 }
+.v2-menu {
+  position: fixed;
+  z-index: 40;
+  inset: 70px max(16px, calc((100vw - 720px) / 2)) auto;
+  max-height: 70dvh;
+  overflow: auto;
+  padding: 24px;
+  background: #182119;
+  border: 1px solid #9b845b;
+  box-shadow: 0 12px 50px #0009;
+  line-height: 1.9;
+}
+.v2-damage {
+  font-size: 22px;
+  font-weight: bold;
+  paint-order: stroke;
+  stroke: #170b06;
+  stroke-width: 2px;
+  animation: v2-popup 600ms ease-out both;
+}
+.v2-impact {
+  animation: v2-impact 400ms ease-out both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.v2-striking circle {
+  stroke: #ffe4a0;
+  stroke-width: 3px;
+}
+.v2-dying {
+  opacity: 0;
+  transition: opacity 360ms ease-out !important;
+  filter: grayscale(1);
+}
+@keyframes v2-popup {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+@keyframes v2-impact {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 1.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2-damage,
+  .v2-impact {
+    animation: none;
+  }
+  .v2-attack-line {
+    opacity: 1;
+  }
+}
+.v2-roster-pick button {
+  touch-action: none;
+  user-select: none;
+}
+
+.v2-dying {
+  animation: v2-death 360ms ease-out both;
+  opacity: 1;
+}
+@keyframes v2-death {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.v2-header button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.v2-battle-controls small {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.v2-reward-announcement {
+  color: #b9e3a4;
+  animation: v2-reward 320ms ease-out both;
+}
+@keyframes v2-reward {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2-reward-announcement {
+    animation: none;
+  }
+  .v2-dying {
+    animation-duration: 110ms;
+  }
+}

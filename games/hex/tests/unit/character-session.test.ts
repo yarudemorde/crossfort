@@ -66,16 +66,69 @@ describe("キャラクター戦闘の通信境界", () => {
     expect(result.frames).toHaveLength(2);
     for (let i = 0; i < result.frames.length; i++) {
       expect(
-        result.frames[i].participants.find(
+        result.frames[i].after.participants.find(
           (p) => p.character.characterId === action.actorId,
         )?.coord,
       ).toEqual(action.path[i]);
       expect(
-        result.frames[i].hexes.every(
+        result.frames[i].after.hexes.every(
           (h) => h.explored || h.terrain === undefined,
         ),
       ).toBe(true);
       expect(result.frames[i]).not.toHaveProperty("seed");
     }
   });
+});
+
+it("演出は攻撃→HP更新→反撃の順で、確定状態と一致する", () => {
+  const initial = session().snapshot();
+  const a = initial.battle.participants.find(
+    (p) => p.owner === "player" && p.character.classId === "knight",
+  )!;
+  const d = initial.battle.participants.find(
+    (p) => p.owner === "cpu" && p.character.classId === "knight",
+  )!;
+  a.character.hpDelta = 0;
+  a.character.attackDelta = 0;
+  a.hp = 12;
+  a.coord = { q: 0, r: 0 };
+  d.character.hpDelta = 0;
+  d.character.attackDelta = 0;
+  d.hp = 12;
+  d.coord = { q: 1, r: 0 };
+  initial.battle.map.hexes.find((h) => h.q === 0 && h.r === 0)!.terrain =
+    "plain";
+  // Use the canonical map's terrain: both relevant hexes are plain on this map.
+  const terrain = maps.find((m) => m.id === initial.config.mapId)!;
+  initial.battle.map = structuredClone(terrain);
+  const game = CharacterSession.restore(initial);
+  const result = game.act({
+    type: "act",
+    actorId: a.character.characterId,
+    path: [],
+    targetId: d.character.characterId,
+  });
+  const hits = result.frames.filter((f) => f.kind === "hit");
+  expect(hits).toHaveLength(2);
+  expect(hits[0].counter).toBe(false);
+  expect(hits[1].counter).toBe(true);
+  expect(
+    hits[0].before.participants.find(
+      (p) => p.character.characterId === a.character.characterId,
+    )?.hp,
+  ).toBe(12);
+  expect(
+    hits[0].after.participants.find(
+      (p) => p.character.characterId === a.character.characterId,
+    )?.hp,
+  ).toBe(12);
+  expect(
+    hits[1].after.participants.find(
+      (p) => p.character.characterId === a.character.characterId,
+    )?.hp,
+  ).toBe(
+    result.observation.participants.find(
+      (p) => p.character.characterId === a.character.characterId,
+    )?.hp,
+  );
 });

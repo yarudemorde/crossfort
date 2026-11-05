@@ -1,3 +1,5 @@
+import timing from "../../../data/presentation.settings.json";
+import type { CharacterFrame } from "../../character/presentation";
 import { TerrainTile, TERRAIN_CLIP_ID, tilePolygon } from "../TerrainTile";
 import { getMapBounds, xy } from "../map/geometry";
 import { useMapGestures } from "../map/useMapGestures";
@@ -11,12 +13,17 @@ export function CharacterBoard({
   legal,
   selected,
   onHex,
+  animation,
+  path,
 }: {
   view: BattleObservation;
   legal: BattleAction[];
   selected?: string;
+  path?: Coord[];
   onHex: (coord: Coord) => void;
+  animation?: { frame: CharacterFrame; impact: boolean; serial: number };
 }) {
+  const f = animation?.frame;
   const camera = useMapGestures(getMapBounds(view.hexes), view.id);
   const moves = legal.filter(
     (a) =>
@@ -98,6 +105,24 @@ export function CharacterBoard({
                 </g>
               );
             })}
+            {path && path.length > 0 && (
+              <polyline
+                points={[
+                  view.participants.find(
+                    (p) => p.character.characterId === selected,
+                  )?.coord,
+                  ...path,
+                ]
+                  .filter((c): c is Coord => !!c)
+                  .map((c) => `${xy(c).x},${xy(c).y}`)
+                  .join(" ")}
+                fill="none"
+                stroke="#fff0ab"
+                strokeWidth="3"
+                strokeDasharray="5 3"
+                pointerEvents="none"
+              />
+            )}
             <g pointerEvents="none">
               {(["player", "cpu"] as const).map((owner) => {
                 const c = xy(view.headquarters[owner].coord);
@@ -122,36 +147,126 @@ export function CharacterBoard({
                 return (
                   <g
                     key={unit.character.characterId}
-                    className="v2-moving-piece"
-                    style={{ transform: `translate(${c.x}px, ${c.y}px)` }}
+                    className={`v2-moving-piece ${f?.kind === "destroy" && f.targetId === unit.character.characterId ? "v2-dying" : ""} ${f?.kind === "hit" && f.actorId === unit.character.characterId ? "v2-striking" : ""}`}
+                    style={{
+                      transform: `translate(${c.x}px, ${c.y}px)`,
+                      transitionDuration: `${timing.movement.stepMs}ms`,
+                    }}
                   >
-                    <circle
-                      r="15"
-                      fill={unit.owner === "player" ? "#203f50" : "#522720"}
-                      stroke={
-                        unit.character.characterId === selected
-                          ? "#ffe098"
-                          : "#d4c6a1"
-                      }
-                      strokeWidth={
-                        unit.character.characterId === selected ? 3 : 1
-                      }
-                    />
-                    <text textAnchor="middle" y="5" className="v2-piece-icon">
-                      {unit.character.classId === "knight"
-                        ? "♞"
-                        : unit.character.classId === "archer"
-                          ? "♝"
-                          : "♟"}
-                    </text>
-                    <text textAnchor="middle" y="25" className="v2-piece-label">
-                      {unit.character.displayName} {unit.hp}/
-                      {stats(unit.character).hp}
-                    </text>
+                    <g>
+                      {f?.kind === "hit" &&
+                        f.actorId === unit.character.characterId &&
+                        f.range === 1 &&
+                        f.source &&
+                        f.target &&
+                        !animation?.impact && (
+                          <animateTransform
+                            key={animation?.serial}
+                            attributeName="transform"
+                            type="translate"
+                            values={`0 0; ${(xy(f.target).x - c.x) * 0.18} ${(xy(f.target).y - c.y) * 0.18}; 0 0`}
+                            dur={`${timing.combat.meleeMs}ms`}
+                          />
+                        )}
+                      <circle
+                        r="15"
+                        fill={unit.owner === "player" ? "#203f50" : "#522720"}
+                        stroke={
+                          unit.character.characterId === selected
+                            ? "#ffe098"
+                            : "#d4c6a1"
+                        }
+                        strokeWidth={
+                          unit.character.characterId === selected ? 3 : 1
+                        }
+                      />
+                      <text textAnchor="middle" y="5" className="v2-piece-icon">
+                        {unit.character.classId === "knight"
+                          ? "♞"
+                          : unit.character.classId === "archer"
+                            ? "♝"
+                            : "♟"}
+                      </text>
+                      <text
+                        textAnchor="middle"
+                        y="25"
+                        className="v2-piece-label"
+                      >
+                        {unit.character.displayName} {unit.hp}/
+                        {stats(unit.character).hp}
+                      </text>
+                    </g>
                   </g>
                 );
               })}
             </g>
+            {f?.kind === "hit" && f.target && (
+              <g key={animation!.serial} pointerEvents="none">
+                {f.source && !animation!.impact && (
+                  <g>
+                    {(() => {
+                      const a = xy(f.source!),
+                        b = xy(f.target!);
+                      return (
+                        <>
+                          <line
+                            x1={a.x}
+                            y1={a.y}
+                            x2={b.x}
+                            y2={b.y}
+                            stroke={f.counter ? "#e99e53" : "#ffe6a2"}
+                            strokeWidth="2"
+                            strokeDasharray={f.range === 2 ? "4 3" : undefined}
+                            className="v2-attack-line"
+                          />
+                          <circle r="4" fill="#ffe6a2">
+                            <animateMotion
+                              dur={`${timing.combat.projectileMs}ms`}
+                              path={`M${a.x},${a.y} L${b.x},${b.y}`}
+                              fill="freeze"
+                            />
+                          </circle>
+                        </>
+                      );
+                    })()}
+                  </g>
+                )}
+                {animation!.impact && (
+                  <g
+                    transform={`translate(${xy(f.target).x} ${xy(f.target).y})`}
+                  >
+                    <circle
+                      className="v2-impact"
+                      r="20"
+                      fill="none"
+                      stroke="#ffe0a1"
+                      strokeWidth="3"
+                    />
+                    <text
+                      textAnchor="middle"
+                      y="-24"
+                      className="v2-damage"
+                      fill={f.counter ? "#ffb566" : "#ff7e70"}
+                    >
+                      −{f.amount}
+                    </text>
+                  </g>
+                )}
+              </g>
+            )}
+            {f?.kind === "destroy" &&
+              f.target &&
+              f.targetId?.startsWith("hq_") && (
+                <circle
+                  className="v2-impact"
+                  cx={xy(f.target).x}
+                  cy={xy(f.target).y}
+                  r="28"
+                  fill="none"
+                  stroke="#c7a56c"
+                  strokeWidth="5"
+                />
+              )}
           </g>
         </svg>
       </div>

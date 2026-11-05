@@ -13,15 +13,19 @@ import { chooseAction, playCpuTurn } from "../../src/character/cpu";
 it.each(
   maps.flatMap((m) =>
     [1, 2, 3].flatMap((seed) =>
-      (["player", "cpu"] as const).map((first) => ({ id: m.id, seed, first })),
+      (["player", "cpu"] as const).flatMap((first) =>
+        [1, 5, 6].map((count) => ({ id: m.id, seed, first, count })),
+      ),
     ),
   ),
 )(
-  "$id/$seed/$first CPU同士が合法手で決着する",
-  ({ id, seed, first }) => {
+  "$id/$seed/$first/$count名 CPU同士が合法手で決着する",
+  ({ id, seed, first, count }) => {
     const map = maps.find((m) => m.id === id)!;
+    const indices =
+      count === 1 ? [6] : count === 5 ? [0, 1, 2, 3, 4] : [0, 1, 3, 4, 6, 7];
     const one = createInitialRoster(seed).roster.filter((_, i) =>
-      [0, 1, 3, 4, 6, 7].includes(i),
+      indices.includes(i),
     );
     const two = createInitialRoster(seed + 100)
       .roster.filter((_, i) => [0, 1, 3, 4, 6, 7].includes(i))
