@@ -3,7 +3,11 @@ import { nextRandom } from "../game/rng";
 import { damage } from "./combat";
 import { stats } from "./roster";
 import {
+  applyBattleAction,
+  beginMovement,
   legalActions,
+  observation,
+  type Battle,
   type BattleAction,
   type BattleObservation,
 } from "./battle";
@@ -59,4 +63,15 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
   });
   candidates.sort((a, b) => b.score - a.score || b.tie - a.tie);
   return candidates[0].action;
+}
+
+/** Execute a full turn through observations, including targets revealed by movement. */
+export function playCpuTurn(state: Battle, seed: number): Battle {
+  const owner = state.activePlayer;
+  const first = chooseAction(observation(state, owner), seed);
+  if (first.type === "pass" || state.pendingActorId)
+    return applyBattleAction(state, first, owner);
+  const moved = beginMovement(state, owner, first.actorId, first.path);
+  const followUp = chooseAction(observation(moved, owner), seed ^ 0x9e3779b9);
+  return applyBattleAction(moved, followUp, owner);
 }

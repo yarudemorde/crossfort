@@ -2,6 +2,14 @@ import rules from "../../data/ruleset.characters.json";
 import { nextRandom } from "../game/rng";
 import { nextLevel, scoutChance } from "./roster";
 import type { BattleResult, RosterSave } from "./types";
+import type { Character } from "./types";
+
+export function sameCharacter(a: Character, b: Character): boolean {
+  return (
+    (Object.keys(a) as (keyof Character)[]).every((key) => a[key] === b[key]) &&
+    (Object.keys(b) as (keyof Character)[]).every((key) => a[key] === b[key])
+  );
+}
 
 export function beginReward(
   save: RosterSave,
@@ -18,10 +26,7 @@ export function beginReward(
   if (
     !own.length ||
     new Set(own.map((p) => p.character.characterId)).size !== own.length ||
-    own.some(
-      (p) =>
-        !save.roster.some((c) => c.characterId === p.character.characterId),
-    )
+    own.some((p) => !save.roster.some((c) => sameCharacter(c, p.character)))
   )
     throw Error("戦闘結果が不正です。");
   const eligible =

@@ -6,10 +6,9 @@ import { headquartersFor } from "../../src/character/combat";
 import {
   startBattle,
   observation,
-  applyBattleAction,
   legalActions,
 } from "../../src/character/battle";
-import { chooseAction } from "../../src/character/cpu";
+import { chooseAction, playCpuTurn } from "../../src/character/cpu";
 
 it.each(
   maps.flatMap((m) =>
@@ -44,7 +43,7 @@ it.each(
       const o = observation(s, s.activePlayer),
         a = chooseAction(o, seed + i + 1);
       expect(legalActions(o)).toContainEqual(a);
-      s = applyBattleAction(s, a, s.activePlayer);
+      s = playCpuTurn(s, seed + i + 1);
     }
     expect(s.outcome, `${id}: ${s.events.length} events`).toBeDefined();
   },

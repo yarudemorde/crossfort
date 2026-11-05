@@ -1,5 +1,6 @@
 import type { Character, Participant, RosterSave } from "./types";
-import { createInitialRoster } from "./roster";
+import { createInitialRoster, stats } from "./roster";
+import { sameCharacter } from "./reward";
 
 const DB_NAME = "crossfort-hex-characters-v2";
 const STORE = "saves";
@@ -92,6 +93,7 @@ export function validateSave(value: unknown): asserts value is RosterSave {
           !Number.isInteger(p.coord.r) ||
           !Number.isInteger(p.hp) ||
           p.hp < 0 ||
+          p.hp > stats(p.character).hp ||
           typeof p.alive !== "boolean" ||
           p.alive !== p.hp > 0 ||
           !Number.isInteger(p.killsThisBattle) ||
@@ -102,13 +104,25 @@ export function validateSave(value: unknown): asserts value is RosterSave {
       participants.some(
         (p) =>
           p.owner === "player" &&
-          !(s.roster as Character[]).some(
-            (c) => c.characterId === p.character.characterId,
-          ),
+          !(s.roster as Character[]).some((c) => sameCharacter(c, p.character)),
       ) ||
       (r.scoutStatus === "pending" &&
         result.reason !== "headquartersDestroyed") ||
       (r.scoutStatus !== "succeeded" && r.scouted !== undefined) ||
+      (r.scoutStatus === "succeeded" &&
+        !participants.some(
+          (p) =>
+            p.owner === "cpu" &&
+            p.alive &&
+            sameCharacter(
+              {
+                ...p.character,
+                acquisitionSource: "scout",
+                nameEditUsed: false,
+              },
+              r.scouted as Character,
+            ),
+        )) ||
       (r.scoutStatus === "pending" && r.promotionStatus === "chosen") ||
       (r.promotionStatus === "chosen" &&
         !participants.some(

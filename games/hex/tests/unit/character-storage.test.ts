@@ -40,6 +40,10 @@ it("報酬途中の状態を再読込でき、破損した候補や重複受領�
     7,
   );
   expect(() => validateSave(JSON.parse(JSON.stringify(reward)))).not.toThrow();
+  const changed = structuredClone(reward);
+  changed.pendingReward!.result.participants[0].character.level = "MAX";
+  expect(() => validateSave(changed)).toThrow();
+  expect(() => beginReward(save, changed.pendingReward!.result, 7)).toThrow();
   expect(() =>
     validateSave({ ...reward, completedRewardIds: ["match-123"] }),
   ).toThrow();
