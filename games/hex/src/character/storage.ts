@@ -118,7 +118,10 @@ export function validateSave(value: unknown): asserts value is RosterSave {
               {
                 ...p.character,
                 acquisitionSource: "scout",
-                nameEditUsed: false,
+                nameEditUsed: (r.scouted as Character).nameEditUsed,
+                displayName: (r.scouted as Character).nameEditUsed
+                  ? (r.scouted as Character).displayName
+                  : p.character.displayName,
               },
               r.scouted as Character,
             ),

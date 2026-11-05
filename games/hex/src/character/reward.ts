@@ -1,6 +1,6 @@
 import rules from "../../data/ruleset.characters.json";
 import { nextRandom } from "../game/rng";
-import { nextLevel, scoutChance } from "./roster";
+import { cleanName, nextLevel, scoutChance } from "./roster";
 import type { BattleResult, RosterSave } from "./types";
 import type { Character } from "./types";
 
@@ -84,6 +84,25 @@ export function decideScout(save: RosterSave, targetId?: string): RosterSave {
             },
           }
         : {}),
+    },
+  };
+}
+/** The one-time name edit remains part of the pending atomic reward. */
+export function renameScout(save: RosterSave, input: string): RosterSave {
+  const reward = save.pendingReward;
+  const scout = reward?.scouted;
+  if (
+    !reward ||
+    reward.scoutStatus !== "succeeded" ||
+    !scout ||
+    scout.nameEditUsed
+  )
+    throw Error("勧誘したキャラクターの名前を変更できません。");
+  return {
+    ...save,
+    pendingReward: {
+      ...reward,
+      scouted: { ...scout, displayName: cleanName(input), nameEditUsed: true },
     },
   };
 }

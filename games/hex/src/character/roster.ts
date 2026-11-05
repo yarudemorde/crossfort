@@ -114,18 +114,22 @@ export function recruitReplacement(
     ],
   };
 }
-export function rename(
-  save: RosterSave,
-  id: string,
-  input: string,
-): RosterSave {
-  if (save.pendingReward) throw Error("報酬処理中は変更できません。");
+export function cleanName(input: string): string {
   const clean = input
     .replace(/<[^>]*>/g, "")
     .replace(/[\u0000-\u001f\u007f-\u009f]/g, "")
     .trim();
   if (!clean || [...clean].length > 20)
     throw Error("名前は1〜20文字で入力してください。");
+  return clean;
+}
+export function rename(
+  save: RosterSave,
+  id: string,
+  input: string,
+): RosterSave {
+  if (save.pendingReward) throw Error("報酬処理中は変更できません。");
+  const clean = cleanName(input);
   const c = save.roster.find((p) => p.characterId === id);
   if (!c || c.nameEditUsed) throw Error("名前を変更できません。");
   return {
