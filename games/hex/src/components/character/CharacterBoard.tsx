@@ -1,3 +1,4 @@
+import { Icon } from "../tactics/Icons";
 import timing from "../../../data/presentation.settings.json";
 import type { CharacterFrame } from "../../character/presentation";
 import { TerrainTile, TERRAIN_CLIP_ID, tilePolygon } from "../TerrainTile";
@@ -15,16 +16,26 @@ export function CharacterBoard({
   onHex,
   animation,
   path,
+  deploymentSlots,
+  initialCoords,
+  attackPreview,
 }: {
   view: BattleObservation;
   legal: BattleAction[];
   selected?: string;
   path?: Coord[];
+  deploymentSlots?: Coord[];
+  initialCoords?: Coord[];
+  attackPreview?: { actorId: string; targetId?: string };
   onHex: (coord: Coord) => void;
   animation?: { frame: CharacterFrame; impact: boolean; serial: number };
 }) {
   const f = animation?.frame;
-  const camera = useMapGestures(getMapBounds(view.hexes), view.id);
+  const camera = useMapGestures(
+    getMapBounds(view.hexes),
+    view.id,
+    initialCoords?.length ? getMapBounds(initialCoords) : undefined,
+  );
   const moves = legal.filter(
     (a) =>
       a.type === "act" &&
@@ -55,29 +66,45 @@ export function CharacterBoard({
       <div className="map-viewport" ref={camera.viewport} {...camera.bindings}>
         <svg className="hex-map" width="100%" height="100%" aria-label="戦場">
           <defs>
+            <marker
+              id="hx-attack-arrow"
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5"
+              markerHeight="5"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0L10 5L0 10Z" fill="#CF756B" />
+            </marker>
             <clipPath id={TERRAIN_CLIP_ID} clipPathUnits="userSpaceOnUse">
               <polygon points={tilePolygon} />
             </clipPath>
           </defs>
           <g
+            className="hx-camera"
+            data-camera={`${camera.camera.x},${camera.camera.y},${camera.camera.scale}`}
             transform={`translate(${camera.camera.x} ${camera.camera.y}) scale(${camera.camera.scale})`}
           >
             {view.hexes.map((h) => {
               const p = xy(h);
-              const canMove = moves.some(
-                (a) =>
-                  a.type === "act" && sameHex(a.path[a.path.length - 1], h),
-              );
+              const canMove =
+                deploymentSlots?.some((c) => sameHex(c, h)) ||
+                moves.some(
+                  (a) =>
+                    a.type === "act" && sameHex(a.path[a.path.length - 1], h),
+                );
               const canAttack = targetCoords.some((c) => sameHex(c, h));
               const unit = view.participants.find((u) => sameHex(u.coord, h));
               return (
                 <g
                   key={`${h.q},${h.r}`}
+                  data-hex={`${h.q},${h.r}`}
                   transform={`translate(${p.x} ${p.y})`}
                   onClick={() => onHex(h)}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${h.q},${h.r} ${unit?.character.displayName ?? ""}`}
+                  aria-label={`${h.q},${h.r} ${unit ? `${unit.owner === "player" ? "自軍" : "敵軍"} ${unit.character.displayName} HP${unit.hp}` : deploymentSlots?.some((c) => sameHex(c, h)) ? "配置可能" : ""}`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
@@ -123,19 +150,44 @@ export function CharacterBoard({
                 pointerEvents="none"
               />
             )}
+            {attackPreview &&
+              (() => {
+                const a = view.participants.find(
+                  (p) => p.character.characterId === attackPreview.actorId,
+                )?.coord;
+                const b =
+                  attackPreview.targetId === "hq_cpu"
+                    ? view.headquarters.cpu.coord
+                    : view.participants.find(
+                        (p) =>
+                          p.character.characterId === attackPreview.targetId,
+                      )?.coord;
+                return a && b ? (
+                  <line
+                    className="hx-attack-preview"
+                    x1={xy(a).x}
+                    y1={xy(a).y}
+                    x2={xy(b).x}
+                    y2={xy(b).y}
+                    stroke="#CF756B"
+                    strokeWidth="2.5"
+                    strokeDasharray="5 3"
+                    markerEnd="url(#hx-attack-arrow)"
+                    pointerEvents="none"
+                  />
+                ) : null;
+              })()}
             <g pointerEvents="none">
               {(["player", "cpu"] as const).map((owner) => {
                 const c = xy(view.headquarters[owner].coord);
                 return (
                   <g key={owner} transform={`translate(${c.x} ${c.y})`}>
-                    <text
-                      textAnchor="middle"
-                      y="5"
+                    <g
+                      transform="translate(-15 -16)"
                       className={owner === "player" ? "v2-ally" : "v2-enemy"}
-                      fontSize="25"
                     >
-                      ♜
-                    </text>
+                      <Icon name="castle" size={30} />
+                    </g>
                     <text textAnchor="middle" y="23" className="v2-piece-label">
                       {view.headquarters[owner].hp ?? "?"}
                     </text>
@@ -168,33 +220,74 @@ export function CharacterBoard({
                             dur={`${timing.combat.meleeMs}ms`}
                           />
                         )}
-                      <circle
-                        r="15"
-                        fill={unit.owner === "player" ? "#203f50" : "#522720"}
-                        stroke={
-                          unit.character.characterId === selected
-                            ? "#ffe098"
-                            : "#d4c6a1"
+                      {unit.character.characterId === selected && (
+                        <circle
+                          r="22"
+                          fill="none"
+                          stroke="#D2B576"
+                          strokeWidth="2"
+                          className="hx-selection-ring"
+                        />
+                      )}
+                      {unit.owner === "cpu" ? (
+                        <polygon
+                          points="0,-19 16,-9 16,9 0,19 -16,9 -16,-9"
+                          fill="#382323"
+                          stroke="#CF756B"
+                          strokeWidth="1.6"
+                        />
+                      ) : (
+                        <circle
+                          r="18"
+                          fill="#19353E"
+                          stroke="#79B5C8"
+                          strokeWidth="1.6"
+                        />
+                      )}
+                      <g
+                        transform="translate(-12 -14)"
+                        color={unit.owner === "player" ? "#BDE4EE" : "#F0B5A9"}
+                      >
+                        <Icon name={unit.character.classId} size={24} />
+                      </g>
+                      <rect
+                        x="-14"
+                        y="15"
+                        width="28"
+                        height="4"
+                        rx="2"
+                        fill="#0B1112"
+                        stroke="#0B1112"
+                        strokeWidth="2"
+                      />
+                      <rect
+                        x="-14"
+                        y="15"
+                        width={
+                          Math.max(0, unit.hp / stats(unit.character).hp) * 28
                         }
-                        strokeWidth={
-                          unit.character.characterId === selected ? 3 : 1
+                        height="4"
+                        rx="2"
+                        fill={
+                          unit.hp / stats(unit.character).hp < 0.3
+                            ? "#E8A179"
+                            : unit.owner === "player"
+                              ? "#91D0CC"
+                              : "#DF9587"
                         }
                       />
-                      <text textAnchor="middle" y="5" className="v2-piece-icon">
-                        {unit.character.classId === "knight"
-                          ? "♞"
-                          : unit.character.classId === "archer"
-                            ? "♝"
-                            : "♟"}
-                      </text>
-                      <text
-                        textAnchor="middle"
-                        y="25"
-                        className="v2-piece-label"
-                      >
-                        {unit.character.displayName} {unit.hp}/
-                        {stats(unit.character).hp}
-                      </text>
+                      {unit.character.level !== 1 && (
+                        <text
+                          x="18"
+                          y="-12"
+                          textAnchor="middle"
+                          className="v2-piece-label"
+                        >
+                          {unit.character.level === "MAX"
+                            ? "★"
+                            : unit.character.level}
+                        </text>
+                      )}
                     </g>
                   </g>
                 );
@@ -272,13 +365,13 @@ export function CharacterBoard({
       </div>
       <div className="v2-map-tools">
         <button onClick={() => camera.fit()} aria-label="全体表示">
-          全体
+          <Icon name="fit" />
         </button>
         <button onClick={() => camera.zoom(1 / 1.2)} aria-label="縮小">
-          −
+          <Icon name="minus" />
         </button>
         <button onClick={() => camera.zoom(1.2)} aria-label="拡大">
-          ＋
+          <Icon name="plus" />
         </button>
       </div>
     </div>

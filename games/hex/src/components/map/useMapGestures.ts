@@ -17,7 +17,11 @@ import {
   type Camera,
   type Point,
 } from "./geometry";
-export function useMapGestures(bounds: MapBounds, key: string) {
+export function useMapGestures(
+  bounds: MapBounds,
+  key: string,
+  initialBounds?: MapBounds,
+) {
   const viewport = useRef<HTMLDivElement>(null);
   const controller = useRef(new MapGestureController());
   const [camera, setCamera] = useState<Camera>(controller.current.camera);
@@ -130,7 +134,7 @@ export function useMapGestures(bounds: MapBounds, key: string) {
       sizeRef.current = next;
       if (!initialized) {
         initialized = true;
-        fit(false);
+        go(fitMapCamera(initialBounds ?? boundsRef.current, next), false);
       }
       // UI panels change the visible area, never the camera. Recentring here
       // made every card selection and hand toggle move the battlefield.

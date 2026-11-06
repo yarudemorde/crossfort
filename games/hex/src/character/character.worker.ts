@@ -1,3 +1,6 @@
+import { deploymentObservation } from "./deployment";
+import type { Character } from "./types";
+import type { BattleObservation } from "./battle";
 import type { Coord } from "../game/types";
 import { CharacterSession, type NewBattle } from "./session";
 import type { BattleAction } from "./battle";
@@ -5,6 +8,13 @@ import type { CharacterFrame } from "./presentation";
 import { discardBattle, persistBattle, readBattle } from "./storage";
 import type { RosterSave } from "./types";
 export type CharacterRequest = (
+  | {
+      type: "deployment";
+      deploymentSerial: number;
+      mapId: string;
+      team: Character[];
+      placements: Record<string, Coord>;
+    }
   | { type: "new"; config: NewBattle }
   | { type: "move"; actorId: string; path: Coord[] }
   | { type: "act"; action: BattleAction }
@@ -18,6 +28,8 @@ export type CharacterResponse = {
   frames?: CharacterFrame[];
   save?: RosterSave;
   resumed?: boolean;
+  deployment?: BattleObservation;
+  deploymentSerial?: number;
   discarded?: boolean;
 } & Partial<ReturnType<CharacterSession["view"]>>;
 let current: CharacterSession | undefined;
@@ -27,6 +39,18 @@ self.onmessage = (message: MessageEvent<CharacterRequest>) => {
   queue = queue.then(async () => {
     const before = current?.snapshot();
     try {
+      if (request.type === "deployment") {
+        self.postMessage({
+          session: request.session,
+          deploymentSerial: request.deploymentSerial,
+          deployment: deploymentObservation(
+            request.mapId,
+            request.team,
+            request.placements,
+          ),
+        } satisfies CharacterResponse);
+        return;
+      }
       if (request.type === "discard") {
         await discardBattle();
         current = undefined;

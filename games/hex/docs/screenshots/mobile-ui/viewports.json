@@ -1,0 +1,149 @@
+[
+  {
+    "size": [
+      375,
+      667
+    ],
+    "dim": {
+      "height": 667,
+      "scrollHeight": 667,
+      "scrollWidth": 375,
+      "width": 375
+    },
+    "bar": {
+      "bottom": 667,
+      "height": 130
+    },
+    "map": {
+      "bottom": 537,
+      "height": 485,
+      "top": 52
+    }
+  },
+  {
+    "size": [
+      390,
+      844
+    ],
+    "dim": {
+      "height": 844,
+      "scrollHeight": 844,
+      "scrollWidth": 390,
+      "width": 390
+    },
+    "bar": {
+      "bottom": 844,
+      "height": 130
+    },
+    "map": {
+      "bottom": 714,
+      "height": 662,
+      "top": 52
+    }
+  },
+  {
+    "size": [
+      430,
+      932
+    ],
+    "dim": {
+      "height": 932,
+      "scrollHeight": 932,
+      "scrollWidth": 430,
+      "width": 430
+    },
+    "bar": {
+      "bottom": 932,
+      "height": 130
+    },
+    "map": {
+      "bottom": 802,
+      "height": 750,
+      "top": 52
+    }
+  },
+  {
+    "size": [
+      844,
+      390
+    ],
+    "dim": {
+      "height": 390,
+      "scrollHeight": 390,
+      "scrollWidth": 844,
+      "width": 844
+    },
+    "bar": {
+      "bottom": 390,
+      "height": 90
+    },
+    "map": {
+      "bottom": 300,
+      "height": 252,
+      "top": 48
+    }
+  },
+  {
+    "size": [
+      768,
+      1024
+    ],
+    "dim": {
+      "height": 1024,
+      "scrollHeight": 1024,
+      "scrollWidth": 768,
+      "width": 768
+    },
+    "bar": {
+      "bottom": 1024,
+      "height": 130
+    },
+    "map": {
+      "bottom": 894,
+      "height": 842,
+      "top": 52
+    }
+  },
+  {
+    "size": [
+      1366,
+      768
+    ],
+    "dim": {
+      "height": 768,
+      "scrollHeight": 768,
+      "scrollWidth": 1366,
+      "width": 1366
+    },
+    "bar": {
+      "bottom": 768,
+      "height": 112
+    },
+    "map": {
+      "bottom": 656,
+      "height": 596,
+      "top": 60
+    }
+  },
+  {
+    "size": [
+      1440,
+      900
+    ],
+    "dim": {
+      "height": 900,
+      "scrollHeight": 900,
+      "scrollWidth": 1440,
+      "width": 1440
+    },
+    "bar": {
+      "bottom": 900,
+      "height": 112
+    },
+    "map": {
+      "bottom": 788,
+      "height": 728,
+      "top": 60
+    }
+  }
+]

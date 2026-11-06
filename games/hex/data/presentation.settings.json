@@ -1,5 +1,9 @@
 {
-  "movement": { "stepMs": 210, "pauseMs": 45, "easing": "ease-in-out" },
+  "movement": {
+    "stepMs": 210,
+    "pauseMs": 45,
+    "easing": "ease-in-out"
+  },
   "combat": {
     "windupMs": 120,
     "meleeMs": 180,
@@ -17,6 +21,6 @@
     "wheelSensitivity": 0.0018,
     "focusMs": 220,
     "fitPaddingPx": 16,
-    "toolbarInsetPx": 58
+    "toolbarInsetPx": 0
   }
 }

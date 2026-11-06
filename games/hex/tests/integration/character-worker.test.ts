@@ -4,7 +4,11 @@ import type {
   CharacterRequest,
   CharacterResponse,
 } from "../../src/character/character.worker";
-import { loadSave, discardBattle } from "../../src/character/storage";
+import {
+  loadSave,
+  discardBattle,
+  readBattle,
+} from "../../src/character/storage";
 import { neighbors } from "../../src/game/rules/hex";
 import { maps } from "../../src/game/data";
 import { headquartersFor } from "../../src/character/combat";
@@ -51,6 +55,21 @@ it("実Workerの通信で新規対戦・保存復帰・可視演出・勝利報�
   });
   expect(r.error).toBeUndefined();
   const original = r.observation;
+  const snapshot = await readBattle();
+  const saveBeforePreview = await loadSave(0);
+  const preview = await send({
+    type: "deployment",
+    mapId: maps.at(-1)!.id,
+    team,
+    placements: {},
+    deploymentSerial: 77,
+    session: 42,
+  });
+  expect(preview.deploymentSerial).toBe(77);
+  expect(preview.deployment?.participants).toHaveLength(0);
+  expect(preview.deployment?.headquarters.cpu.hp).toBeUndefined();
+  expect(await readBattle()).toEqual(snapshot);
+  expect(await loadSave(0)).toEqual(saveBeforePreview);
   r = await send({ type: "resume" });
   expect(r.observation).toEqual(original);
   let hits = 0,

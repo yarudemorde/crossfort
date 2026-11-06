@@ -1,15 +1,15 @@
 {
   "version": "2.0.0",
   "spec": "固有キャラクター戦術バトル v2.0 (2026-11-05)",
-  "testsPassed": 299,
-  "buildDate": "2026-11-05",
+  "testsPassed": 309,
+  "buildDate": "2026-11-06",
   "sha256": {
-    "docs/GAME_SPEC.md": "f75a69e91b865e19af7aab0608e7732894c9dc4b7cddebd91a8afb03e2cbea1f",
+    "docs/GAME_SPEC.md": "79d19b40dc2e16a9f8cd753790a18fd7ed5d7c07e1bfd6b247b81599bd33980f",
     "data/ruleset.characters.json": "d4857a1ba5ee05bf75bfcbe1f922ac27e6be70dae9124157825e07627f54838f",
     "data/map-sizes.json": "2b44542a3310bb9616e6b8a0ca004c63b21d5205bc98ab43479f5030d79cbf5c",
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/maps.additional.prototype.json": "7d03a153b86643eb093730dff5c30a30ec5daf9094fd0d679c68664160c0a008",
-    "data/presentation.settings.json": "cc2ad8c2e7699eddc4b16fac3b11e26951962f0c7957bdd3639bec57ee71a256"
+    "data/presentation.settings.json": "02820e668f47b6cb2f3d3fa79f8d801db9d9875a3bc162cf5647a13ba5699ac6"
   },
   "cpuConditions": 108,
   "uiLayout": {
@@ -22,7 +22,13 @@
       "1366x768",
       "1440x900"
     ],
-    "physicalMobileVerified": false
+    "physicalMobileVerified": false,
+    "stableActionBarCssHeight": {
+      "portrait": 130,
+      "landscape": 90,
+      "desktop": 112
+    },
+    "pageOverflow": false
   },
   "storage": {
     "engine": "IndexedDB",
@@ -33,5 +39,6 @@
   "presentation": {
     "structuredFrames": true,
     "settings": "data/presentation.settings.json"
-  }
+  },
+  "uiRevision": "mobile-tactics-ui-2026-11-06"
 }
