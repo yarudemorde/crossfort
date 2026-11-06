@@ -120,3 +120,13 @@ ChromeのCSS viewportで実測。全7サイズでhtmlのclientWidth/Heightとscr
 - `tests/unit/character-rounds.test.tsx`
 - `tests/unit/character-session.test.ts`
 - `tests/unit/character-storage.test.ts`
+
+## 公開後の確認
+
+実装コミット `3e0e89381a23f73acdd741788f7f2f7c77fa9164` をmainとfeature/hex-initiative-roundsへ反映。Hex game checks（main/作業ブランチ）、Deploy Crossfort and Hex to Pages、既存pages build and deploymentはすべて成功した。
+
+公開URL https://yarudemorde.github.io/crossfort/hex/ が `index-wLSpr4q2.js` を読み込むことを確認。6名・コスト10で編成、配置、戦闘開始。HP60と機動16の斥候の自動選択、タイムラインを確認した。ルカの2マス移動を確定しても同じ兵士の攻撃待ちが続き、リロード後も同じ状態から再開した。移動前後のカメラ値は不変。行動終了後、CPUの移動・戦闘・反撃を経て次の自軍エルナへ自動で進んだ。
+
+エルナの移動後に見えている敵ルカを選び、与6・反撃14・予測HP自6/敵12、左キャンセル・右攻撃確定を確認。現在見える9名だけをタイムラインへ表示していた。公開画面のhtmlは1363×936でscrollWidth/Heightも同値。
+
+[公開版の行動順と攻撃予測](screenshots/rounds/public-battle.png)
