@@ -69,3 +69,13 @@ Chromeの同一オリジンiframeに各CSS viewportを作成。DOM寸法を読�
 ## 未検証範囲
 
 物理スマートフォン、iOS Safariでの実タッチ・ノッチ・ブラウザバー変動・60fps計測は未実施。Safe Area、dvh/visualViewport、pointer capture、reduced-motionは実装し、ジェスチャーの中心補正・閾値・キャンセルは自動テストで検証した。ブラウザのCSS viewport検証と実機検証は区別する。
+
+## 公開後の確認
+
+実装コミット `9cb43722b3349958f90012d4364eeea118486501` をmainへ反映。GitHub Actionsの `Hex game checks`、`Deploy Crossfort and Hex to Pages`、既存の `pages build and deployment` はすべて成功。
+
+公開URL https://yarudemorde.github.io/crossfort/hex/ で、製品アセット `index-CBRDpXa9.js` を読み込んでいることを確認。6名・コスト10の編成→実マップ配置→戦闘開始→移動プレビュー→確定→CPUの移動・攻撃→第3手→リロード再開を操作した。攻撃プレビューではHP5の自軍エルナからHP7の敵エルナへ、与ダメージ1・反撃2・予測HP3/6を表示した。選択・移動プレビューでカメラ値が不変であることも確認。公開画面のhtmlは1363×936でscrollWidth/Heightも同値だった。
+
+ルート https://yarudemorde.github.io/crossfort/ では従来のカードゲームのホームが正常表示されることを確認した。
+
+[公開版の攻撃プレビュー](screenshots/mobile-ui/public-battle.png)
