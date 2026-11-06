@@ -52,7 +52,7 @@ document.querySelector<HTMLButtonElement>("#run")!.onclick = async (event) => {
         continue;
       await discardBattle();
       await persistBattle(game.snapshot());
-      output.textContent = `完了: seed ${seed} / ${state.observation.actionNumber}手 / ${state.result.reason} / 降伏兵あり。ゲームを開くと報酬から再開します。`;
+      output.textContent = `完了: seed ${seed} / ${state.observation.roundNumber}ラウンド / ${state.result.reason} / 降伏兵あり。ゲームを開くと報酬から再開します。`;
       return;
     }
     throw Error("40シード内に降伏兵のいる勝利なし。");

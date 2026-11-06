@@ -22,5 +22,6 @@
     "focusMs": 220,
     "fitPaddingPx": 16,
     "toolbarInsetPx": 0
-  }
+  },
+  "roundMs": 650
 }

@@ -1,6 +1,12 @@
 import type { Coord, Owner } from "../game/types";
 export type ClassId = "knight" | "archer" | "scout";
 export type Level = 1 | 2 | 3 | "MAX";
+export type Growth = {
+  hp: number;
+  attack: number;
+  initiative: number;
+  counterTenths: number;
+};
 export type Character = {
   characterId: string;
   originalName: string;
@@ -10,6 +16,7 @@ export type Character = {
   hpDelta: number;
   attackDelta: number;
   level: Level;
+  growthHistory: Growth[];
   battlesParticipated: number;
   kills: number;
   playerBattlesParticipated?: number;
@@ -18,6 +25,8 @@ export type Character = {
   nameEditUsed: boolean;
 };
 export type Participant = {
+  /** Private stable CPU tie identity; never included in observations or frames. */
+  initiativeKey?: string;
   character: Character;
   owner: Owner;
   coord: Coord;
@@ -39,13 +48,26 @@ export type Reward = {
   scouted?: Character;
   promotionStatus: "pending" | "skipped" | "chosen";
   promotedId?: string;
+  promotionResult?: {
+    characterId: string;
+    fromLevel: Level;
+    toLevel: Level;
+    gain: Growth;
+  };
 };
 export type RosterSave = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   roster: Character[];
   archive: Character[];
   pendingReward?: Reward;
   completedRewardIds: string[];
+  deploymentRecovery?: {
+    mapId: string;
+    seed: number;
+    teamIds: string[];
+    placements: Record<string, Coord>;
+  };
+  migrationNotice?: string;
 };
 
 /** Reserved identity for a future class; not generated or selectable in v2. */

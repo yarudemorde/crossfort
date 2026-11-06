@@ -1,3 +1,5 @@
+import { migratedGrowth } from "../../src/character/growth";
+import { validateSave } from "../../src/character/storage";
 import { expect, it } from "vitest";
 import {
   createInitialRoster,
@@ -23,18 +25,25 @@ const soldier = (
   killsThisBattle: 2,
   coord: { q: owner === "player" ? 0 : 1, r: 0 },
 });
-it("レベルによるHP・攻撃補正と固定職業値を保つ", () => {
+it("保存した成長履歴を累積し、職業固定値を保つ", () => {
   const c = { ...createInitialRoster(1).roster[0], hpDelta: 0, attackDelta: 0 };
   expect(
     ([1, 2, 3, "MAX"] as const).map((level) => {
-      const s = stats({ ...c, level });
+      const s = stats({
+        ...c,
+        level,
+        growthHistory: Array.from(
+          { length: level === "MAX" ? 3 : level - 1 },
+          () => ({ hp: 4, attack: 1, initiative: 0, counterTenths: 1 }),
+        ),
+      });
       return [s.hp, s.attack, s.range, s.movement, s.cost, s.vision];
     }),
   ).toEqual([
-    [12, 6, 1, 1, 2, 2],
-    [13, 6, 1, 1, 2, 2],
-    [14, 6, 1, 1, 2, 2],
-    [14, 7, 1, 1, 2, 2],
+    [30, 12, 1, 1, 2, 2],
+    [34, 13, 1, 1, 2, 2],
+    [38, 14, 1, 1, 2, 2],
+    [42, 15, 1, 1, 2, 2],
   ]);
 });
 it("勧誘は死亡者を除いた所持枠で判定し、所属・Lv・個体差を保持する", () => {
@@ -47,6 +56,7 @@ it("勧誘は死亡者を除いた所持枠で判定し、所属・Lv・個体�
     ...createInitialRoster(2).roster[0],
     characterId: "enemy",
     level: "MAX" as const,
+    growthHistory: migratedGrowth("enemy", "MAX"),
     hpDelta: -3,
     attackDelta: -1,
   };
@@ -72,6 +82,10 @@ it("勧誘は死亡者を除いた所持枠で判定し、所属・Lv・個体�
   expect(() => decideScout(s, "enemy")).toThrow();
   s = promote(s, s.roster[0].characterId);
   const saved = commitVictory(s);
+  validateSave(saved);
+  expect(
+    saved.roster.find((c) => c.characterId === "enemy")?.growthHistory,
+  ).toEqual(enemy.growthHistory);
   expect(saved.roster).toHaveLength(15);
   expect(saved.archive).toHaveLength(1);
   expect(saved.roster.find((c) => c.characterId === "enemy")?.level).toBe(
@@ -99,7 +113,11 @@ it("満員・死亡敵・全滅勝利では勧誘できず、控え・MAX・死�
   s = decideScout(s);
   expect(() => promote(s, s.roster[1].characterId)).toThrow();
   const base = createInitialRoster(7);
-  const max = { ...base.roster[0], level: "MAX" as const };
+  const max = {
+    ...base.roster[0],
+    level: "MAX" as const,
+    growthHistory: migratedGrowth(base.roster[0].characterId, "MAX"),
+  };
   base.roster[0] = max;
   const noScout = beginReward(
     base,

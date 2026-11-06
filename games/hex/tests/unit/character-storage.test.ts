@@ -17,7 +17,7 @@ it("旧形式、破損データ、IDの重複は新規データとして扱わ�
   expect(() =>
     validateSave({
       ...save,
-      roster: [{ ...save.roster[0], classId: "scout", attackDelta: -1 }],
+      roster: [{ ...save.roster[0], classId: "scout", attackDelta: -2 }],
     }),
   ).toThrow();
 });

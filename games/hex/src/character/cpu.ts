@@ -45,6 +45,7 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
                 stats(target.character).attack,
                 terrain(target.coord),
                 true,
+                stats(target.character).counterTenths,
               )
             : 0;
         score +=
@@ -57,7 +58,37 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
         score +=
           130 +
           hit * 10 +
-          ((o.headquarters[enemy].hp ?? 15) <= hit ? 10000 : 0);
+          ((o.headquarters[enemy].hp ?? 60) <= hit ? 10000 : 0);
+    }
+    // Only currently visible opponents and the filtered timeline enter these estimates.
+    const visibleEnemies = o.participants.filter((p) => p.owner !== o.owner);
+    const waiting = new Set(
+      o.timeline.filter((t) => !t.acted).map((t) => t.characterId),
+    );
+    for (const enemyUnit of visibleEnemies) {
+      const es = stats(enemyUnit.character);
+      if (hexDistance(dest, enemyUnit.coord) <= es.range + es.movement) {
+        const danger = damage(es.attack, terrain(enemyUnit.coord));
+        score -=
+          danger * (waiting.has(enemyUnit.character.characterId) ? 1.2 : 0.4);
+        if (danger >= actor.hp && waiting.has(enemyUnit.character.characterId))
+          score -= 12;
+      }
+      // Assist the next visible friendly attackers instead of assuming hidden forces.
+      if (
+        action.targetId === enemyUnit.character.characterId &&
+        enemyUnit.hp > stats(actor.character).attack
+      ) {
+        const support = o.participants.filter(
+          (p) =>
+            p.owner === o.owner &&
+            p.character.characterId !== action.actorId &&
+            waiting.has(p.character.characterId) &&
+            hexDistance(p.coord, enemyUnit.coord) <=
+              stats(p.character).range + stats(p.character).movement,
+        ).length;
+        score += Math.min(2, support) * 4;
+      }
     }
     const [tie] = nextRandom((seed ^ Math.imul(index + 1, 2654435761)) >>> 0);
     return { action, score, tie };

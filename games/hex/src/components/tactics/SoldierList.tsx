@@ -41,6 +41,10 @@ export function SoldierList({
                 <Icon name="sword" size={13} />
                 {s.attack}
               </span>
+              <span>
+                <Icon name="initiative" size={13} />
+                {s.initiative}
+              </span>
             </span>
             <span className="hx-row-tail">
               {active ? (

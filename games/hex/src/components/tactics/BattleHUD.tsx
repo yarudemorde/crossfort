@@ -30,7 +30,7 @@ export function BattleHUD({
             <strong>
               {view.activePlayer === "player" ? "自軍の手番" : "敵軍の手番"}
             </strong>
-            <small>第 {view.actionNumber} 手</small>
+            <small>ROUND {view.roundNumber}</small>
           </>
         ) : (
           <strong>{title ?? "本陣"}</strong>

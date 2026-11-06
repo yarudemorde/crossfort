@@ -1,15 +1,15 @@
 {
-  "version": "2.0.0",
-  "spec": "固有キャラクター戦術バトル v2.0 (2026-11-05)",
-  "testsPassed": 309,
-  "buildDate": "2026-11-06",
+  "version": "2.1.0",
+  "spec": "機動順ラウンド・ランダム成長 (2026-11-07)",
+  "testsPassed": 329,
+  "buildDate": "2026-11-07",
   "sha256": {
-    "docs/GAME_SPEC.md": "79d19b40dc2e16a9f8cd753790a18fd7ed5d7c07e1bfd6b247b81599bd33980f",
-    "data/ruleset.characters.json": "d4857a1ba5ee05bf75bfcbe1f922ac27e6be70dae9124157825e07627f54838f",
+    "docs/GAME_SPEC.md": "e8ea6b1e2626edadd3c1fdf10e0a6379e07d4cf8cf5a2d241b16715819ca7850",
+    "data/ruleset.characters.json": "fe31fbd121d9e63bb709352eea86d9f60eda63d215e199cdfcaabcc79a9017a8",
     "data/map-sizes.json": "2b44542a3310bb9616e6b8a0ca004c63b21d5205bc98ab43479f5030d79cbf5c",
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/maps.additional.prototype.json": "7d03a153b86643eb093730dff5c30a30ec5daf9094fd0d679c68664160c0a008",
-    "data/presentation.settings.json": "02820e668f47b6cb2f3d3fa79f8d801db9d9875a3bc162cf5647a13ba5699ac6"
+    "data/presentation.settings.json": "aa39f1b5ce22a1c037a081a25c6555b073141508438f78bb24dad96ebbefc5ba"
   },
   "cpuConditions": 108,
   "uiLayout": {
@@ -28,7 +28,12 @@
       "landscape": 90,
       "desktop": 112
     },
-    "pageOverflow": false
+    "pageOverflow": false,
+    "timelineCssHeight": {
+      "portrait": 68,
+      "landscape": 54,
+      "desktop": 68
+    }
   },
   "storage": {
     "engine": "IndexedDB",
@@ -40,5 +45,27 @@
     "structuredFrames": true,
     "settings": "data/presentation.settings.json"
   },
-  "uiRevision": "mobile-tactics-ui-2026-11-06"
+  "uiRevision": "initiative-round-timeline-2026-11-07",
+  "saveSchemaVersion": 3,
+  "migration": {
+    "fromSchema": 2,
+    "toSchema": 3,
+    "legacyBattle": "backupAndRecoverDeployment",
+    "backupKey": "legacyBackupV2",
+    "retainsIdentityAndRecords": true
+  },
+  "cpuProbe": {
+    "conditions": 108,
+    "unresolved": 0,
+    "firstPlayer": 24,
+    "firstCpu": 84,
+    "sixVsSix": {
+      "conditions": 36,
+      "playerWins": 20,
+      "cpuWins": 16,
+      "minRounds": 5,
+      "medianRounds": 8,
+      "maxRounds": 12
+    }
+  }
 }

@@ -5,7 +5,7 @@ import type { Coord } from "../game/types";
 import { CharacterSession, type NewBattle } from "./session";
 import type { BattleAction } from "./battle";
 import type { CharacterFrame } from "./presentation";
-import { discardBattle, persistBattle, readBattle } from "./storage";
+import { loadSave, discardBattle, persistBattle, readBattle } from "./storage";
 import type { RosterSave } from "./types";
 export type CharacterRequest = (
   | {
@@ -19,7 +19,7 @@ export type CharacterRequest = (
   | { type: "move"; actorId: string; path: Coord[] }
   | { type: "act"; action: BattleAction }
   | { type: "cpu" }
-  | { type: "resume" }
+  | { type: "resume"; initialSeed?: number }
   | { type: "discard" }
 ) & { session: number };
 export type CharacterResponse = {
@@ -61,11 +61,13 @@ self.onmessage = (message: MessageEvent<CharacterRequest>) => {
         return;
       }
       if (request.type === "resume") {
+        const save = await loadSave(request.initialSeed ?? 0);
         const saved = await readBattle();
         current = saved ? CharacterSession.restore(saved) : undefined;
         self.postMessage({
           session: request.session,
           resumed: true,
+          save,
           ...current?.view(),
         } satisfies CharacterResponse);
         return;

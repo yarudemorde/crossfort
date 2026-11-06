@@ -4,15 +4,9 @@ import { Icon, SoldierBadge } from "./Icons";
 export function BattleActionBar({
   game: g,
   onInspect,
-  attackIntent,
-  onMoveIntent,
-  onAttackIntent,
 }: {
   game: CharacterGame;
   onInspect: () => void;
-  attackIntent: boolean;
-  onMoveIntent: () => void;
-  onAttackIntent: () => void;
 }) {
   const o = g.view;
   if (!o)
@@ -78,6 +72,7 @@ export function BattleActionBar({
                   {g.expectedCounter}
                 </b>
                 {targetAfter === 0 && <em>撃破可能</em>}
+                {ownAfter === 0 && <em className="danger-text">戦死の危険</em>}
               </small>
             </div>
             <div className="hx-after-hp">
@@ -113,12 +108,11 @@ export function BattleActionBar({
               </strong>
               <small>
                 攻撃 {stats(unit.character).attack} · 射程{" "}
-                {stats(unit.character).range} · 機動{" "}
-                {stats(unit.character).movement}{" "}
+                {stats(unit.character).range} · 移動{" "}
+                {stats(unit.character).movement} · 機動{" "}
+                {stats(unit.character).initiative}{" "}
                 <span className="hx-hint">
-                  {o.pendingActorId || attackIntent
-                    ? "攻撃対象を選択"
-                    : "移動先を選択"}
+                  {o.pendingActorId ? "攻撃対象を選択" : "移動先を選択"}
                 </span>
               </small>
             </span>
@@ -155,21 +149,27 @@ export function BattleActionBar({
         ) : g.preview ? (
           <>
             <button
+              className="hx-button"
+              onClick={() => g.setPreview(undefined)}
+            >
+              キャンセル
+            </button>
+            <button
               className="hx-button primary danger-action"
               onClick={() => g.command(g.preview!)}
             >
               <Icon name="sword" />
-              攻撃を確定
-            </button>
-            <button
-              className="hx-button"
-              onClick={() => g.setPreview(undefined)}
-            >
-              取消
+              攻撃確定
             </button>
           </>
         ) : g.movePreview ? (
           <>
+            <button
+              className="hx-button"
+              onClick={() => g.setMovePreview(undefined)}
+            >
+              キャンセル
+            </button>
             <button
               className="hx-button primary"
               onClick={() =>
@@ -177,33 +177,17 @@ export function BattleActionBar({
               }
             >
               <Icon name="move" />
-              移動を確定
-            </button>
-            <button
-              className="hx-button"
-              onClick={() => g.setMovePreview(undefined)}
-            >
-              取消
+              移動確定
             </button>
           </>
         ) : unit ? (
           <>
-            <button
-              className="hx-button"
-              disabled={!!o.pendingActorId}
-              onClick={() => {
-                g.setPreview(undefined);
-                g.setMovePreview(undefined);
-                onMoveIntent();
-              }}
-            >
-              <Icon name="move" />
-              移動先
+            <button className="hx-button subtle" onClick={onInspect}>
+              詳細
             </button>
-            <button className="hx-button" onClick={onAttackIntent}>
-              <Icon name="sword" />
-              その場で攻撃
-            </button>
+            <span className="hx-ready-label">
+              {o.pendingActorId ? "敵をタップ" : "移動先・敵をタップ"}
+            </span>
             <button
               className="hx-button primary"
               onClick={() => g.command({ type: "pass" })}

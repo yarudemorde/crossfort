@@ -47,7 +47,7 @@ describe("v2 キャラクターの基礎", () => {
     expect(
       a.roster
         .filter((c) => c.classId === "scout")
-        .every((c) => c.attackDelta >= 0),
+        .every((c) => c.attackDelta >= -1),
     ).toBe(true);
   });
   it("初回1回の名前変更・除隊と6名未満の最低値補充", () => {
@@ -59,8 +59,8 @@ describe("v2 キャラクターの基礎", () => {
     for (const c of s.roster.slice(0, 4)) s = retire(s, c.characterId);
     s = recruitReplacement(s, "scout", "replacement-1");
     expect(stats(s.roster.at(-1)!)).toMatchObject({
-      hp: 3,
-      attack: 1,
+      hp: 15,
+      attack: 5,
       movement: 2,
     });
     expect(() => recruitReplacement(s, "knight", "replacement-2")).toThrow();
@@ -116,7 +116,7 @@ describe("v2 キャラクターの基礎", () => {
       character: knight,
       owner: "player",
       coord: { q: 0, r: 0 },
-      hp: 12,
+      hp: 30,
       alive: true,
       killsThisBattle: 0,
     };
@@ -128,13 +128,13 @@ describe("v2 キャラクターの基礎", () => {
     };
     const r = resolveCombat(p, enemy, "plain", "plain");
     expect([r.defender.hp, r.attacker.hp, r.hit, r.counter]).toEqual([
-      6, 6, 6, 6,
+      18, 18, 12, 12,
     ]);
     const killed = resolveCombat(p, { ...enemy, hp: 4 }, "plain", "plain");
     expect(killed.defender.alive).toBe(false);
     expect(killed.counter).toBe(0);
     expect(killed.attacker.killsThisBattle).toBe(1);
-    expect(stats(r.defender.character).attack).toBe(6);
+    expect(stats(r.defender.character).attack).toBe(12);
     expect(movement(1, "swamp")).toBe(1);
     expect(damage(6, "forest", true)).toBe(7);
     expect(damage(0, "forest", true)).toBe(0);

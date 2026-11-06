@@ -1,3 +1,6 @@
+import rules from "../../data/ruleset.characters.json";
+import { TurnTimeline } from "../components/tactics/TurnTimeline";
+import { RoundIndicator } from "../components/tactics/RoundIndicator";
 import { useEffect, useState } from "react";
 import { useCharacterGame, newCharacterId } from "./useCharacterGame";
 import { CharacterBoard } from "../components/character/CharacterBoard";
@@ -46,7 +49,6 @@ export default function CharacterApp() {
   const g = useCharacterGame();
   const [panel, setPanel] = useState<Panel>();
   const [detail, setDetail] = useState<Character>();
-  const [attackIntent, setAttackIntent] = useState(false);
   useEffect(() => {
     const viewport = window.visualViewport;
     const measure = () =>
@@ -63,9 +65,6 @@ export default function CharacterApp() {
       document.documentElement.style.removeProperty("--hx-viewport");
     };
   }, []);
-  useEffect(() => {
-    setAttackIntent(false);
-  }, [g.selection, g.movePreview, g.view?.pendingActorId]);
   useEffect(() => {
     if (!g.error) return;
     const timer = setTimeout(() => g.setError(""), 6000);
@@ -157,18 +156,39 @@ export default function CharacterApp() {
       )}
       {g.screen === "battle" && (
         <>
+          {g.view && <TurnTimeline view={g.view} onInspect={openDetail} />}
           <div className="hx-battle-stage">
             {g.view && (
               <CharacterBoard
                 view={g.view}
                 legal={g.response?.legal ?? []}
                 selected={g.selection}
-                onHex={g.hex}
+                onHex={(coord) => {
+                  const p = g.view?.participants.find(
+                    (p) => p.coord.q === coord.q && p.coord.r === coord.r,
+                  );
+                  const attackable =
+                    p?.owner === "cpu" &&
+                    g.response?.legal?.some(
+                      (a) =>
+                        a.type === "act" &&
+                        !a.path.length &&
+                        a.targetId === p.character.characterId,
+                    );
+                  if (
+                    p &&
+                    p.character.characterId !== g.view?.currentActorId &&
+                    !attackable
+                  )
+                    openDetail(p.character);
+                  else g.hex(coord);
+                }}
                 path={g.movePreview?.path}
                 animation={g.animation}
                 attackPreview={g.preview}
               />
             )}
+            {g.view && <RoundIndicator round={g.view.roundNumber} />}
             <button
               className="hx-info-toggle hx-icon-btn"
               aria-label={selected ? "選択兵士の詳細" : "戦況記録"}
@@ -183,9 +203,6 @@ export default function CharacterApp() {
           </div>
           <BattleActionBar
             game={g}
-            attackIntent={attackIntent}
-            onMoveIntent={() => setAttackIntent(false)}
-            onAttackIntent={() => setAttackIntent(true)}
             onInspect={() =>
               selected ? openDetail(selected.character) : setPanel("chronicle")
             }
@@ -291,8 +308,8 @@ export default function CharacterApp() {
               {[
                 ["平原", "補正なし"],
                 ["森林", "反撃ダメージ +1"],
-                ["山岳", "機動 −1 / 反撃 +1"],
-                ["湿地", "機動 −2"],
+                ["山岳", "移動 −1 / 反撃 +1"],
+                ["湿地", "移動 −2"],
                 ["砂漠", "攻撃 −1（最低1）"],
                 ["河川", "移動距離1固定"],
               ].map(([a, b]) => (
@@ -302,19 +319,19 @@ export default function CharacterApp() {
                 </div>
               ))}
               <p className="hx-muted">
-                移動の補正は出発地点で判定。機動は最低1です。
+                移動の補正は出発地点で判定。移動は最低1です。
               </p>
             </dl>
           )}
           {panel === "help" && (
             <div className="hx-help">
-              <h3>一手、一人。</h3>
+              <h3>機動の高い兵士から</h3>
               <p>
-                兵士を選び、金色のマスで移動先を確認。確定後は赤い敵を選んで攻撃するか、行動を終了します。その場からの攻撃も可能です。
+                行動順はラウンド開始時に機動の高い順で決定。各兵士は1回行動します。金色のマスで移動先を確認し、確定後は赤い敵を攻撃するか行動終了。移動せず敵をタップして攻撃もできます。
               </p>
               <h3>反撃を読む</h3>
               <p>
-                敵が生存し、射程内なら自動で一度反撃します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
+                敵が生存し、射程内なら自動で一度反撃します。騎士×1.0、弓兵×0.5、斥候×2.0を基本に、成長した倍率と地形を反映します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
               </p>
               <h3>霧の向こうへ</h3>
               <p>
@@ -329,7 +346,7 @@ export default function CharacterApp() {
                 敵本城の破壊、または敵全滅で勝利。生存者1名を強化し、本城破壊時には降伏兵を勧誘できます。勝利時の戦死者は永久に失われます。敗北時は戦闘前へ戻ります。
               </p>
               <p className="hx-muted">
-                このブラウザに自動保存します。再読み込みで戦闘や報酬を再開できます。端末間同期はありません。
+                勝利時の強化は体力+3〜5、攻撃+0〜2、機動+0〜1、反撃+0.0〜0.1を独立抽選し保存します。再読み込みで手番と確定成長を再開できます。端末間同期はありません。
               </p>
             </div>
           )}
@@ -386,11 +403,7 @@ export default function CharacterApp() {
                     <Icon name={c} size={28} />
                     <strong>{classNames[c]}</strong>
                     <small>
-                      {c === "knight"
-                        ? "HP9 / 攻撃5"
-                        : c === "archer"
-                          ? "HP5 / 攻撃2"
-                          : "HP3 / 攻撃1"}
+                      {`HP${rules.classes[c].hp - 3} / 攻撃${rules.classes[c].attack - 1}`}
                     </small>
                   </button>
                 ))}

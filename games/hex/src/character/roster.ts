@@ -1,16 +1,20 @@
 import rules from "../../data/ruleset.characters.json";
+import { totalGrowth } from "./growth";
 import { nextRandom } from "../game/rng";
 import type { Character, ClassId, Level, RosterSave } from "./types";
 
 export function stats(c: Character) {
   const base = rules.classes[c.classId],
-    bonus = rules.levels[String(c.level) as keyof typeof rules.levels];
+    growth = totalGrowth(c.growthHistory);
   const initialHp = Math.max(1, base.hp + c.hpDelta),
     initialAttack = Math.max(1, base.attack + c.attackDelta);
   return {
     ...base,
-    hp: initialHp + bonus.hp,
-    attack: initialAttack + bonus.attack,
+    hp: initialHp + growth.hp,
+    attack: initialAttack + growth.attack,
+    initiative: base.initiative + growth.initiative,
+    counterTenths: base.counterTenths + growth.counterTenths,
+    growth,
     initialHp,
     initialAttack,
   };
@@ -66,13 +70,14 @@ export function createInitialRoster(seed: number): RosterSave {
         hpDelta,
         attackDelta,
         level: 1,
+        growthHistory: [],
         battlesParticipated: 0,
         kills: 0,
         acquisitionSource: "starter",
         nameEditUsed: false,
       });
     }
-  return { schemaVersion: 2, roster, archive: [], completedRewardIds: [] };
+  return { schemaVersion: 3, roster, archive: [], completedRewardIds: [] };
 }
 export function recruitReplacement(
   save: RosterSave,
@@ -106,6 +111,7 @@ export function recruitReplacement(
         hpDelta: -3,
         attackDelta: Math.max(1, base.attack - 1) - base.attack,
         level: 1,
+        growthHistory: [],
         battlesParticipated: 0,
         kills: 0,
         acquisitionSource: "replacement",

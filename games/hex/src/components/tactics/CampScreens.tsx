@@ -1,3 +1,4 @@
+import rules from "../../../data/ruleset.characters.json";
 import { useState } from "react";
 import type { CharacterGame } from "../../app/useCharacterGame";
 import type { Character, ClassId } from "../../character/types";
@@ -274,7 +275,9 @@ export function SoldierDetails({
           ["攻撃", s.attack],
           ["視野", s.vision],
           ["射程", s.range],
-          ["機動", s.movement],
+          ["移動", s.movement],
+          ["機動", s.initiative],
+          ["反撃", `×${(s.counterTenths / 10).toFixed(1)}`],
           ["編成", s.cost],
         ].map(([label, value]) => (
           <div key={label}>
@@ -284,6 +287,19 @@ export function SoldierDetails({
         ))}
       </div>
       <dl className="hx-detail-lines">
+        <div>
+          <dt>職業基準 HP / 攻撃</dt>
+          <dd>
+            {rules.classes[c.classId].hp} / {rules.classes[c.classId].attack}
+          </dd>
+        </div>
+        <div>
+          <dt>職業基準 機動 / 反撃</dt>
+          <dd>
+            {rules.classes[c.classId].initiative} / ×
+            {(rules.classes[c.classId].counterTenths / 10).toFixed(1)}
+          </dd>
+        </div>
         <div>
           <dt>初期個体差</dt>
           <dd>
@@ -295,7 +311,9 @@ export function SoldierDetails({
         <div>
           <dt>成長補正</dt>
           <dd>
-            HP +{s.hp - s.initialHp} / 攻撃 +{s.attack - s.initialAttack}
+            HP +{s.growth.hp} / 攻撃 +{s.growth.attack} / 機動 +
+            {s.growth.initiative} / 反撃 +
+            {(s.growth.counterTenths / 10).toFixed(1)}
           </dd>
         </div>
         <div>

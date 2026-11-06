@@ -93,14 +93,23 @@ export function DeploymentBar({ game: g }: { game: CharacterGame }) {
           </button>
         ))}
       </div>
-      <button
-        className="hx-button primary hx-wide"
-        disabled={g.busy || placed !== g.formation.length || !placed}
-        onClick={g.start}
-      >
-        <Icon name="flag" />
-        戦闘開始
-      </button>
+      <div className="hx-deployment-confirm">
+        <button
+          className="hx-button"
+          disabled={g.busy}
+          onClick={() => g.setScreen("formation")}
+        >
+          編成へ戻る
+        </button>
+        <button
+          className="hx-button primary hx-wide"
+          disabled={g.busy || placed !== g.formation.length || !placed}
+          onClick={g.start}
+        >
+          <Icon name="flag" />
+          戦闘開始
+        </button>
+      </div>
       {ghost && (
         <div className="hx-drag-ghost" style={{ left: ghost.x, top: ghost.y }}>
           <SoldierBadge

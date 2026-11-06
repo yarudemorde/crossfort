@@ -58,7 +58,8 @@ export function deploymentObservation(
     radius: map.radius,
     owner: "player",
     activePlayer: "player",
-    actionNumber: 0,
+    roundNumber: 0,
+    timeline: [],
     participants,
     headquarters: {
       player: { coord: homes.player, hp: rules.headquarters.hp },

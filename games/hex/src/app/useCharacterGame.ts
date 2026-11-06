@@ -7,7 +7,7 @@ import {
   type MapSizeId,
 } from "../data/map-selection";
 import { hexDistance, neighbors, sameHex } from "../game/rules/hex";
-import type { Coord, Owner } from "../game/types";
+import type { Coord } from "../game/types";
 import { damage, headquartersForRadius } from "../character/combat";
 import { stats, validateFormation } from "../character/roster";
 import { loadSave, updateSave } from "../character/storage";
@@ -34,6 +34,7 @@ export type Screen =
   | "defeat"
   | "reward";
 export function useCharacterGame() {
+  const initialSeed = useRef(seed());
   const [save, setSave] = useState<RosterSave>();
   const [screen, setScreen] = useState<Screen>("home");
   const [error, setError] = useState("");
@@ -50,7 +51,6 @@ export function useCharacterGame() {
   const [mapType, setMapType] = useState(mapTypes[0].id);
   const [mapSize, setMapSize] = useState<MapSizeId>("medium");
   const mapId = selectMap(mapType, mapSize).id;
-  const [first, setFirst] = useState<Owner>("player");
   const [battleSeed, setBattleSeed] = useState(seed);
   const [selection, setSelection] = useState<string>();
   const [preview, setPreview] =
@@ -67,7 +67,7 @@ export function useCharacterGame() {
 
   useEffect(() => {
     let live = true;
-    loadSave(seed())
+    loadSave(initialSeed.current)
       .then((s) => {
         if (live) {
           setSave(s);
@@ -105,6 +105,26 @@ export function useCharacterGame() {
         return;
       }
       if (v.save) setSave(v.save);
+      const recovery =
+        v.resumed && !v.observation && v.save?.deploymentRecovery;
+      if (recovery && !v.save?.pendingReward) {
+        const meta = mapTypes
+          .flatMap((t) =>
+            mapSizes.map((size) => ({
+              ...selectMap(t.id, size.id),
+              type: t.id,
+              size: size.id,
+            })),
+          )
+          .find((m) => m.id === recovery.mapId)!;
+        setMapType(meta.type);
+        setMapSize(meta.size);
+        setBattleSeed(recovery.seed);
+        setFormation(recovery.teamIds);
+        setPlacements(recovery.placements);
+        setScreen("deployment");
+        setError(v.save?.migrationNotice ?? "戦闘前の配置を復元しました。");
+      }
       if (v.resumed && v.config) {
         const meta = mapTypes
           .flatMap((t) =>
@@ -117,7 +137,6 @@ export function useCharacterGame() {
           .find((m) => m.id === v.config!.mapId)!;
         setMapType(meta.type);
         setMapSize(meta.size);
-        setFirst(v.config.first);
         setBattleSeed(v.config.seed);
         setFormation(v.config.team.map((c) => c.characterId));
         setPlacements(v.config.placements);
@@ -175,13 +194,18 @@ export function useCharacterGame() {
       setAnimation(undefined);
       setChronicle(v.chronicle ?? []);
       setResponse(v);
-      setSelection(v.observation?.pendingActorId);
+      setSelection(
+        v.observation?.activePlayer === "player"
+          ? v.observation.currentActorId
+          : undefined,
+      );
       if (v.save?.pendingReward) setScreen("reward");
       else if (v.observation?.outcome?.winner === "cpu") setScreen("defeat");
       setBusy(false);
     };
     w.postMessage({
       type: "resume",
+      initialSeed: initialSeed.current,
       session: sid.current,
     } satisfies CharacterRequest);
     w.onerror = () => {
@@ -259,7 +283,6 @@ export function useCharacterGame() {
       id: id(),
       seed: battleSeed,
       mapId,
-      first,
       team,
       placements,
     };
@@ -331,7 +354,8 @@ export function useCharacterGame() {
       (p) => p.owner === "player" && sameHex(p.coord, coord),
     );
     setMovePreview(undefined);
-    setSelection(piece?.character.characterId);
+    if (piece?.character.characterId === view.currentActorId)
+      setSelection(view.currentActorId);
   }
   function chooseSlot(coord: Coord, characterId = pick) {
     if (!characterId) {
@@ -386,7 +410,12 @@ export function useCharacterGame() {
     defending.hp > expectedHit &&
     hexDistance(attacking.coord, defending.coord) <=
       stats(defending.character).range
-      ? damage(stats(defending.character).attack, tile(defending.coord), true)
+      ? damage(
+          stats(defending.character).attack,
+          tile(defending.coord),
+          true,
+          stats(defending.character).counterTenths,
+        )
       : 0;
   function goHome() {
     if (busy) return;
@@ -463,8 +492,6 @@ export function useCharacterGame() {
     setMapSize,
     mapInfo,
     mapId,
-    first,
-    setFirst,
     battleSeed,
     setBattleSeed,
     selection,

@@ -1,3 +1,5 @@
+import rules from "../../data/ruleset.characters.json";
+import { beginRound, finishActor } from "./rounds";
 import type { PresentationEvent } from "./presentation";
 import type { Coord, MapDefinition, Owner, Terrain } from "../game/types";
 import { hexDistance, hexId, neighbors, sameHex } from "../game/rules/hex";
@@ -20,6 +22,11 @@ export type Battle = {
   map: MapDefinition;
   activePlayer: Owner;
   actionNumber: number;
+  roundNumber: number;
+  turnOrder: string[];
+  turnIndex: number;
+  actedIds: string[];
+  currentActorId: string;
   pendingActorId?: string;
   participants: Participant[];
   headquarters: Record<Owner, { coord: Coord; hp: number }>;
@@ -42,7 +49,14 @@ export type BattleObservation = {
   radius: number;
   owner: Owner;
   activePlayer: Owner;
-  actionNumber: number;
+  roundNumber: number;
+  currentActorId?: string;
+  timeline: {
+    characterId: string;
+    owner: Owner;
+    acted: boolean;
+    current: boolean;
+  }[];
   pendingActorId?: string;
   headquarters: Record<Owner, { coord: Coord; hp?: number }>;
   participants: Participant[];
@@ -54,7 +68,10 @@ const terrainAt = (state: Battle, c: Coord): Terrain =>
   state.map.hexes.find((h) => sameHex(h, c))?.terrain ?? "plain";
 function visible(state: Battle, owner: Owner) {
   const sources = [
-    { coord: state.headquarters[owner].coord, range: 2 },
+    {
+      coord: state.headquarters[owner].coord,
+      range: rules.headquarters.vision,
+    },
     ...state.participants
       .filter((p) => p.owner === owner && p.alive)
       .map((p) => ({ coord: p.coord, range: stats(p.character).vision })),
@@ -71,6 +88,11 @@ function reveal(state: Battle) {
       ...new Set([...state.explored[owner], ...visible(state, owner)]),
     ];
 }
+export function publicParticipant(participant: Participant): Participant {
+  const copy = { ...participant };
+  delete copy.initiativeKey;
+  return copy;
+}
 export function observation(state: Battle, owner: Owner): BattleObservation {
   const sight = visible(state, owner),
     explored = new Set(state.explored[owner]),
@@ -81,7 +103,32 @@ export function observation(state: Battle, owner: Owner): BattleObservation {
     radius: state.map.radius,
     owner,
     activePlayer: state.activePlayer,
-    actionNumber: state.actionNumber,
+    roundNumber: state.roundNumber,
+    currentActorId: state.participants.some(
+      (p) =>
+        p.character.characterId === state.currentActorId &&
+        (p.owner === owner || sight.has(hexId(p.coord))),
+    )
+      ? state.currentActorId
+      : undefined,
+    timeline: state.turnOrder.flatMap((id) => {
+      const p = state.participants.find(
+        (p) =>
+          p.character.characterId === id &&
+          p.alive &&
+          (p.owner === owner || sight.has(hexId(p.coord))),
+      );
+      return p
+        ? [
+            {
+              characterId: id,
+              owner: p.owner,
+              acted: state.actedIds.includes(id),
+              current: id === state.currentActorId,
+            },
+          ]
+        : [];
+    }),
     pendingActorId:
       owner === state.activePlayer ? state.pendingActorId : undefined,
     headquarters: {
@@ -93,9 +140,11 @@ export function observation(state: Battle, owner: Owner): BattleObservation {
           : {}),
       },
     } as BattleObservation["headquarters"],
-    participants: state.participants.filter(
-      (p) => p.alive && (p.owner === owner || sight.has(hexId(p.coord))),
-    ),
+    participants: state.participants
+      .filter(
+        (p) => p.alive && (p.owner === owner || sight.has(hexId(p.coord))),
+      )
+      .map(publicParticipant),
     hexes: state.map.hexes.map((h) => ({
       q: h.q,
       r: h.r,
@@ -112,8 +161,9 @@ export function startBattle(
   map: MapDefinition,
   teams: Record<Owner, Character[]>,
   placements: Record<Owner, Record<string, Coord>>,
-  first: Owner,
+  _legacyFirst?: Owner,
 ): Battle {
+  void _legacyFirst; // Retained only for v2 configuration compatibility; initiative determines the first actor.
   const hq = headquartersFor(map);
   for (const owner of ["player", "cpu"] as const) {
     const ids = teams[owner].map((c) => c.characterId);
@@ -129,16 +179,23 @@ export function startBattle(
     id,
     seed: seed >>> 0,
     map: structuredClone(map),
-    activePlayer: first,
+    activePlayer: "player",
     actionNumber: 1,
+    roundNumber: 1,
+    turnOrder: [],
+    turnIndex: 0,
+    actedIds: [],
+    currentActorId: "",
     headquarters: {
-      player: { coord: hq.player, hp: 15 },
-      cpu: { coord: hq.cpu, hp: 15 },
+      player: { coord: hq.player, hp: rules.headquarters.hp },
+      cpu: { coord: hq.cpu, hp: rules.headquarters.hp },
     },
     explored: { player: [], cpu: [] },
     events: [],
     participants: (["player", "cpu"] as const).flatMap((owner) =>
-      teams[owner].map((character) => ({
+      teams[owner].map((character, index) => ({
+        initiativeKey:
+          owner === "cpu" ? `cpu-slot-${index}` : character.characterId,
         character: structuredClone(character),
         owner,
         coord: { ...placements[owner][character.characterId] },
@@ -148,6 +205,7 @@ export function startBattle(
       })),
     ),
   };
+  beginRound(s);
   reveal(s);
   return s;
 }
@@ -160,7 +218,10 @@ export function legalActions(o: BattleObservation): BattleAction[] {
     own = o.participants.filter((p) => p.owner === o.owner),
     hqs = Object.values(o.headquarters).map((h) => h.coord);
   for (const p of own) {
-    if (o.pendingActorId && o.pendingActorId !== p.character.characterId)
+    if (
+      o.currentActorId !== p.character.characterId ||
+      (o.pendingActorId && o.pendingActorId !== p.character.characterId)
+    )
       continue;
     const limit = movement(
       stats(p.character).movement,
@@ -237,6 +298,7 @@ export function beginMovement(
   );
   if (
     !actor ||
+    actorId !== state.currentActorId ||
     (path.length > 0 &&
       !legalActions(o).some(
         (a) =>
@@ -432,7 +494,7 @@ export function applyBattleAction(
           : "allUnitsKilled",
     };
   if (!s.outcome) {
-    s.activePlayer = enemy;
+    finishActor(s);
     s.actionNumber++;
   }
   return s;
@@ -442,6 +504,6 @@ export function battleResult(s: Battle): BattleResult {
   return {
     id: s.id,
     ...s.outcome,
-    participants: structuredClone(s.participants),
+    participants: structuredClone(s.participants.map(publicParticipant)),
   };
 }

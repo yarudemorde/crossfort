@@ -1,51 +1,22 @@
 import type { Character, Participant, RosterSave } from "./types";
 import { createInitialRoster, stats } from "./roster";
 import { beginReward, sameCharacter } from "./reward";
+import { validCharacter } from "./validation";
+import { validGrowth } from "./growth";
+import { nextLevel } from "./roster";
+import { migrateSave, recoverDeployment } from "./migration";
 import { battleResult } from "./battle";
 
 const DB_NAME = "crossfort-hex-characters-v2";
 const STORE = "saves";
 const KEY = "active";
-export function validCharacter(value: unknown): value is Character {
-  if (!value || typeof value !== "object") return false;
-  const c = value as Record<string, unknown>;
-  return (
-    typeof c.characterId === "string" &&
-    c.characterId.length > 0 &&
-    typeof c.originalName === "string" &&
-    c.originalName.length > 0 &&
-    typeof c.displayName === "string" &&
-    [...c.displayName].length >= 1 &&
-    [...c.displayName].length <= 20 &&
-    typeof c.affiliationId === "string" &&
-    ["knight", "archer", "scout"].includes(String(c.classId)) &&
-    [1, 2, 3, "MAX"].includes(c.level as string | number) &&
-    Number.isInteger(c.hpDelta) &&
-    Number(c.hpDelta) >= -3 &&
-    Number(c.hpDelta) <= 3 &&
-    Number.isInteger(c.attackDelta) &&
-    Number(c.attackDelta) >= -1 &&
-    Number(c.attackDelta) <= 1 &&
-    !(c.classId === "scout" && c.attackDelta === -1) &&
-    Number.isInteger(c.battlesParticipated) &&
-    Number(c.battlesParticipated) >= 0 &&
-    Number.isInteger(c.kills) &&
-    Number(c.kills) >= 0 &&
-    ["starter", "replacement", "scout"].includes(String(c.acquisitionSource)) &&
-    typeof c.nameEditUsed === "boolean" &&
-    (c.playerBattlesParticipated === undefined ||
-      (Number.isInteger(c.playerBattlesParticipated) &&
-        Number(c.playerBattlesParticipated) >= 0)) &&
-    (c.playerKills === undefined ||
-      (Number.isInteger(c.playerKills) && Number(c.playerKills) >= 0))
-  );
-}
+export { validCharacter } from "./validation";
 export function validateSave(value: unknown): asserts value is RosterSave {
   if (!value || typeof value !== "object")
     throw Error("セーブデータが破損しています。");
   const s = value as Record<string, unknown>;
   if (
-    s.schemaVersion !== 2 ||
+    s.schemaVersion !== 3 ||
     !Array.isArray(s.roster) ||
     s.roster.length > 15 ||
     !s.roster.every(validCharacter) ||
@@ -143,6 +114,22 @@ export function validateSave(value: unknown): asserts value is RosterSave {
         ))
     )
       throw Error("報酬データの内容が不正です。");
+    const promotion = (r as unknown as import("./types").Reward)
+      .promotionResult;
+    const promoted = participants.find(
+      (p) => p.character.characterId === r.promotedId,
+    )?.character;
+    if (
+      r.promotionStatus === "chosen"
+        ? !promotion ||
+          !promoted ||
+          promotion.characterId !== r.promotedId ||
+          promotion.fromLevel !== promoted.level ||
+          promotion.toLevel !== nextLevel(promoted.level) ||
+          !validGrowth(promotion.gain)
+        : promotion !== undefined || r.promotedId !== undefined
+    )
+      throw Error("成長結果が不正です。");
   }
 }
 function openDatabase(): Promise<IDBDatabase> {
@@ -174,15 +161,32 @@ export async function updateSave(
       let result: RosterSave | undefined, failure: unknown;
       battleRequest.onsuccess = () => {
         try {
-          const current: unknown =
-            request.result === undefined
-              ? createInitialRoster(seed)
-              : request.result;
+          const raw = request.result;
+          const current =
+            raw === undefined ? createInitialRoster(seed) : migrateSave(raw);
+          const legacyBattle =
+            battleRequest.result && battleRequest.result.schemaVersion !== 3;
+          if ((raw && raw.schemaVersion === 2) || legacyBattle) {
+            // Retain the original records in the same transaction, before moving
+            // a legacy battle back to its own deployment screen.
+            store.put(
+              { save: raw, battle: battleRequest.result },
+              "legacyBackupV2",
+            );
+            if (legacyBattle) {
+              const recovery = recoverDeployment(battleRequest.result, current);
+              if (!current.pendingReward) current.deploymentRecovery = recovery;
+              current.migrationNotice =
+                "旧方式の戦闘は編成・配置・シードを保持して戦闘前に戻しました。所持兵士と旧データのバックアップは維持しています。";
+              store.delete("battle");
+            }
+          }
           validateSave(current);
           result = change(structuredClone(current));
           validateSave(result);
           if (
             battleRequest.result &&
+            !legacyBattle &&
             (JSON.stringify(result.roster) !== JSON.stringify(current.roster) ||
               JSON.stringify(result.archive) !==
                 JSON.stringify(current.archive))
@@ -212,6 +216,7 @@ export const loadSave = (seed: number) =>
 type Snapshot = ReturnType<import("./session").CharacterSession["snapshot"]>;
 const BATTLE_KEY = "battle";
 export async function readBattle(): Promise<Snapshot | undefined> {
+  await loadSave(0);
   const db = await openDatabase();
   try {
     return await new Promise((resolve, reject) => {
@@ -262,10 +267,12 @@ export async function persistBattle(
             )
           )
             throw Error("出撃時の所持データと一致しません。");
-          result = save;
+          result = { ...save };
+          delete result.deploymentRecovery;
+          if (save.deploymentRecovery) store.put(result, KEY);
           if (snapshot.battle.outcome?.winner === "player") {
             result = beginReward(
-              save,
+              result,
               battleResult(snapshot.battle),
               snapshot.config.seed ^ 0x3c6ef372,
             );

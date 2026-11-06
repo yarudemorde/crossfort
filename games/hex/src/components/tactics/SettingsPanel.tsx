@@ -1,6 +1,5 @@
 import type { CharacterGame } from "../../app/useCharacterGame";
 import { mapTypes, mapSizes, type MapSizeId } from "../../data/map-selection";
-import type { Owner } from "../../game/types";
 import { Icon } from "./Icons";
 export function SettingsPanel({ game: g }: { game: CharacterGame }) {
   const locked =
@@ -45,18 +44,6 @@ export function SettingsPanel({ game: g }: { game: CharacterGame }) {
             </button>
           ))}
         </div>
-        <h3>先攻</h3>
-        <div className="hx-setting-options">
-          {(["player", "cpu"] as Owner[]).map((o) => (
-            <button
-              key={o}
-              aria-pressed={g.first === o}
-              onClick={() => g.setFirst(o)}
-            >
-              {o === "player" ? "自軍" : "敵軍"}
-            </button>
-          ))}
-        </div>
         <details>
           <summary>詳細設定</summary>
           <label className="hx-seed-input">
@@ -69,6 +56,11 @@ export function SettingsPanel({ game: g }: { game: CharacterGame }) {
           </label>
         </details>
       </fieldset>
+      {g.save?.migrationNotice && (
+        <p className="hx-muted" role="status">
+          {g.save.migrationNotice}
+        </p>
+      )}
       <p className="hx-muted">
         演出の軽減は端末の「視差効果を減らす」設定に従います。所持・戦闘・報酬はこのブラウザに自動保存されます。
       </p>

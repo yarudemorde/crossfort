@@ -21,8 +21,10 @@ export type IconName =
   | "chevron"
   | "check"
   | "heart"
-  | "history";
+  | "history"
+  | "initiative";
 const paths: Record<IconName, ReactNode> = {
+  initiative: <path d="m14 2-9 12h6l-1 8 9-12h-6Z" />,
   knight: (
     <>
       <path d="M7 7 12 3l5 4v9l-5 5-5-5Z" />

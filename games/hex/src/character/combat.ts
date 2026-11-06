@@ -61,10 +61,17 @@ export function damage(
   attack: number,
   terrain: Terrain,
   counter = false,
+  counterTenths = 10,
 ): number {
   if (attack <= 0) return 0;
   return (
-    Math.max(1, attack - (terrain === "desert" ? 1 : 0)) +
+    (counter
+      ? Math.ceil(
+          (Math.max(1, attack - (terrain === "desert" ? 1 : 0)) *
+            counterTenths) /
+            10,
+        )
+      : Math.max(1, attack - (terrain === "desert" ? 1 : 0))) +
     (counter && (terrain === "forest" || terrain === "mountain") ? 1 : 0)
   );
 }
@@ -89,7 +96,7 @@ export function resolveCombat(
   if (!d.alive) a.killsThisBattle++;
   let counter = 0;
   if (d.alive && distance <= ds.range) {
-    counter = damage(ds.attack, defenderTerrain, true);
+    counter = damage(ds.attack, defenderTerrain, true, ds.counterTenths);
     a.hp = Math.max(0, a.hp - counter);
     a.alive = a.hp > 0;
     if (!a.alive) d.killsThisBattle++;

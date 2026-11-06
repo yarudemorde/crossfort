@@ -1,4 +1,5 @@
 import rules from "../../data/ruleset.characters.json";
+import { rollGrowth } from "./growth";
 import { nextRandom } from "../game/rng";
 import { cleanName, nextLevel, scoutChance } from "./roster";
 import type { BattleResult, RosterSave } from "./types";
@@ -6,8 +7,12 @@ import type { Character } from "./types";
 
 export function sameCharacter(a: Character, b: Character): boolean {
   return (
-    (Object.keys(a) as (keyof Character)[]).every((key) => a[key] === b[key]) &&
-    (Object.keys(b) as (keyof Character)[]).every((key) => a[key] === b[key])
+    (Object.keys(a) as (keyof Character)[]).every(
+      (key) => JSON.stringify(a[key]) === JSON.stringify(b[key]),
+    ) &&
+    (Object.keys(b) as (keyof Character)[]).every(
+      (key) => JSON.stringify(a[key]) === JSON.stringify(b[key]),
+    )
   );
 }
 
@@ -126,9 +131,24 @@ export function promote(save: RosterSave, id?: string): RosterSave {
   }
   if (!survivors.some((p) => p.character.characterId === id))
     throw Error("強化対象が不正です。");
+  const character = survivors.find(
+    (p) => p.character.characterId === id,
+  )!.character;
+  const { gain, rngState } = rollGrowth(reward.rngState);
   return {
     ...save,
-    pendingReward: { ...reward, promotionStatus: "chosen", promotedId: id },
+    pendingReward: {
+      ...reward,
+      rngState,
+      promotionStatus: "chosen",
+      promotedId: id,
+      promotionResult: {
+        characterId: id,
+        fromLevel: character.level,
+        toLevel: nextLevel(character.level),
+        gain,
+      },
+    },
   };
 }
 /** Build the entire next save in memory; the caller persists it as one value. */
@@ -155,6 +175,10 @@ export function commitVictory(save: RosterSave): RosterSave {
         playerBattlesParticipated: (c.playerBattlesParticipated ?? 0) + 1,
         playerKills: (c.playerKills ?? 0) + p.killsThisBattle,
         level: c.characterId === r.promotedId ? nextLevel(c.level) : c.level,
+        growthHistory:
+          c.characterId === r.promotedId
+            ? [...c.growthHistory, r.promotionResult!.gain]
+            : c.growthHistory,
       };
     });
   const dead = save.roster
@@ -176,7 +200,7 @@ export function commitVictory(save: RosterSave): RosterSave {
   )
     throw Error("所持データが不正です。");
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     roster,
     archive: [...save.archive, ...dead],
     completedRewardIds: [...save.completedRewardIds, r.id],

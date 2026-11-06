@@ -1,4 +1,8 @@
-import { validCharacter } from "./storage";
+import rules from "../../data/ruleset.characters.json";
+import { validRoundState } from "./rounds";
+import { identitySeed } from "./growth";
+import { sameCharacter } from "./reward";
+import { validCharacter } from "./validation";
 import { hexId } from "../game/rules/hex";
 import type { CharacterFrame, PresentationEvent } from "./presentation";
 import { stats } from "./roster";
@@ -14,6 +18,7 @@ import {
   beginMovement,
   legalActions,
   observation,
+  publicParticipant,
   startBattle,
   type Battle,
   type BattleAction,
@@ -26,7 +31,8 @@ export type NewBattle = {
   id: string;
   seed: number;
   mapId: string;
-  first: Owner;
+  /** Deprecated v2 metadata. Initiative always determines the first actor. */
+  first?: Owner;
   team: Character[];
   placements: Record<string, Coord>;
 };
@@ -45,7 +51,10 @@ export class CharacterSession {
     if (!config.id) throw Error("戦闘IDが必要です。");
     const cpu = createInitialRoster(config.seed ^ 0x7f4a7c15)
       .roster.filter((_, i) => [0, 1, 3, 4, 6, 7].includes(i))
-      .map((c) => ({ ...c, characterId: `cpu-${config.id}-${c.characterId}` }));
+      .map((c, index) => ({
+        ...c,
+        characterId: `cpu-${[0, 1, 2, 3].map((salt) => identitySeed(`identity:${salt}:${config.id}:${index}`).toString(16).padStart(8, "0")).join("")}`,
+      }));
     const slots = shuffle(
       neighbors(headquartersFor(map).cpu),
       config.seed ^ 0x51633e2d,
@@ -64,6 +73,7 @@ export class CharacterSession {
   }
   snapshot() {
     return structuredClone({
+      schemaVersion: 3 as const,
       config: this.config,
       battle: this.battle,
       step: this.step,
@@ -75,6 +85,7 @@ export class CharacterSession {
     const b = snapshot?.battle;
     const map = maps.find((m) => m.id === snapshot?.config?.mapId);
     if (
+      snapshot.schemaVersion !== 3 ||
       !b ||
       !map ||
       b.id !== snapshot.config.id ||
@@ -111,12 +122,27 @@ export class CharacterSession {
         hexId(b.headquarters[owner].coord) !== hexId(homes[owner]) ||
         !Number.isInteger(b.headquarters[owner].hp) ||
         b.headquarters[owner].hp < 0 ||
-        b.headquarters[owner].hp > 15 ||
+        b.headquarters[owner].hp > rules.headquarters.hp ||
         !Array.isArray(b.explored?.[owner]) ||
         b.explored[owner].some((c) => !tiles.has(c))
       )
         throw Error("戦闘セーブの地図が不正です。");
+    if (!validRoundState(b)) throw Error("戦闘セーブの行動順が不正です。");
     const result = new CharacterSession(snapshot.config);
+    if (
+      b.participants.length !== result.battle.participants.length ||
+      b.participants.some(
+        (p) =>
+          !result.battle.participants.some(
+            (initial) =>
+              initial.character.characterId === p.character.characterId &&
+              initial.owner === p.owner &&
+              initial.initiativeKey === p.initiativeKey &&
+              sameCharacter(initial.character, p.character),
+          ),
+      )
+    )
+      throw Error("戦闘開始時の兵士と保存内容が一致しません。");
     result.battle = structuredClone(snapshot.battle);
     result.battle.actionNumber ??= 1;
     result.step = snapshot.step;
@@ -178,7 +204,10 @@ export class CharacterSession {
           const impact = dead
             ? {
                 ...next,
-                participants: [...next.participants, { ...dead, hp: 0 }],
+                participants: [
+                  ...next.participants,
+                  { ...publicParticipant(dead), hp: 0 },
+                ],
               }
             : next;
           const victim = previous.participants.find(
@@ -217,7 +246,10 @@ export class CharacterSession {
               kind: "destroy",
               before: {
                 ...next,
-                participants: [...next.participants, { ...dead, hp: 0 }],
+                participants: [
+                  ...next.participants,
+                  { ...publicParticipant(dead), hp: 0 },
+                ],
               },
               after: next,
               target,
@@ -246,10 +278,19 @@ export class CharacterSession {
     if (this.battle.activePlayer !== "cpu" || this.battle.outcome)
       throw Error("CPUの手番ではありません。");
     const frames: CharacterFrame[] = [];
-    this.battle = playCpuTurn(
-      this.battle,
-      (this.battle.seed + ++this.step) >>> 0,
-      this.capture(frames),
+    const capture = this.capture(frames);
+    do {
+      this.battle = playCpuTurn(
+        this.battle,
+        (this.battle.seed + ++this.step) >>> 0,
+        capture,
+      );
+      // Collapse invisible CPU actions. No actor IDs, list gaps or per-action
+      // responses reveal how many hidden troops acted between visible turns.
+    } while (
+      !this.battle.outcome &&
+      this.battle.activePlayer === "cpu" &&
+      !observation(this.battle, "player").currentActorId
     );
     return { ...this.view(), frames };
   }

@@ -1,48 +1,59 @@
 {
-  "version": 2,
+  "version": 3,
   "rosterLimit": 15,
   "replacementBelow": 6,
   "formationLimit": 6,
   "formationBudget": 10,
-  "headquarters": { "hp": 15, "attack": 0, "range": 0, "vision": 2 },
+  "headquarters": {
+    "hp": 60,
+    "attack": 0,
+    "range": 0,
+    "vision": 2
+  },
   "classes": {
     "knight": {
       "cost": 2,
       "vision": 2,
-      "hp": 12,
-      "attack": 6,
+      "hp": 30,
+      "attack": 12,
       "range": 1,
-      "movement": 1
+      "movement": 1,
+      "initiative": 10,
+      "counterTenths": 10
     },
     "archer": {
       "cost": 2,
       "vision": 2,
-      "hp": 8,
-      "attack": 3,
+      "hp": 22,
+      "attack": 9,
       "range": 2,
-      "movement": 1
+      "movement": 1,
+      "initiative": 12,
+      "counterTenths": 5
     },
     "scout": {
       "cost": 1,
       "vision": 3,
-      "hp": 6,
-      "attack": 1,
+      "hp": 18,
+      "attack": 6,
       "range": 1,
-      "movement": 2
+      "movement": 2,
+      "initiative": 16,
+      "counterTenths": 20
     }
   },
   "hpDelta": [-3, -2, -1, 0, 1, 2, 3],
   "attackDelta": [-1, 0, 1],
-  "levels": {
-    "1": { "hp": 0, "attack": 0 },
-    "2": { "hp": 1, "attack": 0 },
-    "3": { "hp": 2, "attack": 0 },
-    "MAX": { "hp": 2, "attack": 1 }
-  },
   "scout": {
     "basePercent": 50,
     "perPoint": 10,
     "minPercent": 10,
     "maxPercent": 100
+  },
+  "growth": {
+    "hp": [3, 4, 5],
+    "attack": [0, 1, 2],
+    "initiative": [0, 1],
+    "counterTenths": [0, 1]
   }
 }

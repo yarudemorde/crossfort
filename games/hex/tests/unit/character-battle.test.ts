@@ -10,6 +10,7 @@ import {
   observation,
   startBattle,
 } from "../../src/character/battle";
+import { advanceTo } from "../character-helpers";
 import { chooseAction } from "../../src/character/cpu";
 
 function create(mapId: string) {
@@ -31,11 +32,11 @@ function create(mapId: string) {
     "player",
   );
 }
-describe("キャラクター戦闘の交互手番", () => {
-  it.each(maps.map((m) => m.id))("%s の初期配置は各6名、本城HP15", (id) => {
+describe("キャラクター戦闘のラウンド手番", () => {
+  it.each(maps.map((m) => m.id))("%s の初期配置は各6名、本城HP60", (id) => {
     const s = create(id);
     expect(s.participants).toHaveLength(12);
-    expect(s.headquarters.player.hp).toBe(15);
+    expect(s.headquarters.player.hp).toBe(60);
     expect(observation(s, "player").hexes).toHaveLength(s.map.hexes.length);
   });
   it("視野外の敵と地形を観測やCPU入力に含めない", () => {
@@ -51,39 +52,44 @@ describe("キャラクター戦闘の交互手番", () => {
       "秘密の名前";
     expect(observation(changed, "player")).toEqual(o);
   });
-  it("1手で交代し、相手が待機後に同じ部隊を再選択できる", () => {
-    let s = create("crossing"),
-      o = observation(s, "player");
-    const move = legalActions(o).find(
-      (a) => a.type === "act" && a.path.length > 0 && !a.targetId,
-    )!;
-    expect(move.type).toBe("act");
-    s = applyBattleAction(s, move, "player");
-    expect(s.activePlayer).toBe("cpu");
-    expect(() => applyBattleAction(s, { type: "pass" }, "player")).toThrow();
-    s = applyBattleAction(s, { type: "pass" }, "cpu");
-    o = observation(s, "player");
+  it("1ラウンド中は同じ部隊を再行動できず、次ラウンドで再び行動できる", () => {
+    let s = create("crossing");
+    const actor = s.currentActorId,
+      owner = s.activePlayer;
+    s = applyBattleAction(s, { type: "pass" }, owner);
+    expect(s.currentActorId).not.toBe(actor);
     expect(
-      legalActions(o).some(
-        (a) =>
-          a.type === "act" && move.type === "act" && a.actorId === move.actorId,
+      legalActions(observation(s, owner))
+        .filter((a) => a.type === "act")
+        .every((a) => a.type === "act" && a.actorId !== actor),
+    ).toBe(true);
+    s = advanceTo(s, actor);
+    expect(s.roundNumber).toBe(2);
+    expect(
+      legalActions(observation(s, owner)).some(
+        (a) => a.type === "act" && a.actorId === actor,
       ),
     ).toBe(true);
   });
   it("CPUは観測から合法手を選び、同じ入力で再現する", () => {
-    const s = applyBattleAction(create("crossing"), { type: "pass" }, "player"),
-      o = observation(s, "cpu");
+    let s = create("crossing");
+    while (s.activePlayer !== "cpu")
+      s = applyBattleAction(s, { type: "pass" }, s.activePlayer);
+    const o = observation(s, "cpu");
     const action = chooseAction(o, 44);
     expect(legalActions(o)).toContainEqual(action);
     expect(chooseAction(o, 44)).toEqual(action);
     expect(() => applyBattleAction(s, action, "cpu")).not.toThrow();
   });
   it("移動して初めて見えた敵を同じ手番に攻撃でき、別の部隊は選べない", () => {
-    const s = create("highlands-large");
+    let s = create("highlands-large");
     const archer = s.participants.find(
       (p) => p.owner === "player" && p.character.classId === "archer",
     )!;
-    archer.coord = { q: 0, r: 0 };
+    s = advanceTo(s, archer.character.characterId);
+    s.participants.find(
+      (p) => p.character.characterId === archer.character.characterId,
+    )!.coord = { q: 0, r: 0 };
     const enemy = s.participants.find((p) => p.owner === "cpu")!;
     enemy.coord = { q: 3, r: 0 };
     expect(
@@ -110,8 +116,8 @@ describe("キャラクター戦闘の交互手番", () => {
       (a) => a.type === "act" && a.targetId === enemy.character.characterId,
     );
     expect(attack).toBeDefined();
-    expect(applyBattleAction(moved, attack!, "player").activePlayer).toBe(
-      "cpu",
+    expect(applyBattleAction(moved, attack!, "player").currentActorId).not.toBe(
+      archer.character.characterId,
     );
   });
 });

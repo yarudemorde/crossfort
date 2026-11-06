@@ -1,5 +1,6 @@
 import "fake-indexeddb/auto";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
+import { IDBObjectStore } from "fake-indexeddb";
 import type {
   CharacterRequest,
   CharacterResponse,
@@ -70,6 +71,21 @@ it("実Workerの通信で新規対戦・保存復帰・可視演出・勝利報�
   expect(preview.deployment?.headquarters.cpu.hp).toBeUndefined();
   expect(await readBattle()).toEqual(snapshot);
   expect(await loadSave(0)).toEqual(saveBeforePreview);
+  r = await send({ type: "resume" });
+  expect(r.observation).toEqual(original);
+  const failWrite = vi
+    .spyOn(IDBObjectStore.prototype, "put")
+    .mockImplementationOnce(() => {
+      throw new DOMException("simulated quota failure", "QuotaExceededError");
+    });
+  const failed = await send(
+    original!.activePlayer === "cpu"
+      ? { type: "cpu" }
+      : { type: "act", action: { type: "pass" }, session: 42 },
+  );
+  failWrite.mockRestore();
+  expect(failed.error).toContain("quota");
+  expect(await readBattle()).toEqual(snapshot);
   r = await send({ type: "resume" });
   expect(r.observation).toEqual(original);
   let hits = 0,

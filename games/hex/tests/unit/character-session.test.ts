@@ -1,3 +1,5 @@
+import { stats } from "../../src/character/roster";
+import { applyBattleAction } from "../../src/character/battle";
 import { describe, expect, it } from "vitest";
 import { maps } from "../../src/game/data";
 import { neighbors } from "../../src/game/rules/hex";
@@ -44,18 +46,18 @@ describe("キャラクター戦闘の通信境界", () => {
     const a = session(),
       b = session();
     expect(a.view()).toEqual(b.view());
-    expect(() => a.cpu()).toThrow();
+    const turn = a.snapshot().battle.activePlayer;
+    if (turn === "player") expect(() => a.cpu()).toThrow();
+    else expect(() => a.act({ type: "pass" })).toThrow();
     expect(() => a.move("unknown", [])).toThrow();
     expect(a.view()).toEqual(b.view());
-    a.act({ type: "pass" });
-    expect(() => a.act({ type: "pass" })).toThrow();
-    const after = a.cpu();
-    expect(
-      after.observation.activePlayer === "player" || after.observation.outcome,
-    ).toBeTruthy();
+    if (turn === "player") a.act({ type: "pass" });
+    else a.cpu();
+    expect(a.snapshot().battle.actionNumber).toBeGreaterThan(1);
   });
   it("複数マス移動は各マスの観測を順に返し、未探索地形を含めない", () => {
     const game = session();
+    while (game.view().observation.activePlayer === "cpu") game.cpu();
     const before = game.view();
     const action = before.legal.find(
       (a) => a.type === "act" && a.path.length === 2 && !a.targetId,
@@ -88,19 +90,27 @@ it("演出は攻撃→HP更新→反撃の順で、確定状態と一致する",
   const d = initial.battle.participants.find(
     (p) => p.owner === "cpu" && p.character.classId === "knight",
   )!;
-  a.character.hpDelta = 0;
-  a.character.attackDelta = 0;
-  a.hp = 12;
+  a.hp = Math.min(30, stats(a.character).hp);
   a.coord = { q: 0, r: 0 };
-  d.character.hpDelta = 0;
-  d.character.attackDelta = 0;
-  d.hp = 12;
+  d.hp = Math.min(30, stats(d.character).hp);
   d.coord = { q: 1, r: 0 };
   initial.battle.map.hexes.find((h) => h.q === 0 && h.r === 0)!.terrain =
     "plain";
   // Use the canonical map's terrain: both relevant hexes are plain on this map.
   const terrain = maps.find((m) => m.id === initial.config.mapId)!;
   initial.battle.map = structuredClone(terrain);
+  let fixture = initial.battle;
+  for (
+    let i = 0;
+    i < 24 && fixture.currentActorId !== a.character.characterId;
+    i++
+  )
+    fixture = applyBattleAction(
+      fixture,
+      { type: "pass" },
+      fixture.activePlayer,
+    );
+  initial.battle = fixture;
   const game = CharacterSession.restore(initial);
   const result = game.act({
     type: "act",
@@ -116,12 +126,12 @@ it("演出は攻撃→HP更新→反撃の順で、確定状態と一致する",
     hits[0].before.participants.find(
       (p) => p.character.characterId === a.character.characterId,
     )?.hp,
-  ).toBe(12);
+  ).toBe(a.hp);
   expect(
     hits[0].after.participants.find(
       (p) => p.character.characterId === a.character.characterId,
     )?.hp,
-  ).toBe(12);
+  ).toBe(a.hp);
   expect(
     hits[1].after.participants.find(
       (p) => p.character.characterId === a.character.characterId,

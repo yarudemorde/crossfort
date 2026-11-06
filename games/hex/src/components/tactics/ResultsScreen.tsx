@@ -1,3 +1,4 @@
+import { GrowthResult } from "./GrowthResult";
 import { useState } from "react";
 import type { CharacterGame } from "../../app/useCharacterGame";
 import { stats, scoutChance, nextLevel } from "../../character/roster";
@@ -17,6 +18,7 @@ export function ResultsScreen({
   onDetail: (c: Character) => void;
 }) {
   const r = g.pending!;
+  const [promotionPick, setPromotionPick] = useState<string>();
   // The casualty list remains available on every victory, including all-unit
   // victories and reward sessions resumed after a reload.
   const [overview, setOverview] = useState(true);
@@ -165,19 +167,14 @@ export function ResultsScreen({
                   p.character.level !== "MAX",
               )
               .map((p) => {
-                const a = stats(p.character),
-                  b = stats({
-                    ...p.character,
-                    level: nextLevel(p.character.level),
-                  });
+                const a = stats(p.character);
                 return (
                   <button
-                    className="hx-promotion-row"
+                    className={`hx-promotion-row ${promotionPick === p.character.characterId ? "selected" : ""}`}
+                    aria-pressed={promotionPick === p.character.characterId}
                     key={p.character.characterId}
                     disabled={g.busy}
-                    onClick={() =>
-                      void g.change((s) => promote(s, p.character.characterId))
-                    }
+                    onClick={() => setPromotionPick(p.character.characterId)}
                   >
                     <SoldierBadge character={p.character} />
                     <span>
@@ -188,10 +185,11 @@ export function ResultsScreen({
                     </span>
                     <span>
                       <b>
-                        HP {a.hp} → {b.hp}
+                        HP {a.hp} · 攻撃 {a.attack}
                       </b>
                       <small>
-                        攻撃 {a.attack} → {b.attack}
+                        機動 {a.initiative} · 反撃 ×
+                        {(a.counterTenths / 10).toFixed(1)}
                       </small>
                     </span>
                     <Icon name="chevron" />
@@ -202,6 +200,16 @@ export function ResultsScreen({
         )}
         {stage === "done" && (
           <div className="hx-return-summary">
+            {r.promotionResult && (
+              <GrowthResult
+                character={
+                  r.result.participants.find(
+                    (p) => p.character.characterId === r.promotedId,
+                  )!.character
+                }
+                result={r.promotionResult}
+              />
+            )}
             <Icon name="shield" size={58} />
             <h2>軍営へ帰還</h2>
             <p>生存者は全回復します。</p>
@@ -269,7 +277,22 @@ export function ResultsScreen({
             戦果を確定して帰還
           </button>
         ) : (
-          <span className="hx-footer-hint">強化する兵士を選択</span>
+          <div className="hx-confirm-pair">
+            <button
+              className="hx-button"
+              disabled={g.busy || !promotionPick}
+              onClick={() => setPromotionPick(undefined)}
+            >
+              キャンセル
+            </button>
+            <button
+              className="hx-button primary"
+              disabled={g.busy || !promotionPick}
+              onClick={() => void g.change((s) => promote(s, promotionPick))}
+            >
+              強化確定
+            </button>
+          </div>
         )}
       </footer>
     </main>
@@ -302,9 +325,19 @@ function ScoutName({
           maxLength={40}
         />
       </label>
-      <button className="hx-button" disabled={busy}>
-        名前を確定
-      </button>
+      <div className="hx-confirm-pair">
+        <button
+          type="button"
+          className="hx-button"
+          disabled={busy}
+          onClick={() => setEditing(false)}
+        >
+          キャンセル
+        </button>
+        <button className="hx-button primary" disabled={busy}>
+          名前を確定
+        </button>
+      </div>
     </form>
   ) : (
     <button className="hx-button hx-wide" onClick={() => setEditing(true)}>
