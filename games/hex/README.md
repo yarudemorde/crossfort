@@ -45,6 +45,8 @@ npm run build
 
 検証結果・スクリーンショット・再検証手順は [ROUND_SYSTEM_ACCEPTANCE.md](docs/ROUND_SYSTEM_ACCEPTANCE.md) を参照してください。
 
+勝利後の次戦で編成人数だけが6/6に残る問題は修正済みです。戦死・除隊した兵士を編成枠と配置選択から除き、生存者の順序を維持します。原因と回帰検証は [FORMATION_RECOVERY_FIX.md](docs/FORMATION_RECOVERY_FIX.md) を参照してください。
+
 ## 保存と旧データ移行
 
 保存レコードはschemaVersion 3です。既存のIndexedDB名・ストアを維持します。v2兵士のID・名前・所属・Lv・個体差・戦績・勧誘/除隊の記録を保持し、Lvに応じた成長履歴をIDから一度だけ生成して保存します。未完了報酬も継続します。旧方式の進行中対戦は原データを`legacyBackupV2`へ退避し、所持兵士を保持したまま編成・配置・マップ・シードを復元して戦闘前へ戻します。移行と退避は単一トランザクションで行い、不正なデータは上書きしません。

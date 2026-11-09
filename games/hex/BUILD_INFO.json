@@ -1,8 +1,8 @@
 {
   "version": "2.1.0",
   "spec": "機動順ラウンド・ランダム成長 (2026-11-07)",
-  "testsPassed": 329,
-  "buildDate": "2026-11-07",
+  "testsPassed": 336,
+  "buildDate": "2026-11-09",
   "sha256": {
     "docs/GAME_SPEC.md": "e8ea6b1e2626edadd3c1fdf10e0a6379e07d4cf8cf5a2d241b16715819ca7850",
     "data/ruleset.characters.json": "fe31fbd121d9e63bb709352eea86d9f60eda63d215e199cdfcaabcc79a9017a8",
@@ -67,5 +67,12 @@
       "medianRounds": 8,
       "maxRounds": 12
     }
+  },
+  "formationRecoveryFix": {
+    "date": "2026-11-09",
+    "reconcilesOwnedIds": true,
+    "preservesSurvivorOrderAndPlacements": true,
+    "regressionTests": 7,
+    "nextBattleResumeVerified": true
   }
 }

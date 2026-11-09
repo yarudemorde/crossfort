@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SetStateAction } from "react";
+import { reconcileFormationDraft, type FormationDraft } from "./formation";
 import timing from "../../data/presentation.settings.json";
 import {
   mapSizes,
@@ -45,9 +46,33 @@ export function useCharacterGame() {
     serial: number;
   }>();
   const [chronicle, setChronicle] = useState<string[]>([]);
-  const [formation, setFormation] = useState<string[]>([]);
-  const [placements, setPlacements] = useState<Record<string, Coord>>({});
-  const [pick, setPick] = useState<string>();
+  const [formationDraft, setFormationDraft] = useState<FormationDraft>({
+    formation: [],
+    placements: {},
+  });
+  const { formation, placements, pick } = formationDraft;
+  function setFormation(value: SetStateAction<string[]>) {
+    setFormationDraft((draft) => ({
+      ...draft,
+      formation: typeof value === "function" ? value(draft.formation) : value,
+    }));
+  }
+  function setPlacements(value: SetStateAction<Record<string, Coord>>) {
+    setFormationDraft((draft) => ({
+      ...draft,
+      placements: typeof value === "function" ? value(draft.placements) : value,
+    }));
+  }
+  function setPick(value: SetStateAction<string | undefined>) {
+    setFormationDraft((draft) => ({
+      ...draft,
+      pick: typeof value === "function" ? value(draft.pick) : value,
+    }));
+  }
+  function acceptSave(next: RosterSave) {
+    setSave(next);
+    setFormationDraft((draft) => reconcileFormationDraft(draft, next.roster));
+  }
   const [mapType, setMapType] = useState(mapTypes[0].id);
   const [mapSize, setMapSize] = useState<MapSizeId>("medium");
   const mapId = selectMap(mapType, mapSize).id;
@@ -70,7 +95,7 @@ export function useCharacterGame() {
     loadSave(initialSeed.current)
       .then((s) => {
         if (live) {
-          setSave(s);
+          acceptSave(s);
           if (s.pendingReward) setScreen("reward");
         }
       })
@@ -104,7 +129,7 @@ export function useCharacterGame() {
         setBusy(false);
         return;
       }
-      if (v.save) setSave(v.save);
+      if (v.save) acceptSave(v.save);
       const recovery =
         v.resumed && !v.observation && v.save?.deploymentRecovery;
       if (recovery && !v.save?.pendingReward) {
@@ -260,7 +285,7 @@ export function useCharacterGame() {
     setBusy(true);
     try {
       const s = await updateSave(0, fn);
-      setSave(s);
+      acceptSave(s);
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
