@@ -1,17 +1,17 @@
 {
-  "version": "2.1.0",
-  "spec": "機動順ラウンド・ランダム成長 (2026-11-07)",
-  "testsPassed": 336,
+  "version": "2.2.0",
+  "spec": "新職業3種追加（2026-11-09）",
+  "testsPassed": 402,
   "buildDate": "2026-11-09",
   "sha256": {
-    "docs/GAME_SPEC.md": "e8ea6b1e2626edadd3c1fdf10e0a6379e07d4cf8cf5a2d241b16715819ca7850",
-    "data/ruleset.characters.json": "fe31fbd121d9e63bb709352eea86d9f60eda63d215e199cdfcaabcc79a9017a8",
+    "docs/GAME_SPEC.md": "7d258382e6ac0652dc4bd8b175c619223ceda7c37603769340fea4b622d6a412",
+    "data/ruleset.characters.json": "b16a839d3b0213ba7609d677a064aefe742120b212e0ad57d8732809100f17a9",
     "data/map-sizes.json": "2b44542a3310bb9616e6b8a0ca004c63b21d5205bc98ab43479f5030d79cbf5c",
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/maps.additional.prototype.json": "7d03a153b86643eb093730dff5c30a30ec5daf9094fd0d679c68664160c0a008",
     "data/presentation.settings.json": "aa39f1b5ce22a1c037a081a25c6555b073141508438f78bb24dad96ebbefc5ba"
   },
-  "cpuConditions": 108,
+  "cpuConditions": 132,
   "uiLayout": {
     "verifiedCssViewports": [
       "375x667",
@@ -33,7 +33,15 @@
       "portrait": 68,
       "landscape": 54,
       "desktop": 68
-    }
+    },
+    "newClassesVerifiedCssViewports": [
+      "375x667",
+      "390x844",
+      "430x932",
+      "844x390",
+      "768x1024",
+      "1363x936"
+    ]
   },
   "storage": {
     "engine": "IndexedDB",
@@ -45,7 +53,7 @@
     "structuredFrames": true,
     "settings": "data/presentation.settings.json"
   },
-  "uiRevision": "initiative-round-timeline-2026-11-07",
+  "uiRevision": "six-classes-healing-charge-2026-11-09",
   "saveSchemaVersion": 3,
   "migration": {
     "fromSchema": 2,
@@ -74,5 +82,22 @@
     "preservesSurvivorOrderAndPlacements": true,
     "regressionTests": 7,
     "nextBattleResumeVerified": true
+  },
+  "newClasses": {
+    "ids": ["spearman", "medic", "cavalry"],
+    "encounterVersion": 2,
+    "legacyEncounterVersion": 1,
+    "saveSchemaUnchanged": true,
+    "healingIndependent": true,
+    "chargeContextSaved": true
+  },
+  "newClassesProbe": {
+    "conditions": 24,
+    "unresolved": 0,
+    "minRounds": 4,
+    "maxRounds": 13,
+    "healingActions": 107,
+    "playerWins": 9,
+    "cpuWins": 15
   }
 }

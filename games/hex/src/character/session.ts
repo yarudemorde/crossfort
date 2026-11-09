@@ -1,6 +1,6 @@
 import rules from "../../data/ruleset.characters.json";
 import { validRoundState } from "./rounds";
-import { identitySeed } from "./growth";
+import { createCpuTeam } from "./encounters";
 import { sameCharacter } from "./reward";
 import { validCharacter } from "./validation";
 import { hexId } from "../game/rules/hex";
@@ -11,7 +11,6 @@ import { maps } from "../game/data";
 import { neighbors } from "../game/rules/hex";
 import { shuffle } from "../game/rng";
 import { headquartersFor } from "./combat";
-import { createInitialRoster } from "./roster";
 import {
   applyBattleAction,
   battleResult,
@@ -33,6 +32,8 @@ export type NewBattle = {
   mapId: string;
   /** Deprecated v2 metadata. Initiative always determines the first actor. */
   first?: Owner;
+  /** Absent in old saves: preserve their original CPU roster. New UI games use version 2. */
+  encounterVersion?: 1 | 2;
   team: Character[];
   placements: Record<string, Coord>;
 };
@@ -49,12 +50,16 @@ export class CharacterSession {
     const map = maps.find((m) => m.id === config.mapId);
     if (!map) throw Error("マップが見つかりません。");
     if (!config.id) throw Error("戦闘IDが必要です。");
-    const cpu = createInitialRoster(config.seed ^ 0x7f4a7c15)
-      .roster.filter((_, i) => [0, 1, 3, 4, 6, 7].includes(i))
-      .map((c, index) => ({
-        ...c,
-        characterId: `cpu-${[0, 1, 2, 3].map((salt) => identitySeed(`identity:${salt}:${config.id}:${index}`).toString(16).padStart(8, "0")).join("")}`,
-      }));
+    if (
+      config.encounterVersion !== undefined &&
+      ![1, 2].includes(config.encounterVersion)
+    )
+      throw Error("未対応の敵編成バージョンです。");
+    const cpu = createCpuTeam(
+      config.seed,
+      config.id,
+      config.encounterVersion ?? 1,
+    );
     const slots = shuffle(
       neighbors(headquartersFor(map).cpu),
       config.seed ^ 0x51633e2d,
@@ -128,6 +133,14 @@ export class CharacterSession {
       )
         throw Error("戦闘セーブの地図が不正です。");
     if (!validRoundState(b)) throw Error("戦闘セーブの行動順が不正です。");
+    if (
+      b.pendingMovedHexes !== undefined &&
+      (!b.pendingActorId ||
+        !Number.isInteger(b.pendingMovedHexes) ||
+        b.pendingMovedHexes < 0 ||
+        b.pendingMovedHexes > 3)
+    )
+      throw Error("戦闘セーブの移動情報が不正です。");
     const result = new CharacterSession(snapshot.config);
     if (
       b.participants.length !== result.battle.participants.length ||
@@ -218,27 +231,31 @@ export class CharacterSession {
             : "視野外からの攻撃";
           this.chronicle = [
             ...this.chronicle,
-            `${event.type === "counter" ? "反撃" : "攻撃"}：${actorName} → ${victim ? `${victim.owner === "player" ? "自軍" : "敵軍"} ${victim.character.displayName}` : "本城"} −${Math.min(event.amount, victim?.hp ?? event.amount)}`,
+            `${event.type === "heal" ? "回復" : event.type === "counter" ? "反撃" : event.charge ? "突撃" : "攻撃"}：${actorName} → ${victim ? `${victim.owner === "player" ? "自軍" : "敵軍"} ${victim.character.displayName}` : "本城"} ${event.type === "heal" ? "+" : "−"}${event.type === "heal" ? event.amount : Math.min(event.amount, victim?.hp ?? event.amount)}`,
           ].slice(-60);
           frames.push({
-            kind: "hit",
+            kind: event.type === "heal" ? "heal" : "hit",
             before: previous,
             after: impact,
             source,
             target,
             actorId: source ? event.actorId : undefined,
             targetId: event.targetId,
-            amount: Math.min(
-              event.amount,
-              previous.participants.find(
-                (p) => p.character.characterId === event.targetId,
-              )?.hp ??
-                previous.headquarters[
-                  event.targetId === "hq_player" ? "player" : "cpu"
-                ].hp ??
-                event.amount,
-            ),
+            amount:
+              event.type === "heal"
+                ? event.amount
+                : Math.min(
+                    event.amount,
+                    previous.participants.find(
+                      (p) => p.character.characterId === event.targetId,
+                    )?.hp ??
+                      previous.headquarters[
+                        event.targetId === "hq_player" ? "player" : "cpu"
+                      ].hp ??
+                      event.amount,
+                  ),
             counter: event.type === "counter",
+            charge: !!event.charge,
             range: actor ? stats(actor.character).range : undefined,
           });
           if (dead)

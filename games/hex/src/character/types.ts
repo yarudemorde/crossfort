@@ -1,5 +1,6 @@
 import type { Coord, Owner } from "../game/types";
-export type ClassId = "knight" | "archer" | "scout";
+export type ClassId =
+  keyof typeof import("../../data/ruleset.characters.json").classes;
 export type Level = 1 | 2 | 3 | "MAX";
 export type Growth = {
   hp: number;

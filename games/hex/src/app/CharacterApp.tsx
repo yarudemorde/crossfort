@@ -1,4 +1,5 @@
 import rules from "../../data/ruleset.characters.json";
+import { directActionAt } from "./battle-target";
 import { TurnTimeline } from "../components/tactics/TurnTimeline";
 import { RoundIndicator } from "../components/tactics/RoundIndicator";
 import { useEffect, useState } from "react";
@@ -22,8 +23,13 @@ import {
   classNames,
   type IconName,
 } from "../components/tactics/Icons";
-import { rename, retire, recruitReplacement } from "../character/roster";
-import type { Character, ClassId } from "../character/types";
+import {
+  rename,
+  retire,
+  recruitReplacement,
+  classIds,
+} from "../character/roster";
+import type { Character } from "../character/types";
 import "./character.css";
 import "./terrain.css";
 type Panel =
@@ -167,18 +173,15 @@ export default function CharacterApp() {
                   const p = g.view?.participants.find(
                     (p) => p.coord.q === coord.q && p.coord.r === coord.r,
                   );
-                  const attackable =
-                    p?.owner === "cpu" &&
-                    g.response?.legal?.some(
-                      (a) =>
-                        a.type === "act" &&
-                        !a.path.length &&
-                        a.targetId === p.character.characterId,
-                    );
+                  const actionable = directActionAt(
+                    g.view!,
+                    g.response?.legal ?? [],
+                    coord,
+                  );
                   if (
                     p &&
                     p.character.characterId !== g.view?.currentActorId &&
-                    !attackable
+                    !actionable
                   )
                     openDetail(p.character);
                   else g.hex(coord);
@@ -331,7 +334,11 @@ export default function CharacterApp() {
               </p>
               <h3>反撃を読む</h3>
               <p>
-                敵が生存し、射程内なら自動で一度反撃します。騎士×1.0、弓兵×0.5、斥候×2.0を基本に、成長した倍率と地形を反映します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
+                敵が生存し、射程内なら自動で一度反撃します。騎士×1.0、弓兵×0.5、斥候×2.0、槍兵×1.2、騎兵×0.2を基本に、成長した倍率と地形を反映します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
+              </p>
+              <h3>回復と突撃</h3>
+              <p>
+                衛生兵は緑の味方を選び、攻撃値×1.2を四捨五入した量を回復します。毎ラウンド使用でき、自身・敵・死亡者は対象外。反撃は成長しても0です。騎兵は3マス移動直後の対兵士攻撃だけ+3。本城攻撃と反撃には適用しません。
               </p>
               <h3>霧の向こうへ</h3>
               <p>
@@ -346,7 +353,7 @@ export default function CharacterApp() {
                 敵本城の破壊、または敵全滅で勝利。生存者1名を強化し、本城破壊時には降伏兵を勧誘できます。勝利時の戦死者は永久に失われます。敗北時は戦闘前へ戻ります。
               </p>
               <p className="hx-muted">
-                勝利時の強化は体力+3〜5、攻撃+0〜2、機動+0〜1、反撃+0.0〜0.1を独立抽選し保存します。再読み込みで手番と確定成長を再開できます。端末間同期はありません。
+                勝利時の強化は体力+3〜5、攻撃+0〜2、機動+0〜1、反撃+0.0〜0.1（衛生兵は0固定）を独立抽選し保存します。再読み込みで手番と確定成長を再開できます。端末間同期はありません。
               </p>
             </div>
           )}
@@ -386,7 +393,7 @@ export default function CharacterApp() {
                 最低個体値のLv.1補充兵を迎えます。所持6名未満のときに利用できます。
               </p>
               <div className="hx-replacement-options">
-                {(["knight", "archer", "scout"] as ClassId[]).map((c) => (
+                {classIds.map((c) => (
                   <button
                     className="hx-button"
                     disabled={g.busy || g.save!.roster.length >= 6}

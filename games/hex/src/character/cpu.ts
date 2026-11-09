@@ -1,7 +1,8 @@
 import type { PresentationEvent } from "./presentation";
 import { hexDistance } from "../game/rules/hex";
 import { nextRandom } from "../game/rng";
-import { damage } from "./combat";
+import { attackDamage, counterDamage } from "./combat";
+import { canAttack, healingPower } from "./abilities";
 import { stats } from "./roster";
 import {
   applyBattleAction,
@@ -27,26 +28,46 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
       (p) => p.character.characterId === action.actorId,
     )!;
     const dest = action.path.at(-1) ?? actor.coord;
+    const supporting = !canAttack(actor.character);
+    const allies = o.participants.filter(
+      (p) => p.owner === o.owner && p.character.characterId !== action.actorId,
+    );
+    const anchor = supporting
+      ? ([...allies].sort(
+          (a, b) =>
+            Number(b.hp < stats(b.character).hp) -
+              Number(a.hp < stats(a.character).hp) ||
+            hexDistance(a.coord, hq) - hexDistance(b.coord, hq),
+        )[0]?.coord ?? o.headquarters[o.owner].coord)
+      : hq;
     let score =
       12 +
-      (hexDistance(actor.coord, hq) - hexDistance(dest, hq)) * 8 -
+      (hexDistance(actor.coord, anchor) - hexDistance(dest, anchor)) * 8 -
       action.path.length * 0.1;
     if (action.targetId) {
       const target = o.participants.find(
         (p) => p.character.characterId === action.targetId,
       );
-      const hit = damage(stats(actor.character).attack, terrain(dest));
-      if (target) {
+      const hit = attackDamage(
+        actor.character,
+        terrain(dest),
+        o.pendingMovedHexes ?? action.path.length,
+        !!target,
+      );
+      if (action.effect === "heal" && target) {
+        score +=
+          45 +
+          Math.min(
+            healingPower(actor.character),
+            stats(target.character).hp - target.hp,
+          ) *
+            8;
+      } else if (target) {
         const survives = target.hp > hit;
         const counter =
           survives &&
           hexDistance(dest, target.coord) <= stats(target.character).range
-            ? damage(
-                stats(target.character).attack,
-                terrain(target.coord),
-                true,
-                stats(target.character).counterTenths,
-              )
+            ? counterDamage(target.character, terrain(target.coord))
             : 0;
         score +=
           35 +
@@ -66,9 +87,13 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
       o.timeline.filter((t) => !t.acted).map((t) => t.characterId),
     );
     for (const enemyUnit of visibleEnemies) {
+      if (!canAttack(enemyUnit.character)) continue;
       const es = stats(enemyUnit.character);
       if (hexDistance(dest, enemyUnit.coord) <= es.range + es.movement) {
-        const danger = damage(es.attack, terrain(enemyUnit.coord));
+        const danger = attackDamage(
+          enemyUnit.character,
+          terrain(enemyUnit.coord),
+        );
         score -=
           danger * (waiting.has(enemyUnit.character.characterId) ? 1.2 : 0.4);
         if (danger >= actor.hp && waiting.has(enemyUnit.character.characterId))

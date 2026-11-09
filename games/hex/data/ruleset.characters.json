@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "rosterLimit": 15,
   "replacementBelow": 6,
   "formationLimit": 6,
@@ -40,6 +40,36 @@
       "movement": 2,
       "initiative": 16,
       "counterTenths": 20
+    },
+    "spearman": {
+      "cost": 2,
+      "vision": 2,
+      "hp": 25,
+      "attack": 10,
+      "range": 2,
+      "movement": 1,
+      "initiative": 9,
+      "counterTenths": 12
+    },
+    "medic": {
+      "cost": 2,
+      "vision": 2,
+      "hp": 20,
+      "attack": 8,
+      "range": 1,
+      "movement": 1,
+      "initiative": 8,
+      "counterTenths": 0
+    },
+    "cavalry": {
+      "cost": 3,
+      "vision": 1,
+      "hp": 30,
+      "attack": 15,
+      "range": 1,
+      "movement": 3,
+      "initiative": 5,
+      "counterTenths": 2
     }
   },
   "hpDelta": [-3, -2, -1, 0, 1, 2, 3],
@@ -55,5 +85,56 @@
     "attack": [0, 1, 2],
     "initiative": [0, 1],
     "counterTenths": [0, 1]
-  }
+  },
+  "abilities": {
+    "knight": {
+      "action": "attack",
+      "canCounter": true,
+      "healTenths": 0,
+      "chargeSteps": 0,
+      "chargeAttack": 0
+    },
+    "archer": {
+      "action": "attack",
+      "canCounter": true,
+      "healTenths": 0,
+      "chargeSteps": 0,
+      "chargeAttack": 0
+    },
+    "scout": {
+      "action": "attack",
+      "canCounter": true,
+      "healTenths": 0,
+      "chargeSteps": 0,
+      "chargeAttack": 0
+    },
+    "spearman": {
+      "action": "attack",
+      "canCounter": true,
+      "healTenths": 0,
+      "chargeSteps": 0,
+      "chargeAttack": 0
+    },
+    "medic": {
+      "action": "heal",
+      "canCounter": false,
+      "healTenths": 12,
+      "chargeSteps": 0,
+      "chargeAttack": 0
+    },
+    "cavalry": {
+      "action": "attack",
+      "canCounter": true,
+      "healTenths": 0,
+      "chargeSteps": 3,
+      "chargeAttack": 3
+    }
+  },
+  "cpuFormations": [
+    ["knight", "knight", "archer", "archer", "scout", "scout"],
+    ["spearman", "medic", "cavalry", "scout", "scout"],
+    ["knight", "spearman", "archer", "medic", "scout", "scout"],
+    ["cavalry", "spearman", "medic", "scout", "scout", "scout"],
+    ["spearman", "spearman", "archer", "medic", "scout", "scout"]
+  ]
 }

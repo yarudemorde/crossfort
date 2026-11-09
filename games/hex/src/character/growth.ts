@@ -1,6 +1,6 @@
 import rules from "../../data/ruleset.characters.json";
 import { nextRandom } from "../game/rng";
-import type { Growth, Level } from "./types";
+import type { ClassId, Growth, Level } from "./types";
 
 export const levelSteps = (level: Level) => (level === "MAX" ? 3 : level - 1);
 export const zeroGrowth = (): Growth => ({
@@ -21,7 +21,10 @@ export function totalGrowth(history: Growth[]): Growth {
   );
 }
 /** Four independent, equally weighted integer draws. The caller saves gain and next state atomically. */
-export function rollGrowth(seed: number): { gain: Growth; rngState: number } {
+export function rollGrowth(
+  seed: number,
+  classId?: ClassId,
+): { gain: Growth; rngState: number } {
   let rngState = seed >>> 0;
   const gain = zeroGrowth();
   for (const key of Object.keys(gain) as (keyof Growth)[]) {
@@ -30,6 +33,7 @@ export function rollGrowth(seed: number): { gain: Growth; rngState: number } {
     const choices = rules.growth[key];
     gain[key] = choices[Math.floor(roll * choices.length)];
   }
+  if (classId && !rules.abilities[classId].canCounter) gain.counterTenths = 0;
   return { gain, rngState };
 }
 export function validGrowth(value: unknown): value is Growth {

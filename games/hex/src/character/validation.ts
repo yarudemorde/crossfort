@@ -1,3 +1,4 @@
+import rules from "../../data/ruleset.characters.json";
 import type { Character } from "./types";
 import { levelSteps, validGrowth } from "./growth";
 export function validCharacter(value: unknown): value is Character {
@@ -23,7 +24,7 @@ function validIdentity(value: unknown): value is Character {
     [...c.displayName].length >= 1 &&
     [...c.displayName].length <= 20 &&
     typeof c.affiliationId === "string" &&
-    ["knight", "archer", "scout"].includes(String(c.classId)) &&
+    Object.hasOwn(rules.classes, String(c.classId)) &&
     [1, 2, 3, "MAX"].includes(c.level as string | number) &&
     Number.isInteger(c.hpDelta) &&
     Number(c.hpDelta) >= -3 &&

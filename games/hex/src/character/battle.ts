@@ -7,15 +7,22 @@ import {
   headquartersFor,
   validateDeployment,
   movement,
-  damage,
+  attackDamage,
   resolveCombat,
 } from "./combat";
+import { canAttack, chargeBonus, resolveHealing } from "./abilities";
 import { stats, validateFormation } from "./roster";
 import type { BattleResult, Character, Participant } from "./types";
 
 export type BattleAction =
   | { type: "pass" }
-  | { type: "act"; actorId: string; path: Coord[]; targetId?: string };
+  | {
+      type: "act";
+      actorId: string;
+      path: Coord[];
+      targetId?: string;
+      effect?: "heal";
+    };
 export type Battle = {
   id: string;
   seed: number;
@@ -28,6 +35,7 @@ export type Battle = {
   actedIds: string[];
   currentActorId: string;
   pendingActorId?: string;
+  pendingMovedHexes?: number;
   participants: Participant[];
   headquarters: Record<Owner, { coord: Coord; hp: number }>;
   explored: Record<Owner, string[]>;
@@ -58,6 +66,8 @@ export type BattleObservation = {
     current: boolean;
   }[];
   pendingActorId?: string;
+  /** Own pending action only; hidden enemy routes are never exposed. */
+  pendingMovedHexes?: number;
   headquarters: Record<Owner, { coord: Coord; hp?: number }>;
   participants: Participant[];
   hexes: (Coord & { terrain?: Terrain; visible: boolean; explored: boolean })[];
@@ -131,6 +141,9 @@ export function observation(state: Battle, owner: Owner): BattleObservation {
     }),
     pendingActorId:
       owner === state.activePlayer ? state.pendingActorId : undefined,
+    ...(owner === state.activePlayer && state.pendingActorId
+      ? { pendingMovedHexes: state.pendingMovedHexes ?? 0 }
+      : {}),
     headquarters: {
       [owner]: state.headquarters[owner],
       [enemy]: {
@@ -245,7 +258,13 @@ export function legalActions(o: BattleObservation): BattleAction[] {
             actorId: p.character.characterId,
             path: node.path,
           });
-        for (const e of enemies) {
+        for (const e of canAttack(p.character)
+          ? enemies
+          : own.filter(
+              (ally) =>
+                ally.character.characterId !== p.character.characterId &&
+                ally.hp < stats(ally.character).hp,
+            )) {
           const d = hexDistance(node.coord, e.coord);
           if (d >= 1 && d <= stats(p.character).range)
             out.push({
@@ -253,11 +272,17 @@ export function legalActions(o: BattleObservation): BattleAction[] {
               actorId: p.character.characterId,
               path: node.path,
               targetId: e.character.characterId,
+              ...(!canAttack(p.character) ? { effect: "heal" as const } : {}),
             });
         }
         const enemyHq = o.headquarters[other(o.owner)],
           d = hexDistance(node.coord, enemyHq.coord);
-        if (enemyHq.hp !== undefined && d >= 1 && d <= stats(p.character).range)
+        if (
+          canAttack(p.character) &&
+          enemyHq.hp !== undefined &&
+          d >= 1 &&
+          d <= stats(p.character).range
+        )
           out.push({
             type: "act",
             actorId: p.character.characterId,
@@ -312,8 +337,9 @@ export function beginMovement(
     throw Error("移動できません。");
   const s = structuredClone(state);
   const p = s.participants.find((x) => x.character.characterId === actorId)!;
-  moveAlong(s, p, path, onStep);
+  const moved = moveAlong(s, p, path, onStep);
   s.pendingActorId = actorId;
+  s.pendingMovedHexes = moved.movedHexes;
   return s;
 }
 function moveAlong(
@@ -321,7 +347,7 @@ function moveAlong(
   p: Participant,
   path: Coord[],
   onStep?: (state: Battle, event?: PresentationEvent) => void,
-): boolean {
+): { blocked: boolean; movedHexes: number } {
   let lastFree = { ...p.coord };
   const traversed: Coord[] = [];
   for (const c of path) {
@@ -352,7 +378,7 @@ function moveAlong(
         });
         onStep?.(s);
       }
-      return true;
+      return { blocked: true, movedHexes: traversed.length };
     }
     p.coord = { ...c };
     traversed.push({ ...c });
@@ -373,7 +399,7 @@ function moveAlong(
     )
       lastFree = { ...c };
   }
-  return false;
+  return { blocked: false, movedHexes: traversed.length };
 }
 export function applyBattleAction(
   state: Battle,
@@ -390,6 +416,7 @@ export function applyBattleAction(
         ? a.type === action.type
         : a.actorId === action.actorId &&
           a.targetId === action.targetId &&
+          a.effect === action.effect &&
           a.path.length === action.path.length &&
           a.path.every((c, i) => sameHex(c, action.path[i])),
     )
@@ -403,12 +430,34 @@ export function applyBattleAction(
         x.alive &&
         x.owner === owner,
     )!;
-    const blocked = moveAlong(s, p, action.path, onStep);
+    const moved = moveAlong(s, p, action.path, onStep);
+    const movedHexes = state.pendingActorId
+      ? (state.pendingMovedHexes ?? 0)
+      : moved.movedHexes;
     // A hidden enemy may interrupt an otherwise legal path without revealing its identity.
-    if (!blocked && action.targetId) {
+    if (!moved.blocked && action.targetId) {
       const enemy = other(owner);
-      if (action.targetId === `hq_${enemy}`) {
-        const amount = damage(stats(p.character).attack, terrainAt(s, p.coord));
+      if (action.effect === "heal") {
+        const target = s.participants.find(
+          (x) => x.character.characterId === action.targetId,
+        )!;
+        const healing = resolveHealing(p, target);
+        Object.assign(target, healing.target);
+        const event = {
+          type: "heal" as const,
+          actorId: action.actorId,
+          targetId: action.targetId,
+          amount: healing.amount,
+        };
+        s.events.push(event);
+        onStep?.(s, event);
+      } else if (action.targetId === `hq_${enemy}`) {
+        const amount = attackDamage(
+          p.character,
+          terrainAt(s, p.coord),
+          movedHexes,
+          false,
+        );
         s.headquarters[enemy].hp = Math.max(
           0,
           s.headquarters[enemy].hp - amount,
@@ -435,6 +484,7 @@ export function applyBattleAction(
           target,
           terrainAt(s, p.coord),
           terrainAt(s, target.coord),
+          movedHexes,
         );
         Object.assign(target, r.defender);
         onStep?.(s, {
@@ -442,6 +492,7 @@ export function applyBattleAction(
           actorId: action.actorId,
           targetId: action.targetId,
           amount: r.hit,
+          charge: chargeBonus(p.character, movedHexes) > 0,
         });
         Object.assign(p, r.attacker);
         if (r.counter)
@@ -469,6 +520,7 @@ export function applyBattleAction(
   }
   reveal(s);
   delete s.pendingActorId;
+  delete s.pendingMovedHexes;
   // If both sides are eliminated after one action, the acting side loses.
   const enemy = other(owner);
   if (

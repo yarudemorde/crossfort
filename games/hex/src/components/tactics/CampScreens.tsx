@@ -2,8 +2,15 @@ import rules from "../../../data/ruleset.characters.json";
 import { useState } from "react";
 import type { CharacterGame } from "../../app/useCharacterGame";
 import type { Character, ClassId } from "../../character/types";
-import { stats } from "../../character/roster";
-import { Icon, SoldierBadge, classNames, countryNames } from "./Icons";
+import { healingPower } from "../../character/abilities";
+import { stats, classIds } from "../../character/roster";
+import {
+  Icon,
+  SoldierBadge,
+  classNames,
+  countryNames,
+  classDescriptions,
+} from "./Icons";
 import { SoldierList } from "./SoldierList";
 export function CampHome({
   game: g,
@@ -98,7 +105,7 @@ export function ClassFilter({
 }) {
   return (
     <div className="hx-filters" role="group" aria-label="職業で絞り込み">
-      {(["all", "knight", "archer", "scout"] as const).map((c) => (
+      {(["all", ...classIds] as const).map((c) => (
         <button key={c} aria-pressed={value === c} onClick={() => onChange(c)}>
           {c === "all" ? "全兵士" : classNames[c]}
         </button>
@@ -161,7 +168,7 @@ export function Formation({ game: g }: { game: CharacterGame }) {
           <span>
             出撃兵士{" "}
             <b>
-              {g.formation.length}
+              {g.chosen.length}
               <small>/6</small>
             </b>
           </span>
@@ -286,6 +293,10 @@ export function SoldierDetails({
           </div>
         ))}
       </div>
+      <p className="hx-ability-description">
+        {classDescriptions[c.classId]}
+        {c.classId === "medic" && ` 現在の回復量：${healingPower(c)}。`}
+      </p>
       <dl className="hx-detail-lines">
         <div>
           <dt>職業基準 HP / 攻撃</dt>

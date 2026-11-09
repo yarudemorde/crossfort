@@ -1,5 +1,6 @@
 import type { CharacterGame } from "../../app/useCharacterGame";
 import { stats } from "../../character/roster";
+import { chargeBonus } from "../../character/abilities";
 import { Icon, SoldierBadge } from "./Icons";
 export function BattleActionBar({
   game: g,
@@ -25,7 +26,18 @@ export function BattleActionBar({
     ? Math.max(0, g.attacking.hp - g.expectedCounter)
     : undefined;
   const targetAfter =
-    targetHp === undefined ? undefined : Math.max(0, targetHp - g.expectedHit);
+    targetHp === undefined
+      ? undefined
+      : g.isHealing
+        ? targetHp + g.expectedHeal
+        : Math.max(0, targetHp - g.expectedHit);
+  const healing = unit?.character.classId === "medic";
+  const chargeReady =
+    unit &&
+    chargeBonus(unit.character, o.pendingMovedHexes ?? 0) > 0 &&
+    g.response?.legal?.some(
+      (a) => a.type === "act" && a.targetId && !a.targetId.startsWith("hq_"),
+    );
   return (
     <footer
       className="hx-actionbar"
@@ -35,7 +47,9 @@ export function BattleActionBar({
           : g.busy
             ? "animating"
             : g.preview
-              ? "attack"
+              ? g.isHealing
+                ? "heal"
+                : "attack"
               : g.movePreview
                 ? "move"
                 : unit
@@ -49,13 +63,17 @@ export function BattleActionBar({
             <span className="hx-pulse" />
             {cpu
               ? "敵軍の行動中"
-              : g.animation?.frame.kind === "hit"
-                ? g.animation.frame.counter
-                  ? "反撃"
-                  : "攻撃"
-                : g.animation?.frame.kind === "destroy"
-                  ? "戦闘不能"
-                  : "行動中"}
+              : g.animation?.frame.kind === "heal"
+                ? "回復"
+                : g.animation?.frame.kind === "hit"
+                  ? g.animation.frame.counter
+                    ? "反撃"
+                    : g.animation.frame.charge
+                      ? "突撃"
+                      : "攻撃"
+                  : g.animation?.frame.kind === "destroy"
+                    ? "戦闘不能"
+                    : "行動中"}
             <small>戦場を確認できます</small>
           </div>
         ) : g.preview ? (
@@ -66,19 +84,34 @@ export function BattleActionBar({
                 <span> → </span>
                 {g.defending?.character.displayName ?? "敵本城"}
               </strong>
-              <small>
-                与ダメージ <b>{g.expectedHit}</b>　反撃{" "}
-                <b className={g.expectedCounter ? "danger" : ""}>
-                  {g.expectedCounter}
-                </b>
-                {targetAfter === 0 && <em>撃破可能</em>}
-                {ownAfter === 0 && <em className="danger-text">戦死の危険</em>}
-              </small>
+              {g.isHealing ? (
+                <small className="hx-heal-text">
+                  回復予定 <b>+{g.expectedHeal}</b>　HP {targetHp} →{" "}
+                  {targetAfter}
+                </small>
+              ) : (
+                <small>
+                  与ダメージ <b>{g.expectedHit}</b>　反撃{" "}
+                  <b className={g.expectedCounter ? "danger" : ""}>
+                    {g.expectedCounter}
+                  </b>
+                  {targetAfter === 0 && <em>撃破可能</em>}
+                  {ownAfter === 0 && (
+                    <em className="danger-text">戦死の危険</em>
+                  )}
+                  {!!g.expectedCharge && <em>突撃 +{g.expectedCharge}</em>}
+                </small>
+              )}
             </div>
             <div className="hx-after-hp">
-              <small>予測HP 自 / 敵</small>
+              <small>{g.isHealing ? "回復後HP" : "予測HP 自 / 敵"}</small>
               <b>
-                {ownAfter} <span>／</span> {targetAfter ?? "?"}
+                {!g.isHealing && (
+                  <>
+                    {ownAfter} <span>／</span>{" "}
+                  </>
+                )}
+                {targetAfter ?? "?"}
               </b>
             </div>
           </div>
@@ -112,7 +145,13 @@ export function BattleActionBar({
                 {stats(unit.character).movement} · 機動{" "}
                 {stats(unit.character).initiative}{" "}
                 <span className="hx-hint">
-                  {o.pendingActorId ? "攻撃対象を選択" : "移動先を選択"}
+                  {chargeReady
+                    ? "突撃可能 +3"
+                    : o.pendingActorId
+                      ? healing
+                        ? "回復対象を選択"
+                        : "攻撃対象を選択"
+                      : "移動先を選択"}
                 </span>
               </small>
             </span>
@@ -155,11 +194,11 @@ export function BattleActionBar({
               キャンセル
             </button>
             <button
-              className="hx-button primary danger-action"
+              className={`hx-button primary ${g.isHealing ? "heal-action" : "danger-action"}`}
               onClick={() => g.command(g.preview!)}
             >
-              <Icon name="sword" />
-              攻撃確定
+              <Icon name={g.isHealing ? "heart" : "sword"} />
+              {g.isHealing ? "回復確定" : "攻撃確定"}
             </button>
           </>
         ) : g.movePreview ? (
@@ -186,7 +225,13 @@ export function BattleActionBar({
               詳細
             </button>
             <span className="hx-ready-label">
-              {o.pendingActorId ? "敵をタップ" : "移動先・敵をタップ"}
+              {o.pendingActorId
+                ? healing
+                  ? "味方をタップ"
+                  : "敵をタップ"
+                : healing
+                  ? "移動先・味方をタップ"
+                  : "移動先・敵をタップ"}
             </span>
             <button
               className="hx-button primary"

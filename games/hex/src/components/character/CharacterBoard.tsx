@@ -26,7 +26,7 @@ export function CharacterBoard({
   path?: Coord[];
   deploymentSlots?: Coord[];
   initialCoords?: Coord[];
-  attackPreview?: { actorId: string; targetId?: string };
+  attackPreview?: { actorId: string; targetId?: string; effect?: "heal" };
   onHex: (coord: Coord) => void;
   animation?: { frame: CharacterFrame; impact: boolean; serial: number };
 }) {
@@ -95,6 +95,9 @@ export function CharacterBoard({
                     a.type === "act" && sameHex(a.path[a.path.length - 1], h),
                 );
               const canAttack = targetCoords.some((c) => sameHex(c, h));
+              const canHeal =
+                canAttack &&
+                attacks.some((a) => a.type === "act" && a.effect === "heal");
               const unit = view.participants.find((u) => sameHex(u.coord, h));
               return (
                 <g
@@ -116,16 +119,24 @@ export function CharacterBoard({
                   <polygon
                     points={tilePolygon}
                     fill={
-                      canAttack
-                        ? "#c3454259"
-                        : canMove
-                          ? "#d5b66c55"
-                          : !h.visible
-                            ? "#0a0e1166"
-                            : "transparent"
+                      canHeal
+                        ? "#438a6455"
+                        : canAttack
+                          ? "#c3454259"
+                          : canMove
+                            ? "#d5b66c55"
+                            : !h.visible
+                              ? "#0a0e1166"
+                              : "transparent"
                     }
                     stroke={
-                      canAttack ? "#f47865" : canMove ? "#e8ce86" : "#1a2018"
+                      canHeal
+                        ? "#91dfaa"
+                        : canAttack
+                          ? "#f47865"
+                          : canMove
+                            ? "#e8ce86"
+                            : "#1a2018"
                     }
                     strokeWidth={canMove || canAttack ? 2 : 1}
                   />
@@ -169,10 +180,12 @@ export function CharacterBoard({
                     y1={xy(a).y}
                     x2={xy(b).x}
                     y2={xy(b).y}
-                    stroke="#CF756B"
+                    stroke={
+                      attackPreview.effect === "heal" ? "#91dfaa" : "#CF756B"
+                    }
                     strokeWidth="2.5"
                     strokeDasharray="5 3"
-                    markerEnd="url(#hx-attack-arrow)"
+                    markerEnd={attackPreview.effect === "heal" ? undefined : "url(#hx-attack-arrow)"}
                     pointerEvents="none"
                   />
                 ) : null;
@@ -199,7 +212,7 @@ export function CharacterBoard({
                 return (
                   <g
                     key={unit.character.characterId}
-                    className={`v2-moving-piece ${f?.kind === "destroy" && f.targetId === unit.character.characterId ? "v2-dying" : ""} ${f?.kind === "hit" && f.actorId === unit.character.characterId ? "v2-striking" : ""}`}
+                    className={`v2-moving-piece ${f?.kind === "destroy" && f.targetId === unit.character.characterId ? "v2-dying" : ""} ${f?.kind === "hit" && f.actorId === unit.character.characterId ? (f.charge ? "v2-striking hx-charging" : "v2-striking") : ""}`}
                     style={{
                       transform: `translate(${c.x}px, ${c.y}px)`,
                       transitionDuration: `${timing.movement.stepMs}ms`,
@@ -216,7 +229,7 @@ export function CharacterBoard({
                             key={animation?.serial}
                             attributeName="transform"
                             type="translate"
-                            values={`0 0; ${(xy(f.target).x - c.x) * 0.18} ${(xy(f.target).y - c.y) * 0.18}; 0 0`}
+                            values={`0 0; ${(xy(f.target).x - c.x) * (f.charge ? 0.35 : 0.18)} ${(xy(f.target).y - c.y) * (f.charge ? 0.35 : 0.18)}; 0 0`}
                             dur={`${timing.combat.meleeMs}ms`}
                           />
                         )}
@@ -293,7 +306,7 @@ export function CharacterBoard({
                 );
               })}
             </g>
-            {f?.kind === "hit" && f.target && (
+            {(f?.kind === "hit" || f?.kind === "heal") && f.target && (
               <g key={animation!.serial} pointerEvents="none">
                 {f.source && !animation!.impact && (
                   <g>
@@ -307,12 +320,21 @@ export function CharacterBoard({
                             y1={a.y}
                             x2={b.x}
                             y2={b.y}
-                            stroke={f.counter ? "#e99e53" : "#ffe6a2"}
-                            strokeWidth="2"
+                            stroke={
+                              f.kind === "heal"
+                                ? "#91dfaa"
+                                : f.counter
+                                  ? "#e99e53"
+                                  : "#ffe6a2"
+                            }
+                            strokeWidth={f.charge ? "4" : "2"}
                             strokeDasharray={f.range === 2 ? "4 3" : undefined}
                             className="v2-attack-line"
                           />
-                          <circle r="4" fill="#ffe6a2">
+                          <circle
+                            r="4"
+                            fill={f.kind === "heal" ? "#91dfaa" : "#ffe6a2"}
+                          >
                             <animateMotion
                               dur={`${timing.combat.projectileMs}ms`}
                               path={`M${a.x},${a.y} L${b.x},${b.y}`}
@@ -332,17 +354,34 @@ export function CharacterBoard({
                       className="v2-impact"
                       r="20"
                       fill="none"
-                      stroke="#ffe0a1"
+                      stroke={f.kind === "heal" ? "#91dfaa" : "#ffe0a1"}
                       strokeWidth="3"
                     />
                     <text
                       textAnchor="middle"
                       y="-24"
                       className="v2-damage"
-                      fill={f.counter ? "#ffb566" : "#ff7e70"}
+                      fill={
+                        f.kind === "heal"
+                          ? "#91dfaa"
+                          : f.counter
+                            ? "#ffb566"
+                            : "#ff7e70"
+                      }
                     >
-                      −{f.amount}
+                      {f.kind === "heal" ? "+" : "−"}
+                      {f.amount}
                     </text>
+                    {f.charge && (
+                      <text
+                        y="-44"
+                        textAnchor="middle"
+                        className="v2-piece-label"
+                        fill="#ffe0a1"
+                      >
+                        突撃
+                      </text>
+                    )}
                   </g>
                 )}
               </g>

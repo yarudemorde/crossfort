@@ -3,9 +3,12 @@ import { totalGrowth } from "./growth";
 import { nextRandom } from "../game/rng";
 import type { Character, ClassId, Level, RosterSave } from "./types";
 
+export const classIds = Object.keys(rules.classes) as ClassId[];
+
 export function stats(c: Character) {
   const base = rules.classes[c.classId],
     growth = totalGrowth(c.growthHistory);
+  if (!rules.abilities[c.classId].canCounter) growth.counterTenths = 0;
   const initialHp = Math.max(1, base.hp + c.hpDelta),
     initialAttack = Math.max(1, base.attack + c.attackDelta);
   return {

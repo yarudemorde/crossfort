@@ -134,7 +134,7 @@ export function promote(save: RosterSave, id?: string): RosterSave {
   const character = survivors.find(
     (p) => p.character.characterId === id,
   )!.character;
-  const { gain, rngState } = rollGrowth(reward.rngState);
+  const { gain, rngState } = rollGrowth(reward.rngState, character.classId);
   return {
     ...save,
     pendingReward: {

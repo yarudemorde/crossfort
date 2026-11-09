@@ -2361,3 +2361,31 @@ details summary {
     width: 10px;
   }
 }
+
+/* Six jobs keep the compact HUD and camera geometry unchanged. */
+.hx-filters {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.hx-filters button {
+  flex: 1 0 52px;
+  white-space: nowrap;
+}
+.hx-ability-description {
+  color: var(--hx-text);
+  line-height: 1.7;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.hx-heal-text,
+.hx-heal-text b {
+  color: #a2dfb3;
+}
+.hx-button.heal-action {
+  background: linear-gradient(#467653, #2f523d);
+  border-color: #91b79b;
+  color: #f0fff1;
+}
+.hx-charging {
+  filter: brightness(1.5) drop-shadow(0 0 3px #d2b576);
+}

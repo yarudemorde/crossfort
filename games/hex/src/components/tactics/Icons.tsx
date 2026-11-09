@@ -43,6 +43,24 @@ const paths: Record<IconName, ReactNode> = {
       <path d="M8 10h8l-4 5ZM17 3l-1 5m-2-2 4 3" />
     </>
   ),
+  spearman: (
+    <>
+      <path d="m5 21 11-17 3-2-1 5L7 22M11 9l6 4" />
+      <path d="m4 9 4-2 3 3-2 7-4 1Z" />
+    </>
+  ),
+  medic: (
+    <>
+      <path d="M4 7h16v14H4ZM8 7V3h8v4" />
+      <path d="M12 10v8M8 14h8" />
+    </>
+  ),
+  cavalry: (
+    <>
+      <path d="m5 21 2-7 4-3-4-1 4-6 6-2v4l3 4-2 3-5-1 2 9ZM4 22h15" />
+      <path d="m12 5 3 2M8 16h6" />
+    </>
+  ),
   castle: (
     <>
       <path d="M4 21h16M6 21V8h3V4h2v4h2V4h2v4h3v13M4 8V4h2v4m12 0h2V4h-2" />
@@ -126,6 +144,19 @@ export const classNames: Record<ClassId, string> = {
   knight: "騎士",
   archer: "弓兵",
   scout: "斥候",
+  spearman: "槍兵",
+  medic: "衛生兵",
+  cavalry: "騎兵",
+};
+export const classDescriptions: Record<ClassId, string> = {
+  knight: "体力と攻撃に優れる前衛。射程1。",
+  archer: "射程2の遠距離攻撃。反撃は控えめ。",
+  scout: "移動2・視野3の先行役。高い反撃倍率。",
+  spearman: "射程2・反撃×1.2。生存し、射程内なら反撃。",
+  medic:
+    "攻撃の代わりに隣接する味方1名を回復。自身・敵・死亡者は対象外。毎ラウンド使用可能、反撃なし。",
+  cavalry:
+    "突撃：3マス移動した直後、同じ行動の対兵士攻撃だけ+3。反撃・本城攻撃には適用しない。",
 };
 export const countryNames: Record<string, string> = {
   crossfort: "クロスフォート",
