@@ -189,6 +189,7 @@ export default function CharacterApp() {
                 path={g.movePreview?.path}
                 animation={g.animation}
                 attackPreview={g.preview}
+                forecast={g.attackForecast}
               />
             )}
             {g.view && <RoundIndicator round={g.view.roundNumber} />}
@@ -334,7 +335,11 @@ export default function CharacterApp() {
               </p>
               <h3>反撃を読む</h3>
               <p>
-                敵が生存し、射程内なら自動で一度反撃します。騎士×1.0、弓兵×0.5、斥候×2.0、槍兵×1.2、騎兵×0.2を基本に、成長した倍率と地形を反映します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
+                敵が生存し、射程内なら自動で一度反撃します。騎士×1.0、弓兵×0.5、斥候×2.0、槍兵×1.3、騎兵×0.2を基本に、成長した倍率と地形を反映します。攻撃前の予測HPを確認してください。受傷しても攻撃力は変わりません。
+              </p>
+              <h3>槍兵の直突き</h3>
+              <p>
+                指定方向の手前の敵に命中し、味方は通過します。反撃も同じ判定です。斜め方向も攻撃でき、境界上では同距離なら射線の時計回り側を優先。金の点線が指定方向、赤の枠が命中先、橙の枠が反撃先です。
               </p>
               <h3>回復と突撃</h3>
               <p>

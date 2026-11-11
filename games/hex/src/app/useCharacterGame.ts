@@ -1,3 +1,4 @@
+import { forecastAttack } from "../character/forecast";
 import { directActionAt } from "./battle-target";
 import { useEffect, useRef, useState, type SetStateAction } from "react";
 import { reconcileFormationDraft, type FormationDraft } from "./formation";
@@ -8,13 +9,9 @@ import {
   selectMap,
   type MapSizeId,
 } from "../data/map-selection";
-import { hexDistance, neighbors, sameHex } from "../game/rules/hex";
+import { neighbors, sameHex } from "../game/rules/hex";
 import type { Coord } from "../game/types";
-import {
-  attackDamage,
-  counterDamage,
-  headquartersForRadius,
-} from "../character/combat";
+import { headquartersForRadius } from "../character/combat";
 import { chargeBonus, resolveHealing } from "../character/abilities";
 import { stats, validateFormation } from "../character/roster";
 import { loadSave, updateSave } from "../character/storage";
@@ -402,13 +399,21 @@ export function useCharacterGame() {
   const attacking =
     preview &&
     view?.participants.find((p) => p.character.characterId === preview.actorId);
-  const defending =
+  const attackForecast =
+    preview && view ? forecastAttack(view, preview) : undefined;
+  const requestedDefender =
     preview &&
     view?.participants.find(
       (p) => p.character.characterId === preview.targetId,
     );
-  const tile = (c: Coord) =>
-    view?.hexes.find((h) => sameHex(h, c))?.terrain ?? "plain";
+  const defending = view?.participants.find(
+    (p) =>
+      p.character.characterId ===
+      (attackForecast?.hitTargetId ?? preview?.targetId),
+  );
+  const counterRecipient = view?.participants.find(
+    (p) => p.character.characterId === attackForecast?.counterTargetId,
+  );
   const isHealing = preview?.effect === "heal";
   const movedHexes = view?.pendingMovedHexes ?? preview?.path.length ?? 0;
   const expectedCharge =
@@ -419,24 +424,8 @@ export function useCharacterGame() {
     isHealing && attacking && defending
       ? resolveHealing(attacking, defending).amount
       : 0;
-  const expectedHit =
-    attacking && !isHealing
-      ? attackDamage(
-          attacking.character,
-          tile(attacking.coord),
-          movedHexes,
-          !!defending,
-        )
-      : 0;
-  const expectedCounter =
-    attacking &&
-    defending &&
-    !isHealing &&
-    defending.hp > expectedHit &&
-    hexDistance(attacking.coord, defending.coord) <=
-      stats(defending.character).range
-      ? counterDamage(defending.character, tile(defending.coord))
-      : 0;
+  const expectedHit = attackForecast?.hit ?? 0;
+  const expectedCounter = attackForecast?.counter ?? 0;
   function goHome() {
     if (busy) return;
     if (screen === "battle" && !confirm("戦闘を中断して本陣に戻りますか？"))
@@ -531,6 +520,9 @@ export function useCharacterGame() {
     defending,
     expectedHit,
     expectedCounter,
+    attackForecast,
+    requestedDefender,
+    counterRecipient,
     isHealing,
     expectedHeal,
     expectedCharge,

@@ -8,6 +8,7 @@ import { sameHex } from "../../game/rules/hex";
 import type { Coord } from "../../game/types";
 import type { BattleAction, BattleObservation } from "../../character/battle";
 import { stats } from "../../character/roster";
+import type { AttackForecast } from "../../character/forecast";
 
 export function CharacterBoard({
   view,
@@ -19,6 +20,7 @@ export function CharacterBoard({
   deploymentSlots,
   initialCoords,
   attackPreview,
+  forecast,
 }: {
   view: BattleObservation;
   legal: BattleAction[];
@@ -27,6 +29,7 @@ export function CharacterBoard({
   deploymentSlots?: Coord[];
   initialCoords?: Coord[];
   attackPreview?: { actorId: string; targetId?: string; effect?: "heal" };
+  forecast?: AttackForecast;
   onHex: (coord: Coord) => void;
   animation?: { frame: CharacterFrame; impact: boolean; serial: number };
 }) {
@@ -181,14 +184,101 @@ export function CharacterBoard({
                     x2={xy(b).x}
                     y2={xy(b).y}
                     stroke={
-                      attackPreview.effect === "heal" ? "#91dfaa" : "#CF756B"
+                      attackPreview.effect === "heal"
+                        ? "#91dfaa"
+                        : forecast?.directional
+                          ? "#D2B576"
+                          : "#CF756B"
                     }
                     strokeWidth="2.5"
                     strokeDasharray="5 3"
-                    markerEnd={attackPreview.effect === "heal" ? undefined : "url(#hx-attack-arrow)"}
+                    markerEnd={
+                      attackPreview.effect === "heal" || forecast?.directional
+                        ? undefined
+                        : "url(#hx-attack-arrow)"
+                    }
                     pointerEvents="none"
                   />
                 ) : null;
+              })()}
+            {forecast &&
+              (() => {
+                const actor = view.participants.find(
+                  (p) => p.character.characterId === attackPreview?.actorId,
+                );
+                const hit = view.participants.find(
+                  (p) => p.character.characterId === forecast.hitTargetId,
+                );
+                const counter = view.participants.find(
+                  (p) => p.character.characterId === forecast.counterTargetId,
+                );
+                if (!actor) return null;
+                return (
+                  <g pointerEvents="none" className="hx-target-feedback">
+                    {forecast.directional && (
+                      <circle
+                        cx={xy(forecast.aim).x}
+                        cy={xy(forecast.aim).y}
+                        r="27"
+                        fill="none"
+                        stroke="#D2B576"
+                        strokeWidth="2"
+                        strokeDasharray="4 3"
+                      />
+                    )}
+                    {hit && forecast.directional && (
+                      <>
+                        <circle
+                          data-hit-target={forecast.hitTargetId}
+                          cx={xy(hit.coord).x}
+                          cy={xy(hit.coord).y}
+                          r="24"
+                          fill="none"
+                          stroke="#f47865"
+                          strokeWidth="3"
+                          strokeDasharray={forecast.uncertain ? "4 3" : undefined}
+                        />
+                        {forecast.hitTargetId !==
+                          forecast.requestedTargetId && (
+                          <line
+                            x1={xy(actor.coord).x}
+                            y1={xy(actor.coord).y}
+                            x2={xy(hit.coord).x}
+                            y2={xy(hit.coord).y}
+                            stroke="#f47865"
+                            strokeWidth="3"
+                            markerEnd="url(#hx-attack-arrow)"
+                          />
+                        )}
+                      </>
+                    )}
+                    {hit &&
+                      counter &&
+                      counter.character.characterId !==
+                        actor.character.characterId && (
+                        <>
+                          <circle
+                            data-counter-target={forecast.counterTargetId}
+                            cx={xy(counter.coord).x}
+                            cy={xy(counter.coord).y}
+                            r="25"
+                            fill="none"
+                            stroke="#efb56d"
+                            strokeWidth="3"
+                          />
+                          <line
+                            x1={xy(hit.coord).x}
+                            y1={xy(hit.coord).y}
+                            x2={xy(counter.coord).x}
+                            y2={xy(counter.coord).y}
+                            stroke="#efb56d"
+                            strokeWidth="2.5"
+                            strokeDasharray="4 3"
+                          />
+                        </>
+                      )}
+                  </g>
+                );
               })()}
             <g pointerEvents="none">
               {(["player", "cpu"] as const).map((owner) => {

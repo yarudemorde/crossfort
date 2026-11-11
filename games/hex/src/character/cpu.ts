@@ -1,7 +1,8 @@
 import type { PresentationEvent } from "./presentation";
 import { hexDistance } from "../game/rules/hex";
 import { nextRandom } from "../game/rng";
-import { attackDamage, counterDamage } from "./combat";
+import { forecastAttack } from "./forecast";
+import { attackDamage } from "./combat";
 import { canAttack, healingPower } from "./abilities";
 import { stats } from "./roster";
 import {
@@ -44,16 +45,14 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
       12 +
       (hexDistance(actor.coord, anchor) - hexDistance(dest, anchor)) * 8 -
       action.path.length * 0.1;
+    const forecast = forecastAttack(o, action);
     if (action.targetId) {
       const target = o.participants.find(
-        (p) => p.character.characterId === action.targetId,
+        (p) =>
+          p.character.characterId ===
+          (forecast?.hitTargetId ?? action.targetId),
       );
-      const hit = attackDamage(
-        actor.character,
-        terrain(dest),
-        o.pendingMovedHexes ?? action.path.length,
-        !!target,
-      );
+      const hit = forecast?.hit ?? 0;
       if (action.effect === "heal" && target) {
         score +=
           45 +
@@ -64,17 +63,16 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
             8;
       } else if (target) {
         const survives = target.hp > hit;
-        const counter =
-          survives &&
-          hexDistance(dest, target.coord) <= stats(target.character).range
-            ? counterDamage(target.character, terrain(target.coord))
-            : 0;
+        const counter = forecast?.counter ?? 0;
+        const counterRecipient = o.participants.find(
+          (p) => p.character.characterId === forecast?.counterTargetId,
+        );
         score +=
           35 +
           Math.min(hit, target.hp) * 5 +
           (!survives ? 25 : 0) -
           counter * 3 -
-          (counter >= actor.hp ? 35 : 0);
+          (counterRecipient && counter >= counterRecipient.hp ? 35 : 0);
       } else
         score +=
           130 +
@@ -101,7 +99,7 @@ export function chooseAction(o: BattleObservation, seed: number): BattleAction {
       }
       // Assist the next visible friendly attackers instead of assuming hidden forces.
       if (
-        action.targetId === enemyUnit.character.characterId &&
+        forecast?.hitTargetId === enemyUnit.character.characterId &&
         enemyUnit.hp > stats(actor.character).attack
       ) {
         const support = o.participants.filter(

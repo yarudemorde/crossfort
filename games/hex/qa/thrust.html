@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+  <meta charset="utf-8" /><title>HEX thrust local QA</title
+  ><style>
+    body {
+      font: 16px sans-serif;
+      background: #131a1b;
+      color: #e6e1d4;
+      padding: 24px;
+    }
+    button,
+    a {
+      display: block;
+      min-height: 44px;
+      margin: 20px 0;
+    }
+    output {
+      white-space: pre-wrap;
+    }
+  </style>
+  <h1>開発専用：槍兵の直突き</h1>
+  <p>
+    この開発環境の保存を検証用兵士・戦闘へ置き換えます。公開ビルドには含みません。
+  </p>
+  <button data-scenario="attack">手前の敵への命中を準備</button
+  ><button data-scenario="counter">第三者への反撃を準備</button
+  ><button data-scenario="diagonal">斜め境界の命中を準備</button
+  ><output></output
+  ><a href="/qa/character-responsive.html?w=375&h=667">スマホ画面で開く</a
+  ><a href="/">PC画面で開く</a>
+  <script type="module" src="./thrust.ts"></script>
+</html>

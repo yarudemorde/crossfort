@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "rosterLimit": 15,
   "replacementBelow": 6,
   "formationLimit": 6,
@@ -45,11 +45,11 @@
       "cost": 2,
       "vision": 2,
       "hp": 25,
-      "attack": 10,
+      "attack": 9,
       "range": 2,
       "movement": 1,
       "initiative": 9,
-      "counterTenths": 12
+      "counterTenths": 13
     },
     "medic": {
       "cost": 2,
@@ -92,42 +92,48 @@
       "canCounter": true,
       "healTenths": 0,
       "chargeSteps": 0,
-      "chargeAttack": 0
+      "chargeAttack": 0,
+      "targeting": "direct"
     },
     "archer": {
       "action": "attack",
       "canCounter": true,
       "healTenths": 0,
       "chargeSteps": 0,
-      "chargeAttack": 0
+      "chargeAttack": 0,
+      "targeting": "direct"
     },
     "scout": {
       "action": "attack",
       "canCounter": true,
       "healTenths": 0,
       "chargeSteps": 0,
-      "chargeAttack": 0
+      "chargeAttack": 0,
+      "targeting": "direct"
     },
     "spearman": {
       "action": "attack",
       "canCounter": true,
       "healTenths": 0,
       "chargeSteps": 0,
-      "chargeAttack": 0
+      "chargeAttack": 0,
+      "targeting": "thrust"
     },
     "medic": {
       "action": "heal",
       "canCounter": false,
       "healTenths": 12,
       "chargeSteps": 0,
-      "chargeAttack": 0
+      "chargeAttack": 0,
+      "targeting": "direct"
     },
     "cavalry": {
       "action": "attack",
       "canCounter": true,
       "healTenths": 0,
       "chargeSteps": 3,
-      "chargeAttack": 3
+      "chargeAttack": 3,
+      "targeting": "direct"
     }
   },
   "cpuFormations": [

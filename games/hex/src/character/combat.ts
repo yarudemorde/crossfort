@@ -1,8 +1,10 @@
 import type { Coord, MapDefinition, Terrain } from "../game/types";
-import { hexDistance, hexId, neighbors } from "../game/rules/hex";
+import { hexDistance, hexId, neighbors, sameHex } from "../game/rules/hex";
 import { stats } from "./roster";
 import { canAttack, canCounter, chargeBonus } from "./abilities";
 import type { Character, Participant } from "./types";
+import { resolveHitTarget } from "./targeting";
+import type { PresentationEvent } from "./presentation";
 
 /** Public placement rule; does not require map terrain. */
 export function headquartersForRadius(radius: number) {
@@ -100,7 +102,86 @@ export function counterDamage(character: Character, terrain: Terrain) {
       )
     : 0;
 }
-/** Combat preserves attack when HP is reduced and attributes counter-kills. */
+export type CombatStage = {
+  event: PresentationEvent;
+  participants: Participant[];
+};
+
+/** Select each actual recipient before applying damage. There is at most one counter.
+ * Authoritative play supplies all soldiers; previews/CPU supply only observations.
+ */
+export function resolveBoardCombat(
+  attacker: Participant,
+  aim: Coord,
+  participants: readonly Participant[],
+  terrainAt: (coord: Coord) => Terrain,
+  movedHexes = 0,
+) {
+  if (!canAttack(attacker.character) || !attacker.alive)
+    throw Error("攻撃対象が不正です。");
+  const distance = hexDistance(attacker.coord, aim);
+  if (distance < 1 || distance > stats(attacker.character).range)
+    throw Error("射程外です。");
+  const board = structuredClone([...participants]);
+  const a = board.find(
+    (p) => p.character.characterId === attacker.character.characterId,
+  );
+  if (!a) throw Error("攻撃者が見つかりません。");
+  const d = resolveHitTarget(a, aim, board);
+  if (!d) return;
+  const stages: CombatStage[] = [];
+  const hit = attackDamage(a.character, terrainAt(a.coord), movedHexes);
+  d.hp = Math.max(0, d.hp - hit);
+  d.alive = d.hp > 0;
+  if (!d.alive) a.killsThisBattle++;
+  stages.push({
+    event: {
+      type: "attack",
+      actorId: a.character.characterId,
+      targetId: d.character.characterId,
+      amount: hit,
+      charge: chargeBonus(a.character, movedHexes) > 0,
+    },
+    participants: structuredClone(board),
+  });
+  let counter = 0,
+    counterTargetId: string | undefined;
+  if (
+    d.alive &&
+    canCounter(d.character) &&
+    hexDistance(d.coord, a.coord) <= stats(d.character).range
+  ) {
+    const recipient = resolveHitTarget(d, a.coord, board);
+    if (recipient) {
+      counter = counterDamage(d.character, terrainAt(d.coord));
+      if (counter > 0) {
+        counterTargetId = recipient.character.characterId;
+        recipient.hp = Math.max(0, recipient.hp - counter);
+        recipient.alive = recipient.hp > 0;
+        if (!recipient.alive) d.killsThisBattle++;
+        stages.push({
+          event: {
+            type: "counter",
+            actorId: d.character.characterId,
+            targetId: counterTargetId,
+            amount: counter,
+          },
+          participants: structuredClone(board),
+        });
+      }
+    }
+  }
+  return {
+    participants: board,
+    stages,
+    hit,
+    counter,
+    hitTargetId: d.character.characterId,
+    counterTargetId,
+  };
+}
+
+/** Compatible two-soldier API, backed by the same board combat resolver. */
 export function resolveCombat(
   attacker: Participant,
   defender: Participant,
@@ -108,29 +189,24 @@ export function resolveCombat(
   defenderTerrain: Terrain,
   movedHexes = 0,
 ) {
-  if (
-    !canAttack(attacker.character) ||
-    !attacker.alive ||
-    !defender.alive ||
-    attacker.owner === defender.owner
-  )
+  if (!defender.alive || attacker.owner === defender.owner)
     throw Error("攻撃対象が不正です。");
-  const a = structuredClone(attacker),
-    d = structuredClone(defender),
-    as = stats(a.character),
-    ds = stats(d.character);
-  const distance = hexDistance(a.coord, d.coord);
-  if (distance < 1 || distance > as.range) throw Error("射程外です。");
-  const hit = attackDamage(a.character, attackerTerrain, movedHexes);
-  d.hp = Math.max(0, d.hp - hit);
-  d.alive = d.hp > 0;
-  if (!d.alive) a.killsThisBattle++;
-  let counter = 0;
-  if (d.alive && canCounter(d.character) && distance <= ds.range) {
-    counter = counterDamage(d.character, defenderTerrain);
-    a.hp = Math.max(0, a.hp - counter);
-    a.alive = a.hp > 0;
-    if (!a.alive) d.killsThisBattle++;
-  }
-  return { attacker: a, defender: d, hit, counter };
+  const r = resolveBoardCombat(
+    attacker,
+    defender.coord,
+    [attacker, defender],
+    (coord) =>
+      sameHex(coord, attacker.coord) ? attackerTerrain : defenderTerrain,
+    movedHexes,
+  );
+  if (!r) throw Error("攻撃対象が不正です。");
+  return {
+    ...r,
+    attacker: r.participants.find(
+      (p) => p.character.characterId === attacker.character.characterId,
+    )!,
+    defender: r.participants.find(
+      (p) => p.character.characterId === defender.character.characterId,
+    )!,
+  };
 }

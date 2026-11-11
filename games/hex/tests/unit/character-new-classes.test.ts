@@ -61,7 +61,7 @@ describe("6職業の基礎値と生成", () => {
     ["knight", 2, 2, 1, 1, 12, 30, 10, 10],
     ["archer", 2, 2, 2, 1, 9, 22, 12, 5],
     ["scout", 1, 3, 1, 2, 6, 18, 16, 20],
-    ["spearman", 2, 2, 2, 1, 10, 25, 9, 12],
+    ["spearman", 2, 2, 2, 1, 9, 25, 9, 13],
     ["medic", 2, 2, 1, 1, 8, 20, 8, 0],
     ["cavalry", 3, 1, 1, 3, 15, 30, 5, 2],
   ] as const)(
@@ -118,7 +118,7 @@ describe("槍兵", () => {
         "plain",
         "plain",
       ).hit,
-    ).toBe(10);
+    ).toBe(9);
     expect(() =>
       resolveCombat(
         piece("spearman"),
@@ -128,7 +128,7 @@ describe("槍兵", () => {
       ),
     ).toThrow();
   });
-  it("生存・射程内だけ反撃×1.2、砂漠→倍率→切上げ→地形の順", () => {
+  it("生存・射程内だけ反撃×1.3、砂漠→倍率→切上げ→地形の順", () => {
     expect(
       resolveCombat(
         piece("archer"),

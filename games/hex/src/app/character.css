@@ -2389,3 +2389,14 @@ details summary {
 .hx-charging {
   filter: brightness(1.5) drop-shadow(0 0 3px #d2b576);
 }
+
+/* Direction, actual hit and redirected counter fit the existing fixed action bar. */
+.hx-target-summary.hx-target-noted > div:first-child {
+  gap: 3px;
+}
+.hx-target-summary .hx-aim-note {
+  color: #d2b576;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -8,9 +8,9 @@ import {
   validateDeployment,
   movement,
   attackDamage,
-  resolveCombat,
+  resolveBoardCombat,
 } from "./combat";
-import { canAttack, chargeBonus, resolveHealing } from "./abilities";
+import { canAttack, resolveHealing } from "./abilities";
 import { stats, validateFormation } from "./roster";
 import type { BattleResult, Character, Participant } from "./types";
 
@@ -451,70 +451,63 @@ export function applyBattleAction(
         };
         s.events.push(event);
         onStep?.(s, event);
-      } else if (action.targetId === `hq_${enemy}`) {
-        const amount = attackDamage(
-          p.character,
-          terrainAt(s, p.coord),
-          movedHexes,
-          false,
-        );
-        s.headquarters[enemy].hp = Math.max(
-          0,
-          s.headquarters[enemy].hp - amount,
-        );
-        const hit = {
-          type: "attack" as const,
-          actorId: action.actorId,
-          targetId: action.targetId,
-          amount,
-        };
-        s.events.push(hit);
-        onStep?.(s, hit);
       } else {
-        const target = s.participants.find(
+        const isHeadquarters = action.targetId === `hq_${enemy}`;
+        const requested = s.participants.find(
           (x) =>
             x.character.characterId === action.targetId &&
             x.owner === enemy &&
             x.alive,
         );
-        if (!target || !visible(s, owner).has(hexId(target.coord)))
+        if (
+          !isHeadquarters &&
+          (!requested || !visible(s, owner).has(hexId(requested.coord)))
+        )
           throw Error("攻撃対象が見えません。");
-        const r = resolveCombat(
+        const aim = isHeadquarters
+          ? s.headquarters[enemy].coord
+          : requested!.coord;
+        const exchange = resolveBoardCombat(
           p,
-          target,
-          terrainAt(s, p.coord),
-          terrainAt(s, target.coord),
+          aim,
+          s.participants,
+          (coord) => terrainAt(s, coord),
           movedHexes,
         );
-        Object.assign(target, r.defender);
-        onStep?.(s, {
-          type: "attack",
-          actorId: action.actorId,
-          targetId: action.targetId,
-          amount: r.hit,
-          charge: chargeBonus(p.character, movedHexes) > 0,
-        });
-        Object.assign(p, r.attacker);
-        if (r.counter)
-          onStep?.(s, {
-            type: "counter",
-            actorId: action.targetId,
-            targetId: action.actorId,
-            amount: r.counter,
-          });
-        s.events.push({
-          type: "attack",
-          actorId: action.actorId,
-          targetId: action.targetId,
-          amount: r.hit,
-        });
-        if (r.counter)
-          s.events.push({
-            type: "counter",
-            actorId: action.targetId,
-            targetId: action.actorId,
-            amount: r.counter,
-          });
+        if (exchange) {
+          for (const stage of exchange.stages) {
+            for (const updated of stage.participants) {
+              Object.assign(
+                s.participants.find(
+                  (x) =>
+                    x.character.characterId === updated.character.characterId,
+                )!,
+                updated,
+              );
+            }
+            s.events.push(stage.event);
+            onStep?.(s, stage.event);
+          }
+        } else if (isHeadquarters) {
+          const amount = attackDamage(
+            p.character,
+            terrainAt(s, p.coord),
+            movedHexes,
+            false,
+          );
+          s.headquarters[enemy].hp = Math.max(
+            0,
+            s.headquarters[enemy].hp - amount,
+          );
+          const event = {
+            type: "attack" as const,
+            actorId: action.actorId,
+            targetId: action.targetId,
+            amount,
+          };
+          s.events.push(event);
+          onStep?.(s, event);
+        } else throw Error("命中対象が見つかりません。");
       }
     }
   }

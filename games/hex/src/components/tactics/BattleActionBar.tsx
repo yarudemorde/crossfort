@@ -22,15 +22,26 @@ export function BattleActionBar({
     cpu = o.activePlayer === "cpu",
     locked = g.busy || cpu;
   const targetHp = g.defending?.hp ?? o.headquarters.cpu.hp;
-  const ownAfter = g.attacking
-    ? Math.max(0, g.attacking.hp - g.expectedCounter)
-    : undefined;
+  const ownAfter =
+    g.attackForecast?.attackerHpAfter ??
+    (g.attacking ? Math.max(0, g.attacking.hp - g.expectedCounter) : undefined);
   const targetAfter =
     targetHp === undefined
       ? undefined
       : g.isHealing
         ? targetHp + g.expectedHeal
-        : Math.max(0, targetHp - g.expectedHit);
+        : (g.attackForecast?.hitTargetHpAfter ??
+          Math.max(0, targetHp - g.expectedHit));
+  const redirectedCounter =
+    g.attackForecast?.counterTargetId &&
+    g.attackForecast.counterTargetId !== g.preview?.actorId;
+  const aimNote = g.attackForecast?.uncertain
+    ? "視野内の予測・命中先未確定"
+    : redirectedCounter
+      ? `反撃先：${g.counterRecipient?.character.displayName ?? "部隊"}（残HP ${g.attackForecast?.counterTargetHpAfter}）`
+      : g.attackForecast?.directional
+        ? `直突き｜指定：${g.requestedDefender?.character.displayName ?? "敵本城"}${g.attackForecast.hitTargetId !== g.preview?.targetId ? " → 手前に命中" : ""}`
+        : undefined;
   const healing = unit?.character.classId === "medic";
   const chargeReady =
     unit &&
@@ -77,7 +88,9 @@ export function BattleActionBar({
             <small>戦場を確認できます</small>
           </div>
         ) : g.preview ? (
-          <div className="hx-target-summary">
+          <div
+            className={`hx-target-summary ${aimNote ? "hx-target-noted" : ""}`}
+          >
             <div>
               <strong>
                 {g.attacking?.character.displayName}
@@ -96,22 +109,31 @@ export function BattleActionBar({
                     {g.expectedCounter}
                   </b>
                   {targetAfter === 0 && <em>撃破可能</em>}
-                  {ownAfter === 0 && (
+                  {(ownAfter === 0 ||
+                    (redirectedCounter &&
+                      g.attackForecast?.counterTargetHpAfter === 0)) && (
                     <em className="danger-text">戦死の危険</em>
                   )}
                   {!!g.expectedCharge && <em>突撃 +{g.expectedCharge}</em>}
                 </small>
               )}
+              {aimNote && <small className="hx-aim-note">{aimNote}</small>}
             </div>
             <div className="hx-after-hp">
               <small>{g.isHealing ? "回復後HP" : "予測HP 自 / 敵"}</small>
               <b>
-                {!g.isHealing && (
+                {g.attackForecast?.uncertain ? (
+                  "?"
+                ) : (
                   <>
-                    {ownAfter} <span>／</span>{" "}
+                    {!g.isHealing && (
+                      <>
+                        {ownAfter} <span>／</span>{" "}
+                      </>
+                    )}
+                    {targetAfter ?? "?"}
                   </>
                 )}
-                {targetAfter ?? "?"}
               </b>
             </div>
           </div>

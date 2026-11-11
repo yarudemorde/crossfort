@@ -1,11 +1,11 @@
 {
-  "version": "2.2.0",
-  "spec": "新職業3種追加（2026-11-09）",
-  "testsPassed": 402,
-  "buildDate": "2026-11-09",
+  "version": "2.2.1",
+  "spec": "槍兵の攻撃仕様変更・直突き（2026-11-11）",
+  "testsPassed": 438,
+  "buildDate": "2026-11-11",
   "sha256": {
-    "docs/GAME_SPEC.md": "7d258382e6ac0652dc4bd8b175c619223ceda7c37603769340fea4b622d6a412",
-    "data/ruleset.characters.json": "b16a839d3b0213ba7609d677a064aefe742120b212e0ad57d8732809100f17a9",
+    "docs/GAME_SPEC.md": "cb9b0efa4d6c634f550917614d5ec134b6fce4648116563a0cc755f08dafae80",
+    "data/ruleset.characters.json": "9256752f0879541e3fe537d677a6b75795bf3631879641f19d84ecfba7f7033d",
     "data/map-sizes.json": "2b44542a3310bb9616e6b8a0ca004c63b21d5205bc98ab43479f5030d79cbf5c",
     "data/maps.prototype.json": "d6bc4c038d3dcbd66e668e3ca28208874f56f2ddc4fbc22993092353cd225053",
     "data/maps.additional.prototype.json": "7d03a153b86643eb093730dff5c30a30ec5daf9094fd0d679c68664160c0a008",
@@ -53,7 +53,7 @@
     "structuredFrames": true,
     "settings": "data/presentation.settings.json"
   },
-  "uiRevision": "six-classes-healing-charge-2026-11-09",
+  "uiRevision": "spearman-thrust-targeting-2026-11-11",
   "saveSchemaVersion": 3,
   "migration": {
     "fromSchema": 2,
@@ -84,7 +84,11 @@
     "nextBattleResumeVerified": true
   },
   "newClasses": {
-    "ids": ["spearman", "medic", "cavalry"],
+    "ids": [
+      "spearman",
+      "medic",
+      "cavalry"
+    ],
     "encounterVersion": 2,
     "legacyEncounterVersion": 1,
     "saveSchemaUnchanged": true,
@@ -94,10 +98,29 @@
   "newClassesProbe": {
     "conditions": 24,
     "unresolved": 0,
-    "minRounds": 4,
-    "maxRounds": 13,
-    "healingActions": 107,
-    "playerWins": 9,
-    "cpuWins": 15
+    "minRounds": 5,
+    "maxRounds": 16,
+    "healingActions": 111,
+    "playerWins": 6,
+    "cpuWins": 18
+  },
+  "spearmanThrust": {
+    "attack": 9,
+    "counterTenths": 13,
+    "allRangeTwoDirections": 18,
+    "targeting": "exactHexSupercover",
+    "boundaryTie": "clockwise",
+    "sharedAttackCounterForecastCpu": true,
+    "saveSchemaUnchanged": true,
+    "newTests": 36,
+    "physicalMobileVerified": false,
+    "verifiedCssViewports": [
+      "375x667",
+      "390x844",
+      "430x932",
+      "844x390",
+      "768x1024",
+      "1363x936"
+    ]
   }
 }
