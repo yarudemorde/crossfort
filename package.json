@@ -1,0 +1,15 @@
+{
+  "name": "crossfort-network-tools",
+  "private": true,
+  "scripts": {
+    "build:network": "node network/build-vendor.mjs",
+    "test:network": "node --test tests/lan-*.test.cjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "jsqr": "1.4.0",
+    "pako": "2.1.0",
+    "peerjs": "1.5.5",
+    "qrcode-generator": "2.0.4"
+  }
+}

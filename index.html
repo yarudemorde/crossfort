@@ -482,6 +482,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 <link rel="stylesheet" href="parchment.css?v=14">
 <link rel="stylesheet" href="season-result.css">
 <link rel="stylesheet" href="hand-draw.css">
+<link rel="stylesheet" href="network/lan.css?v=1">
 </head>
 <body>
 
@@ -505,6 +506,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
       <button class="homeTile deckTile" onclick="showDeckLibrary()"><span class="tileIcon">♛</span><span class="tileTitle">デッキ編集</span><span class="tileSub">あなただけの戦略を</span></button>
       <button class="homeTile catalogTile" onclick="showCatalog()"><span class="tileIcon">▤</span><span class="tileTitle">カード図鑑</span><span class="tileSub">すべてのカードを確認</span></button>
       <button class="homeTile missionTile" onclick="showComingSoon('ミッション')"><span class="tileIcon">✥</span><span class="tileTitle">ミッション</span><span class="tileSub">報酬を獲得しよう</span></button>
+      <button class="homeTile lanHomeTile" onclick="CFLan.show()"><span class="tileIcon">⚑</span><span class="tileTitle">通信対戦</span><span class="tileSub">2台のブラウザで対戦</span></button>
     </div>
     <div class="newsHeader"><h2>お知らせ</h2><span>すべて見る ›</span></div>
     <div class="newsList">
@@ -1592,8 +1594,8 @@ function cancelBattleRequests(battle){
   if(!battle)return;
   var target=battle.targetRequest,choice=battle.choiceRequest;
   battle.targetRequest=null;battle.choiceRequest=null;
-  if(target)target.resolve(null);
-  if(choice)choice.resolve(null);
+  if(target&&typeof target.resolve==='function')target.resolve(null);
+  if(choice&&typeof choice.resolve==='function')choice.resolve(null);
   var picker=$('pickerModal');if(picker)picker.classList.remove('show');
   var spell=$('spellCastOverlay');if(spell)spell.remove();
 }
@@ -1649,8 +1651,9 @@ function aiRedeployValue(card,side,lane){
   return aiActionsScore(rules.onPlay||[],side,card,lane)+Math.max(0,printed-aiCardPower(card))*.8
     -Math.max(0,aiCardPower(card)-printed)*1.2-(rules.auras||[]).length*2-(rules.damageMultiplier?3:0)-(card.grantedKeywords||[]).length;
 }
+function gameRandom(){return Math.random();}
 function shuffle(a){
-  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(gameRandom()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
   return a;
 }
 function buildDeck(color){
@@ -1669,7 +1672,7 @@ function startGame(color,opponentColor,mode,playerDeckId,enemyDeckId,firstChoice
     var playerDefinition=getSavedDeck(playerDeckId),enemyDefinition=getSavedDeck(enemyDeckId);
     if(playerDeckId&&!playerDefinition)throw new Error('プレイヤー1の登録デッキが見つかりません');if(enemyDeckId&&!enemyDefinition)throw new Error('相手の登録デッキが見つかりません');
     color=playerDefinition?playerDefinition.colors[0]:color;opponentColor=enemyDefinition?enemyDefinition.colors[0]:(opponentColor||setupEnemyColor);selectedColor=color;mode=mode||setupMode;firstChoice=firstChoice||setupFirstChoice;
-    var firstSide=firstChoice==='player'?'player':firstChoice==='enemy'?'enemy':(Math.random()<.5?'player':'enemy');
+    var firstSide=firstChoice==='player'?'player':firstChoice==='enemy'?'enemy':(gameRandom()<.5?'player':'enemy');
     var playerCards=playerDefinition?buildSavedDeck(playerDefinition):buildDeck(color);
     var enemyCards=gameOptions.enemyCards?shuffle(gameOptions.enemyCards.slice()):(enemyDefinition?buildSavedDeck(enemyDefinition):buildDeck(opponentColor));
     if(playerDefinition&&playerCards.length!==40)throw new Error('プレイヤー1の登録デッキが40枚ではありません');if(enemyDefinition&&enemyCards.length!==40)throw new Error('相手の登録デッキが40枚ではありません');
@@ -1747,7 +1750,7 @@ function deckFor(side){return side==='player'?state.playerDeck:state.enemyDeck;}
 function manaFor(side){return side==='player'?state.mana:state.enemyMana;}
 function maxManaFor(side){return side==='player'?state.maxMana:state.enemyMaxMana;}
 function spendMana(side,amount){if(side==='player')state.mana-=amount;else state.enemyMana-=amount;}
-function isHumanSide(side){return side==='player' || state.matchMode==='local';}
+function isHumanSide(side){return side==='player' || state.matchMode==='local' || state.matchMode==='lan';}
 function sideLabel(side){return side==='player'?'プレイヤー1':state.matchMode==='local'?'プレイヤー2':(state.enemyLabel||'CPU');}
 function boardFor(side){ return side==='player'?state.playerBoard:state.enemyBoard; }
 function landmarkFor(side){return side==='player'?state.playerLandmarks:state.enemyLandmarks;}
@@ -2659,7 +2662,7 @@ async function executeActions(actions,side,sourceSlot,sourceCard,context){
       if(handCard){var handIndex=hand.indexOf(handCard);if(handIndex>=0){hand.splice(handIndex,1);(side==='player'?state.playerDeck:state.enemyDeck).push(handCard);}}
     }else if(a.type==='enemyHandToBottom'){
       var enemyHand=side==='player'?state.enemyHand:state.playerHand;
-      if(enemyHand.length){var hiddenIndex=Math.floor(Math.random()*enemyHand.length);(side==='player'?state.enemyDeck:state.playerDeck).push(enemyHand.splice(hiddenIndex,1)[0]);}
+      if(enemyHand.length){var hiddenIndex=Math.floor(gameRandom()*enemyHand.length);(side==='player'?state.enemyDeck:state.playerDeck).push(enemyHand.splice(hiddenIndex,1)[0]);}
     }else if(a.type==='recoverGrave'){
       var ownGrave=graveFor(side), recoverable=ownGrave.filter(function(c){return (!a.unitOnly || c.type==='ユニット')&&(!a.spellOnly || c.type==='スペル');});
       var recovered=handFor(side).length<8?await checkedBattle(chooseZoneCard(side,recoverable,a.spellOnly?'墓地からスペルを選択':a.unitOnly?'墓地からユニットを選択':'墓地からカードを選択',sourceCard), battleGeneration):null;
@@ -3038,7 +3041,7 @@ async function endTurn(){
   await checkedBattle(processTurnEvent(side,'onTurnEnd'), battleGeneration);
   if(checkGame()){render();return;}
   if(await checkedBattle(beginExtraTurn(side), battleGeneration))return;
-  if(state.matchMode==='local'){await checkedBattle(advanceLocalTurn(side), battleGeneration);return;}
+  if(state.matchMode==='local'||state.matchMode==='lan'){await checkedBattle(advanceLocalTurn(side), battleGeneration);return;}
   await checkedBattle(prepareNextTurn('enemy'), battleGeneration);
   state.animating=false; renderStableBattle(); logMsg(sideLabel('enemy')+'のターン');
   setTimeout(function(){if(state&&state.generation===battleGeneration&&!state.gameOver)cpuTurn(true);},350);
@@ -3908,6 +3911,14 @@ window.addEventListener('unhandledrejection',function(event){
 })();
 renderHomeProfile();renderSeason1Banner();
 </script>
+<script src="network/config.js?v=1"></script>
+<script src="network/version.js?v=1"></script>
+<script src="network/core.js?v=1"></script>
+<script src="network/engine.js?v=1"></script>
+<script src="network/session.js?v=1"></script>
+<script src="network/vendor/rtc.js?v=1"></script>
+<script src="network/transport.js?v=1"></script>
+<script src="network/lan.js?v=1"></script>
 </body>
 </html>
 

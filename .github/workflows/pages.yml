@@ -23,6 +23,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: games/hex/package-lock.json
+      - name: Verify communication battle
+        working-directory: .
+        run: |
+          npm ci --ignore-scripts
+          npm run build:network
+          npm run test:network
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck

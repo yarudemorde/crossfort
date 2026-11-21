@@ -1,3 +1,7 @@
 _site/
+node_modules/
+dist/
+.openai/
+network-test-results/
 games/hex/node_modules/
 games/hex/dist/
