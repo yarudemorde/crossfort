@@ -29,6 +29,7 @@ jobs:
           npm ci --ignore-scripts
           npm run build:network
           npm run test:network
+          node --test tests/battle-hud.test.cjs
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
