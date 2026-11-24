@@ -10,6 +10,37 @@ const {
 } = require("./lan-harness.cjs");
 const g = environment(),
   catalog = Core.catalogFromPools(g.CARD_POOLS, g.CARD_IDS);
+test("repeated 3-second reconnect attempts never extend the first outage deadline", () => {
+  const guard = new Core.ResumeGuard(0),
+    start = 100000;
+  guard.begin(start);
+  for (let elapsed = 3000; elapsed < 120000; elapsed += 3000) {
+    guard.begin(start + elapsed); // A new hello/transport cannot complete recovery.
+    assert.equal(guard.pausedAt, start);
+    assert.equal(guard.ready(start + elapsed, start + elapsed), false);
+    assert.equal(guard.expired(start + elapsed), false);
+  }
+  assert.equal(guard.expired(start + 120000), true);
+  const reloaded = new Core.ResumeGuard(guard.pausedAt);
+  assert.equal(reloaded.expired(start + 120001), true);
+});
+test("recovery requires acknowledged state plus stable heartbeats, with a new budget only after real recovery", () => {
+  const guard = new Core.ResumeGuard(100000);
+  guard.acknowledge(103000);
+  guard.acknowledge(104000);
+  assert.equal(guard.ready(108000, 103000), false);
+  assert.equal(guard.ready(107999, 107999), false);
+  assert.equal(guard.ready(108000, 108000), true);
+  assert.equal(guard.ready(120000, 108000), false);
+  guard.begin(120000);
+  assert.equal(guard.pausedAt, 100000);
+  assert.equal(guard.ready(130000, 130000), false);
+  guard.acknowledge(130000);
+  assert.equal(guard.ready(135000, 135000), true);
+  guard.complete();
+  guard.begin(140000);
+  assert.equal(guard.pausedAt, 140000);
+});
 test("all six starter decks follow 40-card, four-copy and color rules", () => {
   for (const color of Object.keys(g.CARD_POOLS)) {
     const d = Core.starterDeck(color, catalog);

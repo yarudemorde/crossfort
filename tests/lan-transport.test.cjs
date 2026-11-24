@@ -93,6 +93,7 @@ test("cloud connection retries do not create overlapping handshakes", () => {
       this.calls = [];
     }
     connect(id) {
+      this.serialization = arguments[1].serialization;
       const c = new Connection(id);
       this.calls.push(c);
       return c;
@@ -117,12 +118,98 @@ test("cloud connection retries do not create overlapping handshakes", () => {
   cloud.connect("b");
   cloud.connect("b");
   assert.equal(cloud.peer.calls.length, 1);
+  assert.equal(cloud.peer.serialization, "binary");
   const c = cloud.peer.calls[0];
   c.open = true;
   c.emit("open");
   channel.send({ type: "ping" });
-  assert.equal(c.sent.type, "ping");
+  assert.equal(JSON.parse(c.sent).type, "ping");
   assert.equal(channel.isOpen(), true);
   cloud.close();
   assert.equal(cloud.peer.destroyed, true);
+});
+test("reproduces PeerJS JSON failure with a real late-game HP7 snapshot", async () => {
+  const { makeEngine, config, Core, settle } = require("./lan-harness.cjs");
+  const { serializedPair } = require("./lan-peerjs-harness.cjs");
+  const { g, engine } = makeEngine();
+  engine.start(config(g));
+  await settle();
+  g.state.playerLife = 7;
+  for (const [hand, deck, grave] of [
+    ["playerHand", "playerDeck", "grave"],
+    ["enemyHand", "enemyDeck", "enemyGrave"],
+  ]) {
+    g.state[grave] = g.state[deck].splice(0, 20);
+    g.state[hand].push(...g.state[deck].splice(0, 3));
+  }
+  g.state.battleHistory = Array.from({ length: 140 }, (_, i) => ({
+    turn: Math.floor(i / 8) + 1,
+    side: i % 2 ? "player" : "enemy",
+    text: "ユニットの攻撃で相手の防衛線が崩壊した。カード効果によってパワーが増加した。",
+  }));
+  const frame = {
+    type: "frame",
+    matchId: "hp7",
+    version: 500,
+    view: Core.project(g.state, "enemy", {
+      catalog: Core.catalogFromPools(g.CARD_POOLS, g.CARD_IDS),
+    }),
+  };
+  assert.ok(Buffer.byteLength(JSON.stringify(frame)) > 16300);
+  const old = serializedPair("json");
+  old.a.send(frame);
+  assert.equal(old.errors[0].type, "message-too-big");
+  assert.equal(old.packets.length, 0);
+  const current = serializedPair("binary"),
+    channels = {},
+    receivedPackets = [];
+  const transport = load({
+    CFLanVendor: {
+      Peer: class extends EventEmitter {
+        destroy() {}
+      },
+    },
+  });
+  const cloud = new transport.Cloud({
+    id: "test",
+    onStatus() {},
+    onOpen() {},
+    onError(e) {
+      throw e;
+    },
+    onConnection(c) {
+      channels[c.remoteId] = c;
+    },
+  });
+  cloud.wrap(current.a);
+  cloud.wrap(current.b);
+  current.a.emit("open");
+  current.b.emit("open");
+  channels.a.onMessage = (m) => receivedPackets.push(m);
+  const ready = {
+    type: "ready",
+    deck: Core.starterDeck(
+      "黒",
+      Core.catalogFromPools(g.CARD_POOLS, g.CARD_IDS),
+    ),
+  };
+  channels.b.send(ready);
+  channels.b.send(frame);
+  await settle();
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(receivedPackets[0])),
+    JSON.parse(JSON.stringify(ready)),
+  );
+  const received = receivedPackets[1];
+  assert.equal(current.errors.length, 0);
+  assert.ok(current.packets.length > 1);
+  assert.ok(current.packets.every((n) => n <= 16384));
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(received)),
+    JSON.parse(JSON.stringify(frame)),
+  );
+  assert.equal(received.view.state.enemyLife, 7);
+  assert.ok(received.view.state.enemyHand.every((c) => c.hidden));
+  cloud.close();
+  engine.stop();
 });

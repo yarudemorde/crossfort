@@ -72,7 +72,9 @@
     lastSeen = 0,
     lastAttempt = 0,
     connectDeadline = 0,
-    pausedAt = 0,
+    recovery = new Core.ResumeGuard(0),
+    connectionSyncId = null,
+    resumeVersion = 0,
     active = false,
     lastVersion = 0,
     requestId = null,
@@ -564,11 +566,12 @@
   }
   async function setupSession(restoring) {
     if (!session) return;
-    pausedAt =
+    recovery = new Core.ResumeGuard(
       session.pausedAt ||
-      (session.matchId ? session.lastConnectedAt || Date.now() : 0);
-    session.pausedAt = pausedAt;
-    if (pausedAt && Date.now() - pausedAt > Core.RESUME_MS) {
+        (session.matchId ? session.lastConnectedAt || Date.now() : 0),
+    );
+    session.pausedAt = recovery.pausedAt;
+    if (recovery.pausedAt && Date.now() - recovery.pausedAt > Core.RESUME_MS) {
       endLocal("再接続の制限時間を過ぎたため対戦を終了しました");
       return;
     }
@@ -759,7 +762,10 @@
             candidate.close();
             return;
           }
-          if (pausedAt && Date.now() - pausedAt > Core.RESUME_MS) {
+          if (
+            recovery.pausedAt &&
+            Date.now() - recovery.pausedAt > Core.RESUME_MS
+          ) {
             host.abort("再接続の制限時間を過ぎたため対戦を終了しました");
             candidate.close();
             return;
@@ -795,8 +801,9 @@
           channel = candidate;
           authenticated = true;
           lastSeen = Date.now();
-          pausedAt = 0;
-          session.pausedAt = 0;
+          if (session.matchId) beginRecovery();
+          connectionSyncId = randomHex(8);
+          resumeVersion = host.version + 1;
           session.lastConnectedAt = Date.now();
           save();
           candidate.onClose = function () {
@@ -811,11 +818,14 @@
             hostName: session.name,
             matchId: session.matchId,
             lastSeq: host.gate ? host.gate.lastSeq.enemy : 0,
+            syncId: connectionSyncId,
           });
           status("相手が接続しました");
-          host.setOnline(true).catch(function (e) {
-            host.abort(e.message);
-          });
+          if (session.matchId) host.prepareResume();
+          else
+            host.setOnline(true).catch(function (e) {
+              host.abort(e.message);
+            });
           drawRoom();
           positionStatus();
           return;
@@ -834,7 +844,15 @@
             send({ type: "error", message: e.message });
           }
         } else if (m.type === "command") host.command(m.command, "enemy");
-        else if (m.type === "resync") host.broadcast();
+        else if (m.type === "stateAck") {
+          if (
+            m.syncId === connectionSyncId &&
+            m.matchId === session.matchId &&
+            Core.integer(m.version, resumeVersion, host.version)
+          ) {
+            recovery.acknowledge(Date.now());
+          }
+        } else if (m.type === "resync") host.broadcast();
         else if (m.type === "bye") host.abort("対戦相手が退出しました");
       };
     }
@@ -847,7 +865,10 @@
       return;
     }
     if (m.type === "welcome") {
-      if (pausedAt && Date.now() - pausedAt > Core.RESUME_MS) {
+      if (
+        recovery.pausedAt &&
+        Date.now() - recovery.pausedAt > Core.RESUME_MS
+      ) {
         endLocal("再接続の制限時間を過ぎたため対戦を終了しました");
         return;
       }
@@ -865,8 +886,8 @@
       }
       authenticated = true;
       lastSeen = Date.now();
-      pausedAt = 0;
-      session.pausedAt = 0;
+      if (session.matchId || m.matchId) beginRecovery();
+      connectionSyncId = m.syncId;
       session.seq = m.lastSeq || 0;
       session.lastConnectedAt = Date.now();
       session.remoteName = (
@@ -883,6 +904,18 @@
     }
     if (!authenticated) return;
     lastSeen = Date.now();
+    if (m.type === "resumed") {
+      if (
+        m.syncId === connectionSyncId &&
+        m.matchId === session.matchId &&
+        recovery.synchronizedAt &&
+        m.version <= lastVersion &&
+        !recovery.expired(Date.now())
+      ) {
+        completeRecovery();
+      }
+      return;
+    }
     if (m.type === "ping") {
       send({ type: "pong" });
       return;
@@ -1065,12 +1098,43 @@
         save();
       }
     }
+    if (!restoring) acknowledgeFrame();
+  }
+  function acknowledgeFrame() {
+    if (
+      session &&
+      session.role === "guest" &&
+      authenticated &&
+      connectionSyncId
+    ) {
+      recovery.acknowledge(Date.now());
+      send({
+        type: "stateAck",
+        syncId: connectionSyncId,
+        matchId: session.matchId,
+        version: lastVersion,
+      });
+    }
+  }
+  function beginRecovery() {
+    recovery.begin(Date.now());
+    session.pausedAt = recovery.pausedAt;
+    save();
+  }
+  function completeRecovery() {
+    recovery.complete();
+    session.pausedAt = 0;
+    session.lastConnectedAt = Date.now();
+    save();
+    status("盤面の同期が完了しました");
+    if (active) renderView();
   }
   function canInput() {
     return (
       !!session &&
       active &&
       authenticated &&
+      !recovery.pausedAt &&
       !session.ended &&
       !inputPending &&
       !!g.state &&
@@ -1080,7 +1144,8 @@
   function renderView() {
     if (!active || !g.state || g.state.matchMode !== "lan") return;
     var busy = g.state.animating;
-    g.state.animating = busy || !authenticated || inputPending;
+    g.state.animating =
+      busy || !authenticated || !!recovery.pausedAt || inputPending;
     base.render();
     g.state.animating = busy;
     $("playerName").textContent = session.name;
@@ -1096,7 +1161,11 @@
       g.state.turn +
       " / " +
       (g.state.playerTurn ? "自分" : "相手") +
-      (authenticated ? " ・接続中" : " ・接続待ち");
+      (authenticated
+        ? recovery.pausedAt
+          ? " ・同期中"
+          : " ・接続中"
+        : " ・接続待ち");
     positionStatus();
   }
   function command(kind, payload) {
@@ -1140,11 +1209,7 @@
     authenticated = false;
     inputPending = false;
     if (old) old.close();
-    if (session.matchId && !pausedAt) {
-      pausedAt = Date.now();
-      session.pausedAt = pausedAt;
-      save();
-    }
+    if (session.matchId) beginRecovery();
     if (host)
       host.setOnline(false).catch(function (e) {
         error(e.message);
@@ -1157,21 +1222,36 @@
     if (heartbeat) clearInterval(heartbeat);
     heartbeat = setInterval(function () {
       if (!session || session.ended) return;
+      if (recovery.expired(Date.now())) {
+        if (host) host.abort("再接続の制限時間を過ぎたため対戦を終了しました");
+        else endLocal("再接続の制限時間を過ぎたため対戦を終了しました");
+        return;
+      }
       if (authenticated) {
         if (Date.now() - lastSeen > 10000) {
           disconnect("通信が途切れました。再接続しています");
           return;
         }
-        session.lastConnectedAt = lastSeen;
+        if (host && recovery.pausedAt && recovery.ready(Date.now(), lastSeen)) {
+          if (
+            send({
+              type: "resumed",
+              syncId: connectionSyncId,
+              matchId: session.matchId,
+              version: host.version,
+            }) &&
+            authenticated
+          ) {
+            completeRecovery();
+            host.setOnline(true).catch(function (e) {
+              host.abort(e.message);
+            });
+          }
+        }
+        if (!recovery.pausedAt) session.lastConnectedAt = lastSeen;
         save();
         send({ type: "ping" });
       } else {
-        if (pausedAt && Date.now() - pausedAt > Core.RESUME_MS) {
-          if (host)
-            host.abort("再接続の制限時間を過ぎたため対戦を終了しました");
-          else endLocal("再接続の制限時間を過ぎたため対戦を終了しました");
-          return;
-        }
         if (session.mode === "cloud" && Date.now() - lastAttempt > 3500) {
           lastAttempt = Date.now();
           if (transport && transport.peer && transport.peer.destroyed)
@@ -1222,7 +1302,7 @@
     if (
       !active ||
       !session ||
-      authenticated ||
+      (authenticated && !recovery.pausedAt) ||
       $("gameScreen").style.display === "none"
     ) {
       banner.style.display = "none";
@@ -1232,15 +1312,15 @@
     banner.style.display = "block";
     banner.style.left = rect.left + rect.width / 2 + "px";
     banner.style.top = rect.top + rect.height / 2 + "px";
-    var remaining = pausedAt
+    var remaining = recovery.pausedAt
       ? Math.max(
           0,
-          Math.ceil((Core.RESUME_MS - (Date.now() - pausedAt)) / 1000),
+          Math.ceil((Core.RESUME_MS - (Date.now() - recovery.pausedAt)) / 1000),
         )
       : 120;
     banner.textContent =
       "接続待ち・対戦を一時停止中" +
-      (pausedAt ? " ／ 残り" + remaining + "秒" : "");
+      (recovery.pausedAt ? " ／ 残り" + remaining + "秒" : "");
   }
   function visual(event) {
     if (!event || !Core.opposite || !g.state || g.state.matchMode !== "lan")
@@ -1500,7 +1580,9 @@
     cardCache.clear();
     flightOrigins.clear();
     lastVersion = 0;
-    pausedAt = 0;
+    recovery.complete();
+    connectionSyncId = null;
+    resumeVersion = 0;
     inputPending = false;
     requestId = null;
     resultRecorded = false;

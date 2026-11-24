@@ -27,6 +27,96 @@ function fixture(g, engine) {
   g.state.enemyGrave = [];
   engine.checkpoint();
 }
+test("reloaded host publishes a pending choice while paused and resumes it once after state acknowledgement", async () => {
+  function setup(saved) {
+    let host;
+    const made = makeEngine((m) => {
+        if (host) host.fromEngine(m);
+      }),
+      catalog = Core.catalogFromPools(made.g.CARD_POOLS, made.g.CARD_IDS);
+    host = new Host(
+      {
+        engine: made.engine,
+        catalog,
+        players: { player: "p", enemy: "e" },
+        names: { player: "H", enemy: "G" },
+        persist() {},
+        deliver() {},
+        newId() {
+          return "resume-choice";
+        },
+        seed() {
+          return 77;
+        },
+      },
+      saved,
+    );
+    return { ...made, host, catalog };
+  }
+  const first = setup();
+  await first.host.setReady(
+    "player",
+    Core.starterDeck("赤", first.catalog),
+    true,
+  );
+  await first.host.setReady(
+    "enemy",
+    Core.starterDeck("白", first.catalog),
+    true,
+  );
+  await first.host.setOnline(true);
+  await settle();
+  fixture(first.g, first.engine);
+  const card = cloneCard(first.g, "銀嶺の軍旗手");
+  first.g.state.playerHand = [card];
+  first.host.stable = first.engine.checkpoint();
+  first.host.command(
+    {
+      protocol: 1,
+      matchId: "resume-choice",
+      playerId: "p",
+      seq: 1,
+      version: first.host.version,
+      kind: "play",
+      payload: { cardId: card._lanId, lane: 2, mode: "normal" },
+    },
+    "player",
+  );
+  await settle();
+  assert.ok(first.host.request);
+  const second = setup(first.host.saved());
+  second.host.prepareResume();
+  await settle();
+  assert.equal(second.host.connected, false);
+  assert.ok(second.host.request);
+  assert.equal(second.host.request.kind, "target");
+  assert.equal(second.g.state.mana, 6);
+  const pending = second.host.request;
+  const command = {
+    protocol: 1,
+    matchId: "resume-choice",
+    playerId: "p",
+    seq: 2,
+    version: second.host.version,
+    kind: "choice",
+    requestId: pending.id,
+    payload: { side: "player", index: 2 },
+  };
+  second.host.command(command, "player");
+  await settle();
+  assert.equal(second.host.request.id, pending.id);
+  assert.equal(second.g.state.playerBoard[2].power, 1);
+  await second.host.setOnline(true);
+  command.version = second.host.version;
+  second.host.command(command, "player");
+  await settle();
+  assert.equal(second.g.state.playerBoard[2].power, 4);
+  assert.equal(second.g.state.mana, 6);
+  assert.equal(second.host.journal, null);
+  first.engine.stop();
+  second.engine.stop();
+  await settle();
+});
 test("lan uses original placement, guard combat, turns, extra turns and win detection", async () => {
   const { g, engine } = makeEngine();
   engine.start(config(g));

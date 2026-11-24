@@ -134,6 +134,23 @@
     } else if (this.connected && !this.config) await this.tryStart();
     if (this.latest) this.broadcast();
   };
+  Host.prototype.prepareResume = function () {
+    // Deliver a recovery snapshot while the original rule engine stays paused.
+    this.connected = false;
+    this.engine.setOnline(false);
+    if (this.config && !this.engineStarted && !this.ended) {
+      this.engineStarted = true;
+      this.busy = true;
+      var self = this;
+      Promise.resolve(
+        this.engine.recover(this.config, this.stable, this.journal),
+      ).catch(function (e) {
+        self.abort(e.message);
+      });
+    }
+    this.lobby();
+    if (this.latest) this.broadcast();
+  };
   Host.prototype.fromEngine = function (message) {
     if (this.ended) return;
     if (message.type === "update") {

@@ -7,6 +7,34 @@
   var VERSION = 1,
     RESUME_MS = 120000,
     MAX_PACKET = 300000;
+  // A new transport/hello is not proof that a battle snapshot arrived.
+  // Keep the first outage deadline until state sync and stable heartbeats succeed.
+  function ResumeGuard(pausedAt) {
+    this.pausedAt = pausedAt || 0;
+    this.synchronizedAt = 0;
+  }
+  ResumeGuard.prototype.begin = function (now) {
+    if (!this.pausedAt) this.pausedAt = now;
+    this.synchronizedAt = 0;
+  };
+  ResumeGuard.prototype.acknowledge = function (now) {
+    if (!this.synchronizedAt) this.synchronizedAt = now;
+  };
+  ResumeGuard.prototype.ready = function (now, lastSeen) {
+    return (
+      this.synchronizedAt > 0 &&
+      lastSeen - this.synchronizedAt >= 5000 &&
+      now - this.synchronizedAt >= 5000 &&
+      now - lastSeen < 10000
+    );
+  };
+  ResumeGuard.prototype.expired = function (now) {
+    return this.pausedAt > 0 && now - this.pausedAt >= RESUME_MS;
+  };
+  ResumeGuard.prototype.complete = function () {
+    this.pausedAt = 0;
+    this.synchronizedAt = 0;
+  };
   var CARD_FIELDS = [
     "id",
     "name",
@@ -471,6 +499,7 @@
     VERSION: VERSION,
     RESUME_MS: RESUME_MS,
     MAX_PACKET: MAX_PACKET,
+    ResumeGuard: ResumeGuard,
     copy: copy,
     opposite: opposite,
     integer: integer,

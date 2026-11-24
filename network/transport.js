@@ -36,9 +36,11 @@
     var options = this.options,
       channel = {
         send: function (data) {
-          if (JSON.stringify(data).length > MAX)
-            throw Error("通信データが大きすぎます");
-          connection.send(data);
+          var text = JSON.stringify(data);
+          if (text.length > MAX) throw Error("通信データが大きすぎます");
+          // Preserve the JSON protocol (including null-prototype deck maps)
+          // while BinaryPack handles the UTF-8 string's chunking underneath.
+          connection.send(text);
         },
         close: function () {
           connection.close();
@@ -65,6 +67,10 @@
     });
     connection.on("data", function (data) {
       try {
+        if (typeof data === "string") {
+          if (data.length > MAX) return;
+          data = JSON.parse(data);
+        }
         if (
           typeof data !== "object" ||
           !data ||
@@ -90,7 +96,9 @@
     var self = this;
     this.pending = this.peer.connect(id, {
       reliable: true,
-      serialization: "json",
+      // PeerJS 1.5.5 JSON rejects >=16,300 UTF-8 bytes. A normal late-game
+      // snapshot exceeds that limit. BinaryPack splits/reassembles it reliably.
+      serialization: "binary",
       label: "crossfort-lan-v1",
     });
     this.wrap(this.pending);
