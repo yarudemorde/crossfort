@@ -12,16 +12,19 @@ const {
 } = require("./lan-harness.cjs");
 const root = path.join(__dirname, ".."),
   html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-test("all eight generated HUD sprites are RGBA PNGs with production dimensions", () => {
+test("generated HUD sprites are RGBA PNGs with production dimensions", () => {
   for (const [name, w, h] of [
     ["frame", 1800, 268],
+    ["wing_left",1000,180],
+    ["wing_right",1000,180],
+    ["life_crest",209,280],
     ["life", 256, 256],
     ["deck", 128, 128],
     ["grave", 128, 128],
     ["resource_bar", 1500, 200],
-    ["resource_filled", 128, 128],
-    ["resource_spent", 128, 128],
-    ["resource_locked", 128, 128],
+    ["resource_filled", 52, 128],
+    ["resource_spent", 52, 128],
+    ["resource_locked", 52, 128],
   ]) {
     const data = fs.readFileSync(
       path.join(root, "assets/ui/battle/hud/hud_" + name + ".png"),

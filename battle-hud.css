@@ -1,240 +1,99 @@
-/* DUNGEON RELIC — shared by CPU, hot-seat, LAN and season battles.
-   Layout stays inside parchment.css's existing --hud-h grid row. */
+/* Integrated Dungeon Relic. Only the two HUD rows are changed.
+   Rail endcaps retain their width; the quiet middle stretches under the crest. */
 body.battleActive #gameScreen .battleHud {
-  isolation: isolate;
-  box-sizing: border-box;
-  position: relative;
-  height: 100%;
-  min-height: 0;
-  padding: 3px 6px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  color: #e4dcc7;
-  overflow: visible;
+  isolation:isolate;box-sizing:border-box;position:relative;height:100%;min-height:0;
+  padding:2px 4px;border:0;border-radius:0;background:none;box-shadow:none;
+  color:#e4dcc7;overflow:visible;
 }
-body.battleActive #gameScreen .battleHud::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  border: 8px solid transparent;
-  border-image: url("assets/ui/battle/hud/hud_frame.png") 58 72 fill / 8px / 0
-    stretch;
-}
+body.battleActive #gameScreen .battleHud::before {content:none}
 body.battleActive #gameScreen .battleHudHeading {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  height: 13px;
-  min-height: 0;
-  line-height: 13px;
-  gap: 4px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;height:12px;min-height:0;line-height:12px;gap:4px;
 }
 body.battleActive #gameScreen .battleHudHeading .small {
-  max-width: 100%;
-  min-width: 0;
-  padding: 0;
-  color: #e4dcc7;
-  font-size: 10px;
+  max-width:100%;min-width:0;padding:0;color:#e4dcc7;font-size:10px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-body.battleActive #gameScreen #topBattleHud .battleHudHeading .small {
-  padding-left: 44px;
-}
+body.battleActive #gameScreen #topBattleHud .battleHudHeading .small {padding-left:44px}
 body.battleActive #gameScreen #topBattleHud .battleHudHeading .turn {
-  position: static;
-  left: auto;
-  transform: none;
-  justify-self: center;
-  max-width: 120px;
-  font-size: 9px;
-  color: #c6c5bf;
+  position:static;left:auto;transform:none;justify-self:center;max-width:125px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#c6c5bf;
 }
-body.battleActive #gameScreen .battleHudMeta {
-  justify-self: end;
-  font-size: 9px;
-  color: #c6c5bf;
-}
-body.battleActive #gameScreen #bottomBattleHud .battleReturn {
-  grid-column: 3;
-  justify-self: end;
-  color: #c6c5bf;
-  font-size: 10px;
-}
+body.battleActive #gameScreen .battleHudMeta {justify-self:end;font-size:9px;color:#c6c5bf;white-space:nowrap}
+body.battleActive #gameScreen .battleReturn[hidden] {display:none}
 body.battleActive #gameScreen .battleHudStats {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  align-items: center;
-  height: calc(100% - 13px);
-  margin: 0;
-  gap: 3px;
+  isolation:isolate;position:relative;display:grid;
+  grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);
+  align-items:center;height:calc(100% - 12px);margin:0;gap:0;
+}
+body.battleActive #gameScreen .battleDeckCounts,
+body.battleActive #gameScreen .resourceHud {position:relative;min-width:0;height:78%;align-self:center}
+body.battleActive #gameScreen .battleDeckCounts::before,
+body.battleActive #gameScreen .resourceHud::before {
+  content:"";position:absolute;top:0;bottom:0;z-index:-1;pointer-events:none;
+  border:0 solid transparent;
+}
+body.battleActive #gameScreen .battleDeckCounts::before {
+  left:0;right:-15px;
+  border-image:url('assets/ui/battle/hud/hud_wing_left.png') 0 0 0 140 fill / 0 0 0 20px / 0 stretch;
+}
+body.battleActive #gameScreen .resourceHud::before {
+  left:-15px;right:0;
+  border-image:url('assets/ui/battle/hud/hud_wing_right.png') 0 140 0 0 fill / 0 20px 0 0 / 0 stretch;
 }
 body.battleActive #gameScreen .battleDeckCounts {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-  padding: 0;
-  color: #e4dcc7;
-  font:
-    700 14px/1 Arial,
-    sans-serif;
-  font-variant-numeric: tabular-nums;
+  display:flex;width:100%;justify-self:stretch;align-items:center;justify-content:center;gap:8px;padding:0 6px 0 15px;
+  color:#e4dcc7;font:700 15px/1 Arial,sans-serif;font-variant-numeric:tabular-nums;
 }
-body.battleActive #gameScreen #topBattleHud .battleDeckCounts {
-  padding-left: 44px;
-}
-body.battleActive #gameScreen .hudCount {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-}
-body.battleActive #gameScreen .hudCount img {
-  display: block;
-  width: 22px;
-  height: 24px;
-  object-fit: contain;
-  image-rendering: auto;
-}
-body.battleActive #gameScreen .hudCount span {
-  min-width: 15px;
-}
+body.battleActive #gameScreen #topBattleHud .battleDeckCounts {padding-left:44px;gap:5px}
+body.battleActive #gameScreen .hudCount {display:inline-flex;align-items:center;gap:3px;min-width:0}
+body.battleActive #gameScreen .hudCount img {display:block;width:22px;height:24px;object-fit:contain;image-rendering:auto}
+body.battleActive #gameScreen .hudCount span {min-width:15px}
 body.battleActive #gameScreen .life {
-  width: 44px;
-  height: 100%;
-  min-height: 0;
-  max-height: 44px;
-  justify-self: center;
-  color: #e4dcc7;
-  font:
-    900 21px/1 Arial,
-    sans-serif;
-  font-variant-numeric: tabular-nums;
-  text-shadow:
-    0 1px 2px #080d13,
-    1px 0 2px #080d13,
-    -1px 0 2px #080d13;
+  position:relative;z-index:2;width:36px;height:100%;min-height:0;max-height:46px;justify-self:center;
+  color:#e4dcc7;font:900 22px/1 Arial,sans-serif;font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 2px #0b131c,1px 0 2px #0b131c,-1px 0 2px #0b131c;
 }
-body.battleActive #gameScreen .life img {
-  image-rendering: auto;
-  object-fit: contain;
-}
-body.battleActive #gameScreen .life span {
-  transform: translateY(1px);
-}
+body.battleActive #gameScreen .life img {image-rendering:auto;object-fit:contain}
+body.battleActive #gameScreen .life span {position:relative;transform:translateY(-1px)}
 body.battleActive #gameScreen .resourceHud {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto 13px;
-  gap: 0;
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  justify-content: stretch;
-  justify-items: end;
-  min-width: 0;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0;
+  width:100%;padding:2px 13px 2px 3px;background:none;
 }
 body.battleActive #gameScreen .resourceTrack {
-  width: 100%;
-  max-width: 145px;
-  height: auto;
-  max-height: none;
-  aspect-ratio: 1500/200;
-  background: url("assets/ui/battle/hud/hud_resource_bar.png") center/100% 100%
-    no-repeat;
-  image-rendering: auto;
+  position:relative;width:100%;max-width:145px;height:17px;max-height:none;
+  aspect-ratio:auto;background:none;border:0;box-shadow:none;
 }
 body.battleActive #gameScreen .resourceSlots {
-  inset: 14% 1.63% 14% 2.21%;
-  display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  align-items: center;
+  position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));
+  align-items:center;justify-items:center;gap:1px;
 }
-body.battleActive #gameScreen .resourceSlot {
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-}
+body.battleActive #gameScreen .resourceSlot {width:100%;height:100%;display:grid;place-items:center;aspect-ratio:auto}
 body.battleActive #gameScreen .resourceSlot img,
 body.battleActive #gameScreen .resourceSlot.filled img,
 body.battleActive #gameScreen .resourceSlot.spent img,
 body.battleActive #gameScreen .resourceSlot.locked img {
-  display: block;
-  width: 92%;
-  height: 92%;
-  max-width: none;
-  max-height: none;
-  object-fit: contain;
-  transform: none;
-  opacity: 1;
-  filter: none;
-  image-rendering: auto;
+  display:block;width:100%;height:100%;max-width:10px;max-height:17px;
+  object-fit:contain;transform:none;opacity:1;filter:none;image-rendering:auto;
 }
 body.battleActive #gameScreen .resourceHud b {
-  min-width: 0;
-  color: #e4dcc7;
-  font:
-    800 13px/13px Arial,
-    sans-serif;
-  font-variant-numeric: tabular-nums;
+  min-width:0;color:#e4dcc7;font:800 12px/12px Arial,sans-serif;font-variant-numeric:tabular-nums;
 }
-body.battleActive #gameScreen .battleMenuToggle {
-  border-color: #65717c;
-  background: #18232e;
-  color: #e4dcc7;
+body.battleActive #gameScreen .battleMenuToggle {border-color:#65717c;background:#18232e;color:#e4dcc7}
+@media(max-width:350px) {
+  body.battleActive #gameScreen .battleHud {padding-left:2px;padding-right:2px}
+  body.battleActive #gameScreen .battleHudStats {grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr)}
+  body.battleActive #gameScreen .battleDeckCounts {gap:4px;font-size:13px;padding-left:12px}
+  body.battleActive #gameScreen #topBattleHud .battleDeckCounts {gap:3px;padding-left:44px;padding-right:0}
+  body.battleActive #gameScreen .hudCount {gap:1px}
+  body.battleActive #gameScreen .hudCount img {width:18px;height:20px}
+  body.battleActive #gameScreen .hudCount span {min-width:13px}
+  body.battleActive #gameScreen .life {width:32px;font-size:20px}
+  body.battleActive #gameScreen #topBattleHud .battleHudHeading .turn {max-width:110px}
 }
-@media (max-width: 350px) {
-  body.battleActive #gameScreen .battleHud {
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-  body.battleActive #gameScreen .battleDeckCounts {
-    gap: 3px;
-    font-size: 13px;
-  }
-  body.battleActive #gameScreen .hudCount img {
-    width: 20px;
-    height: 22px;
-  }
-  body.battleActive #gameScreen .battleHudStats {
-    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
-    gap: 2px;
-  }
-  body.battleActive #gameScreen .life {
-    width: 40px;
-    font-size: 20px;
-  }
-  body.battleActive #gameScreen #topBattleHud .battleHudHeading .turn {
-    max-width: 108px;
-  }
-}
-@media (max-height: 610px) {
-  body.battleActive #gameScreen .battleHud {
-    padding-top: 2px;
-    padding-bottom: 2px;
-  }
-  body.battleActive #gameScreen .battleHudHeading {
-    height: 12px;
-    line-height: 12px;
-  }
-  body.battleActive #gameScreen .battleHudStats {
-    height: calc(100% - 12px);
-  }
-  body.battleActive #gameScreen .life {
-    width: 38px;
-    max-height: 38px;
-    font-size: 19px;
-  }
-  body.battleActive #gameScreen .resourceHud {
-    grid-template-rows: auto 12px;
-  }
-  body.battleActive #gameScreen .resourceHud b {
-    font-size: 12px;
-    line-height: 12px;
-  }
+@media(max-height:610px) {
+  body.battleActive #gameScreen .life {max-height:36px;width:28px;font-size:19px}
+  body.battleActive #gameScreen .resourceTrack {height:13px}
+  body.battleActive #gameScreen .resourceSlot img {max-height:13px}
+  body.battleActive #gameScreen .resourceHud b {font-size:11px;line-height:11px}
 }

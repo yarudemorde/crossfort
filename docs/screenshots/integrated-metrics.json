@@ -1,0 +1,242 @@
+[
+  {
+    "label": "Before",
+    "width": 375,
+    "height": 844,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 44,
+          "h": 40.078125
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 44,
+          "h": 40.078125
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "After",
+    "width": 375,
+    "height": 844,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "430 × 932",
+    "width": 430,
+    "height": 932,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 62,
+        "shield": {
+          "w": 36,
+          "h": 46
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 62,
+        "shield": {
+          "w": 36,
+          "h": 46
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "375 × 844",
+    "width": 375,
+    "height": 844,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "320 × 568",
+    "width": 320,
+    "height": 568,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 48,
+        "shield": {
+          "w": 28,
+          "h": 32
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 48,
+        "shield": {
+          "w": 28,
+          "h": 32
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "390 × 844",
+    "width": 390,
+    "height": 844,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 59.078125,
+        "shield": {
+          "w": 36,
+          "h": 43.078125
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "1100 × 900",
+    "width": 1100,
+    "height": 900,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 62,
+        "shield": {
+          "w": 36,
+          "h": 46
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 62,
+        "shield": {
+          "w": 36,
+          "h": 46
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  },
+  {
+    "label": "390 × 568",
+    "width": 390,
+    "height": 568,
+    "hud": [
+      {
+        "id": "topBattleHud",
+        "height": 48,
+        "shield": {
+          "w": 28,
+          "h": 32
+        },
+        "overlap": false,
+        "slots": 10
+      },
+      {
+        "id": "bottomBattleHud",
+        "height": 48,
+        "shield": {
+          "w": 28,
+          "h": 32
+        },
+        "overlap": false,
+        "slots": 10
+      }
+    ],
+    "scrollX": false,
+    "scrollY": false,
+    "images": []
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "damage": true,
+  "heal": true,
+  "shield": true,
+  "gravePanel": true,
+  "counts": true,
+  "menu": true,
+  "longName": {
+    "clipped": true,
+    "overflow": "hidden"
+  },
+  "local": true,
+  "cpu": true,
+  "season": true
+}
