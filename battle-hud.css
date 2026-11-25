@@ -77,7 +77,7 @@ body.battleActive #gameScreen .resourceSlot.locked img {
   object-fit:contain;transform:none;opacity:1;filter:none;image-rendering:auto;
 }
 body.battleActive #gameScreen .resourceHud b {
-  min-width:0;color:#e4dcc7;font:800 12px/12px Arial,sans-serif;font-variant-numeric:tabular-nums;
+  display:none;
 }
 body.battleActive #gameScreen .battleMenuToggle {border-color:#65717c;background:#18232e;color:#e4dcc7}
 @media(max-width:350px) {
