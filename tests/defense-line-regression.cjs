@@ -35,9 +35,23 @@ run('render=function(){};renderPicker=function(){};wait=async function(){};anima
     check(ctx.state.enemyDefense[0]===Math.min(2,hit),'defense stage after combat '+hit);
     check(before-ctx.state.enemyLife===(hit===1?0:hit===2?2:3),'intact blocks, cracked takes normal damage, breached gains one damage');
   }
-  check(ctx.state.battleHistory.some(e=>e.text.includes('攻撃を防ぎ、ヒビが入った'))&&ctx.state.battleHistory.some(e=>e.text.includes('突破された'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'defense, transition, and bonus messages enter battle history');
+  check(ctx.state.battleHistory.some(e=>e.text.includes('攻撃を防ぎ、ヒビが入った'))&&ctx.state.battleHistory.some(e=>e.text.includes('崩壊した'))&&ctx.state.battleHistory.some(e=>e.text.includes('ダメージ+1')),'defense, transition, and bonus messages enter battle history');
   check(!html.includes('防衛線 BLOCK')&&!html.includes('0ダメージ')&&css.includes('.fxDefenseShield')&&css.includes('.life.wallShielded'),'blocked combat uses a text-free shield effect');
   const slots=node('enemyDefense');slots.children=[];ctx.renderDefenseLine('enemy','enemyDefense');check(slots.children.length===5&&slots.children[0].innerHTML.includes('defense_wall_breached.png')&&slots.children[1].innerHTML.includes('defense_wall_intact.png'),'five aligned wall images reflect state');
+  const defenseSnapshot=JSON.stringify([ctx.state.playerDefense,ctx.state.enemyDefense]);
+  for(const side of ['player','enemy']){
+    const root=node(side+'Defense'),defense=ctx.state[side+'Defense'],original=defense.slice();
+    for(let lane=0;lane<5;lane++)for(const stage of [0,1,2,1,0]){
+      defense[lane]=stage;root.children=[];ctx.renderDefenseLine(side,side+'Defense');
+      check(root.children.length===5&&root.children.every((child,i)=>child.className==='defenseSlot defenseStage'+defense[i]&&child.innerHTML.includes(ctx.DEFENSE_LINE_ART.basePath+ctx.DEFENSE_LINE_ART.states[defense[i]])),'mixed states and restoration redraw only the corresponding lane on '+side);
+    }
+    defense.splice(0,5,...original);
+  }
+  check(JSON.stringify([ctx.state.playerDefense,ctx.state.enemyDefense])===defenseSnapshot,'visual state switching leaves combat data unchanged');
+  for(const image of ctx.DEFENSE_LINE_ART.states){
+    const data=fs.readFileSync(path.join(dir,ctx.DEFENSE_LINE_ART.basePath,image));
+    check(data.readUInt32BE(16)===448&&data.readUInt32BE(20)===148&&data[25]===6,'connected sprites share RGBA dimensions: '+image);
+  }
   ctx.state.enemyMana=3;ctx.state.enemyMaxMana=5;ctx.renderResourceSlots('enemy','enemyResourceSlots','enemyResourceTrack');const track=node('enemyResourceSlots').innerHTML;
   check((track.match(/resourceSlot filled/g)||[]).length===3&&(track.match(/resourceSlot spent/g)||[]).length===2&&(track.match(/resourceSlot locked/g)||[]).length===5,'resource track distinguishes three coins, two spent, and five locked slots');
   ctx.state.playerBoard[1]=unit();ctx.state.playerBoard[1].canAttack=true;await ctx.attack('player',1);check(ctx.state.enemyDefense[0]===2&&ctx.state.enemyDefense[1]===1&&ctx.state.enemyLife===15,'different lanes progress independently and each intact wall blocks once');

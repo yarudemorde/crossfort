@@ -161,8 +161,15 @@ body.battleActive #gameScreen .card .keywordIcon{width:15px;height:15px;flex-bas
 body.battleActive #gameScreen .card .power{width:17px;height:17px;bottom:1px;right:1px;font-size:10px}
 body.battleActive #gameScreen .landmarkSlot{height:100%;min-height:0;padding:1px;font-size:clamp(8px,1.2vw,10px);line-height:1.1;white-space:nowrap;text-overflow:ellipsis}
 body.battleActive #gameScreen .defenseWrap{padding:0}
-body.battleActive #gameScreen .defenseSlot{height:100%;min-height:0;border:1px solid #3d5265;background:#0b1621;overflow:visible}
-body.battleActive #gameScreen .defenseSlot img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center;image-rendering:pixelated}
+/* Keep the five lane boxes aligned with the unit grid. Only the artwork spans
+   half of each gutter, so hit areas and shield-effect anchors stay unchanged. */
+#gameScreen .defenseBoard{--defense-gap:5px;gap:var(--defense-gap)}
+body.battleActive #gameScreen .defenseBoard{--defense-gap:clamp(3px,.7vw,6px)}
+#gameScreen .defenseSlot{position:relative;min-width:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible}
+body.battleActive #gameScreen .defenseSlot{height:100%;min-height:0}
+#gameScreen .defenseSlot img{position:absolute;top:0;left:calc(var(--defense-gap) / -2);display:block;width:calc(100% + var(--defense-gap));height:100%;max-width:none;object-fit:fill;image-rendering:pixelated;pointer-events:none;user-select:none}
+#gameScreen .defenseSlot:first-child img{left:0;width:calc(100% + var(--defense-gap) / 2)}
+#gameScreen .defenseSlot:last-child img{width:calc(100% + var(--defense-gap) / 2)}
 body.battleActive #gameScreen .battleInfoRow{height:100%;margin:0;gap:3px;grid-template-columns:var(--log-h) minmax(0,1fr)}
 body.battleActive #gameScreen .battleInfoRow .log{height:100%;min-height:0;padding:0 5px;display:grid;place-items:center;font-size:clamp(9px,1.25vw,11px);line-height:1.1}
 body.battleActive #gameScreen .battleInfoRow .battleToolBtn{width:var(--log-h);height:var(--log-h);font-size:14px}

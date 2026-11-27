@@ -479,7 +479,7 @@ html[data-view-mode="full"] .landmarkSlot{height:clamp(30px,3.6vw,49px)}
 @media(min-width:760px){#gameScreen .hand{--hand-card-width:136px}html[data-view-mode="pc"] #gameScreen .hand{--hand-card-width:138px}html[data-view-mode="full"] #gameScreen .hand{--hand-card-width:clamp(150px,10vw,190px)}}
 @media(max-width:430px){.battleHudHeading .small{max-width:28%}.battleHudMeta{font-size:8px}.resourceTrack{width:min(175px,51vw)}#gameScreen .battleHud{padding:4px 6px}}
 </style>
-<link rel="stylesheet" href="parchment.css?v=14">
+<link rel="stylesheet" href="parchment.css?v=15">
 <link rel="stylesheet" href="season-result.css">
 <link rel="stylesheet" href="hand-draw.css">
 <link rel="stylesheet" href="battle-hud.css?v=4">
@@ -2026,14 +2026,19 @@ function renderBattleHud(topSide,bottomSide){
   renderResourceSlots(topSide,'enemyResourceSlots','enemyResourceTrack');
   renderResourceSlots(bottomSide,'playerResourceSlots','playerResourceTrack');
 }
+// One asset set for both sides; future regional artwork can replace this reference.
+var DEFENSE_LINE_ART={
+  basePath:'assets/ui/battle/defense/kingdom/',
+  states:['defense_wall_intact.png','defense_wall_cracked.png','defense_wall_breached.png']
+};
 function renderDefenseLine(side,rootId){
-  var root=$(rootId),defense=defenseFor(side),images=['defense_wall_intact.png','defense_wall_cracked.png','defense_wall_breached.png'];
+  var root=$(rootId),defense=defenseFor(side);
   var labels=['無傷','ヒビ','崩壊'];root.innerHTML='';
   for(var i=0;i<5;i++){
     var stage=Math.min(2,defense[i]),slot=document.createElement('div');
     slot.className='defenseSlot defenseStage'+stage;
     slot.setAttribute('aria-label','左から'+(i+1)+'番目の防衛線：'+labels[stage]);
-    slot.innerHTML='<img src="assets/ui/battle/'+images[stage]+'" alt="">';
+    slot.innerHTML='<img src="'+DEFENSE_LINE_ART.basePath+DEFENSE_LINE_ART.states[stage]+'" alt="" draggable="false">';
     root.appendChild(slot);
   }
 }
